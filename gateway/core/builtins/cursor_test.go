@@ -34,11 +34,11 @@ func refusedAtCursor(t *testing.T, w *World, c Call, why string) {
 func TestR076ACursorIsBoundToItsListing(t *testing.T) {
 	w := NewWorld(t)
 	next, first := firstPage(t, w)
-	if strings.Join(first, " ") != "data.freshness fund.bare" {
+	if strings.Join(first, " ") != "data.freshness fund.list" { // fund.bare is a preview (R3-12)
 		t.Fatalf("page one: %v", first)
 	}
 	page2 := Call{Who: Ana, Address: "atlas.catalog@v1:fetch", Body: `{"page_size": 2, "cursor": "` + next + `"}`}
-	if got := pageIDs(pageOf(t, w, page2)); strings.Join(got, " ") != "fund.list fund.old" {
+	if got := pageIDs(pageOf(t, w, page2)); strings.Join(got, " ") != "fund.old fund.positions" {
 		t.Fatalf("page two: %v", got)
 	}
 	refusedAtCursor(t, w, Call{Who: Bea, Address: page2.Address, Body: page2.Body}, "another principal")
@@ -56,7 +56,7 @@ func TestR076ACursorIsBoundToItsListing(t *testing.T) {
 	w.Policy.Denies = append(w.Policy.Denies, ports.Deny{ID: "deny-ana-freshness", Subject: Ana, Capabilities: []string{"data.freshness@v1"}, Reason: "A test."})
 	refusedAtCursor(t, w, page2, "after a policy change")
 	w.Policy = WorldPolicy()
-	if got := pageIDs(pageOf(t, w, page2)); strings.Join(got, " ") != "fund.list fund.old" {
+	if got := pageIDs(pageOf(t, w, page2)); strings.Join(got, " ") != "fund.old fund.positions" {
 		t.Fatalf("the same policy again: %v", got)
 	}
 

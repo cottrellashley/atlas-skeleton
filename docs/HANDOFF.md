@@ -15,7 +15,8 @@ It adopts the core handoff plan and the peer review of 2026-11-01 ([`docs/source
 | C0 | Done: R3-01 to R3-05 fixed, each with a regression shown to fail first |
 | C1 | Done: generic `ports.Module` registration and company access dimensions (proposed amendment A-200); exit test in `extensions/support` |
 | C2 | Done: negotiation before admission, one outcome path for records and tables, matched bindings, one deadline per call in Go, Node and Python (R3-06 to R3-08) |
-| C3 to C6 | Not started |
+| C3 | In progress: R3-09 to R3-12 fixed; R3-13, R3-14 and the exit matrix remain |
+| C4 to C6 | Not started |
 
 ---
 

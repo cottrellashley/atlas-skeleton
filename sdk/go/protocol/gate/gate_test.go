@@ -371,3 +371,83 @@ func TestDeprecationNoticeIsFromItsDate(t *testing.T) {
 		}
 	}
 }
+
+// R3-09: an array's items are compared whatever form they take: a schema,
+// true (or absent: any item), or false (none). A request may only accept
+// more: narrowing its items to false, or from any item to a schema, is
+// breaking, and widening them is not. A result's items keep their form,
+// since an earlier reader checks what a new writer sends and a new reader
+// what was written before.
+func TestR3_09BooleanItemsAreCompared(t *testing.T) {
+	items := `"items": {"type": "string", "x-atlas-logical": "PortfolioCode"}`
+	tags := func(items string) string {
+		return `"tags": {"type": ["array", "null"], ` + items + `, "description": "Tags."}, "status": {`
+	}
+	for _, c := range []struct {
+		name     string
+		from, to [2]string
+		want     string
+	}{
+		{"a request's items narrowed to none", [2]string{items, items}, [2]string{items, `"items": false`}, "breaking /schemas/request/properties/portfolios/items"},
+		{"a request's items widened to any", [2]string{items, items}, [2]string{items, `"items": true`}, ""},
+		{"a request's items left out: any", [2]string{items, items}, [2]string{", " + items, ""}, ""},
+		{"a request's items narrowed from any to a schema", [2]string{items, `"items": true`}, [2]string{items, items}, "breaking /schemas/request/properties/portfolios/items"},
+		{"a request's items widened from none", [2]string{items, `"items": false`}, [2]string{items, items}, ""},
+		{"a result's items from a schema to any", [2]string{`"status": {`, tags(`"items": {"type": "string"}`)}, [2]string{`"status": {`, tags(`"items": true`)}, "breaking /schemas/result/items/properties/tags/items"},
+		{"a result's items from any to a schema", [2]string{`"status": {`, tags(`"items": true`)}, [2]string{`"status": {`, tags(`"items": {"type": "string"}`)}, "breaking /schemas/result/items/properties/tags/items"},
+	} {
+		got := classes(Check(edited(t, c.to, edited(t, c.from, nil)), edited(t, c.from, nil), nil).Findings)
+		if got != c.want {
+			t.Errorf("%s:\n got %q\nwant %q", c.name, got, c.want)
+		}
+	}
+}
+
+// edited is the base with one replacement; with previous, the profile after
+// it, naming it and adding a changelog entry.
+func edited(t *testing.T, edit [2]string, previous *profile.Profile) *profile.Profile {
+	t.Helper()
+	if !strings.Contains(base, edit[0]) {
+		t.Fatalf("the base has no %q", edit[0])
+	}
+	doc := strings.Replace(base, edit[0], edit[1], 1)
+	if previous != nil {
+		doc = strings.Replace(doc, `"evolution": {"lens": [`, `"evolution": {"previous_profile": "`+previous.Exact().String()+`", "lens": [`, 1)
+		doc = strings.Replace(doc, `{"date": "2026-09-01", "change": "First."}]`, `{"date": "2026-09-01", "change": "First."}, {"date": "2026-10-30", "change": "Next."}]`, 1)
+	}
+	return load(t, doc)
+}
+
+// R3-11: a nested result field renamed, even with its alias, is breaking.
+// Resolution renames top-level fields only, so an earlier reader cannot
+// read details.code from a writer that sends details.id. A top-level
+// rename with its lens stays dangerous.
+func TestR3_11ANestedResultRenameIsBreaking(t *testing.T) {
+	details := func(field string) string {
+		return `"details": {"type": "object", "required": ["` + field + `"], "properties": {"` + field + `": {"type": "string", "description": "The code."` +
+			map[bool]string{true: `, "x-atlas-aliases": ["code"]`, false: ``}[field == "id"] + `}}, "description": "Details."}, "status": {`
+	}
+	from := [2]string{`"status": {`, details("code")}
+	to := [2]string{`"status": {`, details("id")}
+	got := classes(Check(edited(t, to, edited(t, from, nil)), edited(t, from, nil), nil).Findings)
+	if !strings.Contains(got, "breaking /schemas/result/items/properties/details/properties/id") {
+		t.Errorf("a nested result rename: %q", got)
+	}
+}
+
+// R3-10: a lens acts on every schema of its profile that holds its field,
+// so a lens naming a field that more than one schema holds would change an
+// unrelated one too. Such a profile is refused until lenses carry their
+// schema (A-202). Here the result's as_of is renamed while the request's
+// as_of, unrelated, stays.
+func TestR3_10ALensOverASharedFieldIsRefused(t *testing.T) {
+	p := next(t,
+		`"as_of": {"type": "string", "format": "date", "x-atlas-key": true, "description": "The date."}`,
+		`"valued_on": {"type": "string", "format": "date", "x-atlas-key": true, "x-atlas-aliases": ["as_of"], "description": "The date."}`,
+		`"required": ["portfolio", "as_of", "mv", "status"]`, `"required": ["portfolio", "valued_on", "mv", "status"]`,
+		`"evolution": {"lens": [`, `"evolution": {"lens": [{"op": "rename", "from": "as_of", "to": "valued_on"}`)
+	r := Check(p, load(t, base), nil)
+	if !r.Refused() || !strings.Contains(r.Reason(), "more than one schema") {
+		t.Fatalf("a lens over a field two schemas hold: %v", r.Findings)
+	}
+}

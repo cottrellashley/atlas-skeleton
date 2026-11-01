@@ -212,3 +212,47 @@ func TestR3_07EveryOutcomeIsWhatTheCallerReceived(t *testing.T) {
 		}
 	}
 }
+
+// panicWriter is a response whose first body write panics, as a fault in
+// writing an answer would.
+type panicWriter struct {
+	h      http.Header
+	status int
+	writes int
+}
+
+func (w *panicWriter) Header() http.Header { return w.h }
+func (w *panicWriter) WriteHeader(s int)   { w.status = s }
+func (w *panicWriter) Write(b []byte) (int, error) {
+	w.writes++
+	if w.writes == 1 {
+		panic("the answer could not be written")
+	}
+	return len(b), nil
+}
+
+// The review of C2 (R3-07): a panic while an answer is written is the
+// call's internal failure, for a record as for a table, never a success or
+// a cancellation, and the caller is answered internal.
+func TestR3_07APanicWhileAnsweringIsInternal(t *testing.T) {
+	r := newRig(t, rigOptions{})
+	withEcho(t, r)
+	for _, c := range []struct{ name, path, body string }{
+		{"record", echoAt, `{"text": "hello"}`},
+		{"table", listAt, `{}`},
+	} {
+		req := httptest.NewRequest(http.MethodPost, c.path, strings.NewReader(c.body))
+		req.Header = r.request("t-alice", c.path, c.body).Header
+		w := &panicWriter{h: http.Header{}}
+		r.edge.ServeHTTP(w, req)
+		var out ports.Fact
+		for _, f := range r.audit.Of(w.h.Get(protocol.HeaderRequestID)) {
+			if f.Kind == ports.Outcome {
+				out = f
+			}
+		}
+		if out.Code != protocol.CodeInternal {
+			t.Errorf("%s: a panic while answering was recorded as %+v", c.name, out)
+		}
+	}
+}

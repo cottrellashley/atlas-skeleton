@@ -81,7 +81,8 @@ func TestR077OneAvailabilityRule(t *testing.T) {
 		}
 	}
 	core := all(Call{Who: Ana, Address: "atlas.catalog@v1:fetch"}, nil)
-	want := []string{"data.freshness", "fund.bare", "fund.list", "fund.old", "fund.positions", "fund.positions-dates", "fund.search"}
+	// fund.bare is unready, so served as a preview (R3-12).
+	want := []string{"data.freshness", "fund.list", "fund.old", "fund.positions", "fund.positions-dates", "fund.search"}
 	if !slices.Equal(core, want) {
 		t.Errorf("a Core client's catalogue %v, want %v", core, want)
 	}
@@ -317,4 +318,30 @@ func FuzzSearchWords(f *testing.F) {
 			}
 		}
 	})
+}
+
+// R3-12: discovery shows the lifecycle a capability is served with. A
+// profile declared stable that fails the readiness check is served as a
+// preview (registry.Capability.Lifecycle): it is listed only to a caller
+// who asks for previews, and listed as a preview.
+func TestR3_12DiscoveryShowsTheEffectiveLifecycle(t *testing.T) {
+	w := NewWorld(t)
+	c := w.Registry.Snapshot().Lookup("fund.bare@v1")
+	if c == nil || c.Current.Lifecycle != "stable" || c.Lifecycle() != "preview" {
+		t.Fatalf("fund.bare is not a stable-declared, unready capability: %+v", c)
+	}
+	if ids := pageIDs(pageOf(t, w, Call{Who: Ana, Address: "atlas.catalog@v1:fetch", Body: `{"page_size": 50}`})); slices.Contains(ids, "fund.bare") {
+		t.Errorf("an unready capability is listed without previews: %v", ids)
+	}
+	page := pageOf(t, w, Call{Who: Ana, Address: "atlas.catalog@v1:fetch", Body: `{"page_size": 50, "previews": true}`})
+	items, _ := get(page, "items").([]ijson.Value)
+	var lifecycle string
+	for _, it := range items {
+		if str(it, "id") == "fund.bare" {
+			lifecycle = str(it, "lifecycle")
+		}
+	}
+	if lifecycle != "preview" {
+		t.Errorf("an unready capability is listed with previews as %q, not preview", lifecycle)
+	}
 }

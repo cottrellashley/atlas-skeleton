@@ -52,7 +52,21 @@ func (s *Server) call(w http.ResponseWriter, r *http.Request) {
 		s.problem(w, r, err)
 		return
 	}
-	defer s.finish(res, x)
+	defer func() {
+		// A panic while the answer is written is the call's internal
+		// failure, recorded before the recovery layer answers it (R3-07); an
+		// aborted handler is a caller gone.
+		if v := recover(); v != nil {
+			if v == http.ErrAbortHandler { //nolint:errorlint // net/http's sentinel, compared by identity as net/http does
+				x.gone = true
+			} else {
+				x.failed = protocol.NewProblem(protocol.CodeInternal, "an internal error occurred")
+			}
+			s.finish(res, x)
+			panic(v)
+		}
+		s.finish(res, x)
+	}()
 	s.bound(w, r, res)
 	s.answer(w, r, res, ch)
 }

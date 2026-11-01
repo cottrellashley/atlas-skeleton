@@ -8,6 +8,7 @@ import (
 	"testing/synctest"
 	"time"
 
+	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
 )
@@ -45,5 +46,28 @@ func TestR3_06AWaiterBehindARefreshKeepsItsOwnDeadline(t *testing.T) {
 		}
 		wantProblem(t, err, "deadline_exceeded")
 		_ = long() // the refresh ends at its own bound
+	})
+}
+
+// R3-06, the review of C2: a Go call's one deadline is its start plus its
+// deadline, the interaction's default when the caller gives none, for the
+// request it sends and for its own wait alike. Discovery comes out of it, so
+// a call whose describe takes 20s of conformance.echo's 30s ends 30s after
+// it began, not 50s.
+func TestR3_06TheGoCallKeepsOneDeadline(t *testing.T) {
+	isolate(t)
+	synctest.Test(t, func(t *testing.T) {
+		gw := fakegw.New(t, fakegw.Options{})
+		release := make(chan struct{})
+		t.Cleanup(func() { close(release) })
+		gw.Handle("atlas.describe:fetch", func(c *fakegw.Call) { time.Sleep(20 * time.Second); c.Serve() })
+		gw.Handle("conformance.echo@v1:fetch", func(c *fakegw.Call) { c.Hold(release) })
+		c := connect(t, gw, signedIn(t))
+		start := time.Now()
+		_, err := c.Call(context.Background(), "conformance.echo@v1:fetch", map[string]any{"text": "slow"})
+		wantProblem(t, err, "deadline_exceeded")
+		if got := time.Since(start); got != 30*time.Second {
+			t.Fatalf("a call with a 30s default ended after %v", got)
+		}
 	})
 }

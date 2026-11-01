@@ -74,6 +74,27 @@ func (s *Schema) Property(name string) (*Schema, bool) {
 // Required reports whether a property is required.
 func (s *Schema) Required(name string) bool { return slices.Contains(s.def().required, name) }
 
+// The forms an array's items take (ItemsForm).
+const (
+	AnyItem    = "any"    // items absent or true
+	NoItem     = "none"   // items false
+	ItemSchema = "schema" // a schema each item holds to
+)
+
+// ItemsForm is the form a schema's items take: AnyItem, NoItem or
+// ItemSchema. Items gives the schema, which it hides when items is a
+// boolean (R3-09).
+func (s *Schema) ItemsForm() string {
+	it := s.def().items
+	switch {
+	case it == nil || it.boolean != nil && *it.boolean:
+		return AnyItem
+	case it.boolean != nil:
+		return NoItem
+	}
+	return ItemSchema
+}
+
 // Items is an array schema's items, or nil.
 func (s *Schema) Items() *Schema {
 	if it := s.def().items; it != nil && it.boolean == nil {

@@ -76,7 +76,7 @@ func (v *view) item(c *registry.Capability) map[string]any {
 	}
 	out := map[string]any{
 		"id": p.ID, "version": p.Version, "exact": p.Exact().String(), "summary": identity(p, "summary"),
-		"family": p.Family, "lifecycle": p.Lifecycle, "interactions": interactions,
+		"family": p.Family, "lifecycle": c.Lifecycle(), "interactions": interactions,
 	}
 	if t := identity(p, "title"); t != "" {
 		out["title"] = t

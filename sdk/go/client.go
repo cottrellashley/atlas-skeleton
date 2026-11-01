@@ -581,7 +581,10 @@ func (t *tokenStore) token(ctx context.Context, failed string) (string, error) {
 		return t.explicit, nil
 	}
 	if err := t.mu.lock(ctx); err != nil {
-		return "", protocol.NewProblem(protocol.CodeDeadlineExceeded, "the call's deadline passed while another call renewed the sign-in")
+		if e := ended(ctx); e != nil {
+			return "", e // cancelled, or past the call's deadline, while another call renewed the sign-in
+		}
+		return "", err
 	}
 	defer t.mu.unlock()
 	f, err := t.usable()

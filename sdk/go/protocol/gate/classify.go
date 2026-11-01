@@ -3,6 +3,7 @@ package gate
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
@@ -176,9 +177,17 @@ func (c *classifier) compare(o, n *schema.Schema, ptr string, p part, top bool) 
 	if !c.value(o, n, ptr, p) {
 		return // a different type: nothing within it compares
 	}
-	oi, ni := o.Items(), n.Items()
-	if oi != nil && ni != nil {
-		c.compare(oi, ni, ptr+"/items", p, top)
+	// Items in every form (R3-09): a request may only accept more items,
+	// from none to some or from a schema to any; a result keeps their form.
+	switch of, nf := o.ItemsForm(), n.ItemsForm(); {
+	case of == schema.ItemSchema && nf == schema.ItemSchema:
+		c.compare(o.Items(), n.Items(), ptr+"/items", p, top)
+	case of == nf:
+	case p.request && (nf == schema.AnyItem || of == schema.NoItem):
+	case p.request:
+		c.add(Breaking, ptr+"/items", "the request's items now refuse items it accepted (%s, now %s): declare @v%d", of, nf, c.new.Version+1)
+	default:
+		c.add(Breaking, ptr+"/items", "the %s's items changed from %s to %s: an earlier reader checks what the new writer sends, and a new reader what was written before: declare @v%d (R03)", p.name, of, nf, c.new.Version+1)
 	}
 	if len(o.Properties()) > 0 || len(n.Properties()) > 0 {
 		c.properties(o, n, ptr, p, top)
@@ -279,6 +288,12 @@ func keyOf(m map[string]string, v string) string {
 // renamed classifies a renamed property: dangerous, with aliases and, where
 // readers on both sides must follow it, a rename lens.
 func (c *classifier) renamed(from, to, ptr string, p part, top bool) {
+	if !top && !p.request {
+		// Resolution renames a record's own fields only (R3-11): nothing
+		// could give an earlier reader the old name of a nested one.
+		c.add(Breaking, ptr, "the nested field '%s' was renamed '%s': resolution renames only a record's own fields, so earlier readers could not read it: declare @v%d", from, to, c.new.Version+1)
+		return
+	}
 	if top && !p.request && !c.lensHas("rename", from, to) {
 		c.add(Breaking, ptr, "'%s' was renamed '%s' without a rename lens: earlier readers could not read it", from, to)
 		return
@@ -582,10 +597,45 @@ func lensConsistent(old, new *profile.Profile) []Finding {
 		}
 		return nil, false
 	}
+	// holders are the names of the schemas, of either profile, that hold a
+	// field as a record's own: a lens acts on each of them (R3-10).
+	holders := func(field string) []string {
+		var names []string
+		for _, p := range []*profile.Profile{old, new} {
+			for name, s := range p.Schemas {
+				row := s
+				if it := s.Items(); it != nil {
+					row = it
+				}
+				if _, ok := row.Property(field); ok && !slices.Contains(names, name) {
+					names = append(names, name)
+				}
+			}
+		}
+		slices.Sort(names)
+		return names
+	}
 	for i, op := range new.Evolution.Lens {
 		ptr := fmt.Sprintf("/evolution/lens/%d", i)
 		bad := func(format string, args ...any) {
 			out = append(out, Finding{Breaking, ptr, fmt.Sprintf(format, args...)})
+		}
+		// A lens names fields, not schemas, so one whose field more than
+		// one schema holds would change an unrelated one too: refused until
+		// a lens carries its schema (A-202).
+		var fields []string
+		switch op.Op {
+		case "rename":
+			from, _ := op.From.(string)
+			to, _ := op.To.(string)
+			fields = []string{from, to}
+		default:
+			fields = []string{op.Field}
+		}
+		for _, f := range fields {
+			if hs := holders(f); len(hs) > 1 {
+				bad("%s acts on '%s', which more than one schema holds (%s): a lens acts on every schema holding its field, so it would change each of them: change one schema's field in a new version", op.Op, f, strings.Join(hs, ", "))
+			}
 		}
 		switch op.Op {
 		case "rename":

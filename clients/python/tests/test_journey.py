@@ -100,7 +100,11 @@ def test_r3_06_a_call_waiting_for_the_engine_keeps_its_deadline(connect):
     alice = connect("dev-alice")
     alice.call("portfolio.list@v1:fetch", {})  # connected
     engine = shared(alice._path)
-    engine._lock.acquire()  # another call has the engine
+    import threading
+
+    engine._lock.acquire()  # another call has the engine, for 5s
+    held = threading.Timer(5, engine._lock.release)
+    held.start()
     try:
         start = time.monotonic()
         with pytest.raises(AtlasProblem) as e:
@@ -108,5 +112,5 @@ def test_r3_06_a_call_waiting_for_the_engine_keeps_its_deadline(connect):
         assert e.value.code == "deadline_exceeded"
         assert time.monotonic() - start < 2, "the call waited past its deadline for the engine"
     finally:
-        engine._lock.release()
+        held.join()
     assert alice.call("portfolio.list@v1:fetch", {}).rows

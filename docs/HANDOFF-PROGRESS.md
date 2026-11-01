@@ -1,5 +1,19 @@
 # Handoff progress
 
+## Summary (2026-11-01, paused for credit)
+
+**State of `handoff`:** every commit passes `make check` and `make e2e`.
+- **Done:** C0 (R3-01 to R3-05), C1 (generic modules and company access dimensions; exit test in `extensions/support`) and C2 (R3-06 to R3-08, plus the review's fixes).
+- **C3, in part:** R3-09 (boolean items), R3-10 (ambiguous lenses refused, A-202), R3-11 (nested result renames breaking) and R3-12 (effective lifecycle in discovery) are fixed and tested. Still to do: R3-13 (Python Arrow from the reader schema), R3-14 (the Go client checks the Arrow physical schema; the design is to check it in `arrowschema`, against `Derive`'s fields and `atlas:profile`), and C3's cross-client exit matrix.
+- **Not started:** C4 (Gate A), C5 (Gate B), C6 (packaging). **Neither gate has been run.**
+
+**For Ashley to decide or provide:**
+- A review of the proposed protocol amendment A-200 (`x-atlas-scope`, the dimension registry, whoami's `scope`), with the references owner.
+- The company's first integrations.
+- Real credentials, when live proofs are wanted. Nothing here has run against Snowflake, Entra or Azure.
+
+---
+
 The log of the work on branch `handoff`, made from `pass-2` at `7f876ea`, following [HANDOFF.md](HANDOFF.md). Each package records what was done and the tests that prove it, what remains, the decisions taken, and the next step. "Hermetic" means proved against fakes, DuckDB and fixtures on this machine; nothing here has run against a real company system.
 
 ## Set-up, 2026-11-01
@@ -88,6 +102,16 @@ It also strengthened the exit test. The leak case now asserts the withheld probl
   - **Node:** a call's budget is measured from the public call's start, so discovery comes out of it, and no request is sent once it has passed.
   - **Python:** one monotonic deadline per public call bounds the wait for the engine's lock, the connect and the call, and the `deadline_ms` sent is what is left.
 
+**The review.** A fresh reviewer read the C2 diff. Its confirmed points are fixed, each with a test that failed first:
+- **A panic while an answer is written.** It was recorded as a success for a record, or a cancellation for a table, because the handler's own defer ran before the recovery layer marked it failed. The defer now records it as `internal` (`TestR3_07APanicWhileAnsweringIsInternal`).
+- **The Go client restarted the interaction's default budget after discovery.** A 30 s call whose describe took 20 s ended at 50 s. It now has one deadline from its start, and sends nothing once it has passed (`TestR3_06TheGoCallKeepsOneDeadline`). The token lock's failure is mapped through the client's `ended`.
+- **The Python test hung, rather than failed,** without its fix. It now does fail.
+
+Still open from the review:
+- With no explicit deadline, Python's wait for the engine lock and its connect are unbounded. The Go engine applies the interaction's default to the call itself.
+- The shared engine start (`shared()`) and Python's non-call operations take no deadline.
+- A Go refresh runs on its holder's context, so cancelling the holder aborts the shared refresh.
+
 **What remains of C2's exit matrix.** These cases are not yet asserted in one matrix, though existing tests touch some of them:
 - a stalled upstream (`R042` deadline tests, in tables only);
 - a queued call that expires (the bulkhead tests);
@@ -96,6 +120,16 @@ It also strengthened the exit test. The leak case now asserts the withheld probl
 - R3-06 beyond the three cases the review named: the Go client's discovery and bootstrap budgets, and Python's stream consumption. The review's reviewer is checking these now.
 
 **Next.** C3.
+
+## C3. Contracts and clients (in progress)
+
+Fixed, each with a test that failed first:
+- R3-09: `TestR3_09BooleanItemsAreCompared` (`schema.ItemsForm`).
+- R3-10: `TestR3_10ALensOverASharedFieldIsRefused`. A lens naming a field that more than one schema holds is refused until lenses carry their schema (A-202, not yet written in ASSUMPTIONS.md).
+- R3-11: `TestR3_11ANestedResultRenameIsBreaking`.
+- R3-12: `TestR3_12DiscoveryShowsTheEffectiveLifecycle`. Two older tests that expected an unready capability in the default catalogue were corrected.
+
+Remaining: R3-13, R3-14 and the exit matrix.
 
 ## Decisions taken
 

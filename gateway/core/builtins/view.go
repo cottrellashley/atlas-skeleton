@@ -48,8 +48,10 @@ func (v *view) all() []*registry.Capability {
 // and the caller's client implements every trait it marks critical.
 func (v *view) available(c *registry.Capability) bool {
 	p := c.Current
-	switch {
-	case p.Lifecycle == "retired", p.Lifecycle == "preview" && !v.previews:
+	// The lifecycle it is served with: an unready profile is a preview,
+	// whatever it declares (R3-12).
+	switch lifecycle := c.Lifecycle(); {
+	case lifecycle == "retired", lifecycle == "preview" && !v.previews:
 		return false
 	case len(v.unsupported(p)) > 0:
 		return false

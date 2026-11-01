@@ -181,9 +181,15 @@ func (c *Client) Call(ctx context.Context, address string, request any, opts ...
 		}
 	}
 	h.Set(protocol.HeaderAccept, strings.Join(accept, ", "))
-	callCtx, cancel := context.WithTimeout(ctx, deadline)
+	// One deadline for the whole call, from its start (R3-06): discovery has
+	// come out of it, and the request is not sent once it has passed.
+	at := start.Add(deadline)
+	if !c.opt.Clock.Now().Before(at) {
+		return nil, protocol.NewProblem(protocol.CodeDeadlineExceeded, "the call reached its deadline before its request was sent").WithNext("Repeat the call with a later deadline.")
+	}
+	callCtx, cancel := context.WithTimeout(ctx, at.Sub(c.opt.Clock.Now()))
 	done := func() { cancel(); end() }
-	res, err := c.send(callCtx, c.servers[b.Server]+b.Address, body, h, start.Add(deadline))
+	res, err := c.send(callCtx, c.servers[b.Server]+b.Address, body, h, at)
 	if err != nil {
 		done()
 		return nil, err
