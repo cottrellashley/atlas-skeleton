@@ -1,17 +1,16 @@
 # The one entry point: `make check` proves the tree (docs/pass-2/PLAN.md §1).
-# Everything here is hermetic: no network beyond the public module proxy, no Azure,
-# and never the private github.com/jhgonline (below).
+# Fixture tests use local services. Public dependencies may be downloaded;
+# project-owned modules always resolve inside this workspace.
 
 SHELL := /bin/bash
 GO ?= go
 export GOTOOLCHAIN := local
 
-# jhgonline is a private organisation, and its paths here are names only.
-# Nothing may fetch them. Every in-repo module resolves through go.work and a
+# atlas.local names this workspace, not a remote source. Every project module resolves through go.work and a
 # replace (tools/modcheck proves it). If one ever does not, the go command fails
 # here instead of asking the public proxy, the checksum database or GitHub.
-export GOPRIVATE := github.com/jhgonline
-export GOVCS := github.com/jhgonline:off
+export GOPRIVATE := atlas.local
+export GOVCS := atlas.local:off
 
 # gosnowflake's minicore is cgo, and at start writes a native library to disk
 # and loads it. Every build and test here leaves it out, as the release does.
@@ -26,7 +25,7 @@ BIN := $(CURDIR)/.bin
 # The spec the requirement tools read: the copy kept with the repository.
 export ATLAS_SPEC ?= $(CURDIR)/docs/source/atlas-spec
 
-.PHONY: help check release fmt vet staticcheck test tidy e2e e2e-python e2e-node vuln requirements requirements-index
+.PHONY: help check release fmt vet staticcheck test tidy e2e e2e-python e2e-node vuln requirements requirements-index handoff
 
 help: ## List the targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed -E 's/:.*## /\t/' | expand -t 22
@@ -78,3 +77,7 @@ requirements: ## The requirement matrix: what proves each of the spec's requirem
 
 requirements-index: ## Re-read the spec's requirements into spec/requirements.json
 	@$(GO) -C tools run ./reqs index -spec "$(ATLAS_SPEC)"
+
+handoff: ## Package project source, documentation and licenses without Git metadata or local artifacts
+	@python3 -m unittest discover -s tools -p 'test_handoff.py'
+	@python3 tools/handoff.py

@@ -1,5 +1,4 @@
-// Adapted from github.com/cottrellashley/cloud-gateway-patterns-go at 44ba81a
-// (patterns/lifecycle/lifecycle.go), MIT licence: see sdk/go/THIRD_PARTY_NOTICES.md.
+// Includes MIT-licensed serving utilities; see sdk/go/THIRD_PARTY_NOTICES.md.
 // Changes: import paths; later edits are marked ATLAS.
 
 // Package lifecycle holds the process-level run loop: a group of actors that
@@ -23,7 +22,7 @@ import (
 	"sync/atomic"
 	"syscall"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
+	"atlas.local/sdk/go/kit/conc"
 )
 
 type actor struct {

@@ -16,10 +16,10 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/gateway/porttest"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/ports"
+	"atlas.local/gateway/porttest"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/protocol"
 )
 
 // ATLAS-MECH-014: a fact holds no token, key, body or query string, and its

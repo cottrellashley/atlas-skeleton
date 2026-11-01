@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/builtins"
-	"github.com/jhgonline/fi-app-atlas/gateway/edge"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/httpserver"
+	"atlas.local/gateway/core/builtins"
+	"atlas.local/gateway/edge"
+	"atlas.local/sdk/go/kit/httpserver"
 )
 
 // Settings are the gateway's configuration: one JSON file, its secrets

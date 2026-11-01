@@ -3,8 +3,8 @@ package executor_test
 import (
 	"testing"
 
-	_ "github.com/jhgonline/fi-app-atlas/sqlglot/dialects"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/executor"
+	_ "atlas.local/sqlglot/dialects"
+	"atlas.local/sqlglot/executor"
 )
 
 func TestExecuteSmoke(t *testing.T) {

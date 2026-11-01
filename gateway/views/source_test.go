@@ -16,9 +16,9 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/decimal128"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol/grammar"
 )
 
 // source is this package's test double of an engine: tables in memory,

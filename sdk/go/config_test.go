@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/engine/fakegw"
+	"atlas.local/sdk/go/protocol/grammar"
 )
 
 // R090, §9.7.2, CORE-BOOT-002: the gateway is the connect argument, then

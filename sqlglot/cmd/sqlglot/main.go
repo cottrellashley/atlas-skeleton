@@ -15,11 +15,11 @@ import (
 	"os"
 	"strings"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	_ "github.com/jhgonline/fi-app-atlas/sqlglot/dialects"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
+	sqlglot "atlas.local/sqlglot"
+	_ "atlas.local/sqlglot/dialects"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
 )
 
 // Version is the version reported by --version.

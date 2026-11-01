@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol"
 )
 
 // R081, 02-6 discovery rule 4, 06-2 rule 4: a call to a listed capability

@@ -7,12 +7,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/profile"
+	"atlas.local/sdk/go/protocol/schema"
 )
 
 const voc = `"$schema": "https://json-schema.org/draft/2020-12/schema", "$vocabulary": {"https://json-schema.org/draft/2020-12/vocab/core": true, "https://json-schema.org/draft/2020-12/vocab/applicator": true, "https://json-schema.org/draft/2020-12/vocab/validation": true, "https://json-schema.org/draft/2020-12/vocab/meta-data": true, "https://json-schema.org/draft/2020-12/vocab/format-assertion": true, "https://atlas.jhg.com/vocab/2026-10": false}`

@@ -10,10 +10,10 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/decimal128"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/arrowschema"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/units"
+	"atlas.local/sdk/go/protocol/arrowschema"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/schema"
+	"atlas.local/sdk/go/protocol/units"
 )
 
 // Batch resolves a record batch, written under the plan's writer, column by

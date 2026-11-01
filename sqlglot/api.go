@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/tokens"
 )
 
 func init() { exp.SetBackend(backend{}) }

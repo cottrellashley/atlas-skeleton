@@ -2,6 +2,7 @@
 __pycache__/
 .pytest_cache/
 .bin/
+dist/
 clients/python/fiatlas/bin/
 node_modules/
 *.test

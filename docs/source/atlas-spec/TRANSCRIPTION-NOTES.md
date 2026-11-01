@@ -1,16 +1,20 @@
-# Transcription notes
+# Specification maintenance notes
 
-## Sources
+This directory is the repository-local specification. Its 34 substantive chapters preserve the product vision, domain concepts, requirement identifiers, contract examples, architecture diagrams, design decisions and open questions needed to understand Atlas.
 
-- `IMG_2138.MOV`: 00:16:46, covering the overview through §6.1.
-- `IMG_2139.MOV`: 00:17:53, continuing with §6.2 and ending after §9.8 and the specification's reference material.
+## Document structure
 
-## Method
+- The overview, vision and surface chapters explain what callers can discover and do.
+- Contracts and clients define the shared capability interface and language-specific behavior.
+- Sections 6.1–6.7 describe gateway ownership, access, adapters, package boundaries, principles and mechanisms.
+- Section 7 is the domain catalogue; a catalogue entry is a planned capability, not proof of an implemented profile.
+- Section 8 records decisions and open questions.
+- Sections 9.1–9.8 define the wire protocol and conformance requirements.
 
-The videos were sampled at one- or two-second intervals after correcting separately for the camera position in each recording. Repeated views created by scrolling were reconciled into one ordered record; taskbar text, sidebar repetition, clipped viewport fragments, and duplicate frames were removed.
+Keep headings, numbered rules, requirement IDs, code punctuation, table columns and diagram edges intact when editing. A change to formatting must not silently change a contract, ownership boundary or delivery path. Preserve uncertain requirements as explicit questions rather than guessing a resolution.
 
-The initial generated draft was used only as a navigation aid. Every target file was then reviewed against its complete full-resolution source interval and rebuilt where needed. The files preserve the visible headings, prose, numbered rules, requirement identifiers, lists, tables, and code-like text. Visual flows were read from the frames and reconstructed as Mermaid. The initial 14-frame audit that exposed the draft's errors is retained in [Manual visual validation](VALIDATION.md); the complete per-file review is recorded in the [verification ledger](VERIFICATION-LEDGER.md).
+## Evidence boundaries
 
-## Source constraint
+The [document-review coverage](VERIFICATION-LEDGER.md) and [validation lessons](VALIDATION.md) describe editorial checks. They do not establish executable correctness or live-service behavior. The [review documents](review/README.md) record dated analyses; the [handoff progress](../../HANDOFF-PROGRESS.md) records implementation and test evidence.
 
-The source is a handheld recording rather than the original document. The verification ledger records the complete frame coverage used to resolve small monospace punctuation and densely packed table cells.
+Maintain relative links to the local specification, code and protocol references. Planned package paths and commands must be labelled as planned until the implementation exists. Keep public standards and required third-party license notices where they substantiate the design or reused code.

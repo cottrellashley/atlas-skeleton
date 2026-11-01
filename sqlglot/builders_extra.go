@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/exp"
 )
 
 // ApplyIndexOffset mirrors exp.apply_index_offset: it shifts a single integer array index by

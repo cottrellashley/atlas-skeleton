@@ -1,10 +1,12 @@
 # Critic: what the twelve digests leave the build lacking
 
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
+
 Written 2026-10-31, 22:15, after reading AGENTS.md, docs/pass-2/REVIEW.md and all twelve digests in full, and checking 45 cited facts against the sources.
 
 Paths:
-- SPEC = `/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec`
-- REPO = `/Users/ashleycottrell/repos/atlas-skeleton`
+- SPEC = `docs/source/atlas-spec`
+- REPO = `the repository root`
 - REFS = `REPO/spec/protocol/references`
 
 ## Verdict
@@ -36,7 +38,7 @@ The register for recording decisions already exists: `REPO/docs/pass-2/ASSUMPTIO
 | Since 22:09 | `gateway/adapter/{entra,auditlog,policyfile}`, `gateway/porttest/authenticator.go`, `gateway/layers.toml`, `gateway/local/layers.toml`, `gateway/cmd/gateway/{main,settings,drivers}.go`, `gateway/local/cmd/gateway-local/main.go` |
 | Makefile | `PRODUCT` now includes `gateway` and `gateway/local`, so code-api's defect D1 no longer holds |
 
-**Why it matters.** Steps 4 to 8 would duplicate or overwrite this work if they were built from the digest. Some of code-api's defects may already be fixed (D1, D2, D3); others may not. ListAgents shows a busy peer session. Whoever is writing, coordinate before editing.
+**Why it matters.** Steps 4 to 8 would duplicate or overwrite this work if they were built from the digest. Some of code-api's defects may already be fixed (D1, D2, D3); others may not. Check the current source before acting on a historical defect inventory.
 
 **To close it:**
 - run `git -C REPO status --short` and `find REPO/gateway REPO/sdk/go -newermt '2026-10-31 21:30' -type f`;
@@ -246,7 +248,7 @@ They run against `gateway-local` with production-sized Harbour data.
 - `REPO/docs/pass-2/REVIEW.md:11-19, :33, :44-51`;
 - `SPEC/06-1-front-door-and-services.md` §6.1.16 (L284-303), ATLAS-GATEWAY-012 (L62) and the objectives at L233;
 - `SPEC/08-design-decisions.md` O61 (L170);
-- `git show pass-1:PROOF-0.md` (L50-57, the measured numbers).
+- `docs/pass-1/PROOF-0.md` (L50-57, the measured numbers).
 
 ### 10. Adding `holdings-dates` after the clients are built: the procedure and the staging (steps 7, 11)
 
@@ -257,7 +259,7 @@ They run against `gateway-local` with production-sized Harbour data.
 - a blast-radius row and a switch;
 - the 15-question review.
 
-ATLAS-MECH-018 requires a generator for patterns P01 to P19, whose ids are not in the transcription (PLAN.md P2-13; §5 gives a provisional list).
+ATLAS-MECH-018 requires a generator for patterns P01 to P19, whose ids are not in the specification (PLAN.md P2-13; §5 gives a provisional list).
 
 **What the live tree does.** It adds a capability as a profile plus a view model, and it already serves `portfolio.holdings-dates@v1` from `svc/portfolio`.
 
@@ -344,7 +346,7 @@ Citation discipline is good. The assertive lines without a nearby citation are a
 | `gate.MinimumSunset` is 90 days (code-api) | `sdk/go/protocol/gate/gate.go:79` | Confirmed |
 | A row-count mismatch is `invalid_document` (pass1) | `sdk/go/protocol/frame/frame.go:444-445` | Confirmed |
 | Pass 1's engine queue holds 64 commands (pass1) | `pass-1:sdk/go/engine/engine.go:110` | Confirmed |
-| The library answers a reused key 422, or 409 while in progress (patterns) | `scratchpad/cgp/repo/patterns/idempotency/idempotency.go:161-169` | Confirmed |
+| The library answers a reused key 422, or 409 while in progress (patterns) | the `idempotency` pattern | Confirmed |
 | The readiness check's one-sentence heuristic (contracts) | `tools/spec/atlasref/profilecheck.py:400-404` | Confirmed |
 | The catalogue rows for the journey (journey) | `07-the-catalogue.md:634, :635, :639, :640` | Confirmed |
 | Only holdings and trades are chunked; search is `fetch` only (journey) | `review/CAPABILITY-HANDBOOK.md:233` | Confirmed |

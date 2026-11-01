@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/sdk/go/engine/fakegw"
+	"atlas.local/sdk/go/protocol"
 )
 
 func describes(gw *fakegw.Gateway, by string) int {

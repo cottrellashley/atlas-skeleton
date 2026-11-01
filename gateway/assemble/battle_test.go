@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/fixtures"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/fixtures"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/protocol"
 )
 
 // Many callers at once, under -race: every answer is its own caller's, and

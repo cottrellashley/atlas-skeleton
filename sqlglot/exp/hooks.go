@@ -3,7 +3,7 @@ package exp
 import (
 	"fmt"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
+	"atlas.local/sqlglot/errs"
 )
 
 // Constants mirroring sqlglot.expressions.core.
@@ -85,7 +85,7 @@ func SetBackend(b Backend) { backend = b }
 
 func mustBackend() Backend {
 	if backend == nil {
-		panic("sqlglot backend not installed: import github.com/jhgonline/fi-app-atlas/sqlglot")
+		panic("sqlglot backend not installed: import atlas.local/sqlglot")
 	}
 	return backend
 }

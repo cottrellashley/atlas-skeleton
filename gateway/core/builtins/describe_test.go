@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/documents"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/documents"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 func describeOf(t *testing.T, w *World, c Call) *ijson.Object {

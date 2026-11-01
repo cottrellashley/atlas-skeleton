@@ -4,9 +4,9 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/documents"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/gate"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/documents"
+	"atlas.local/sdk/go/protocol/gate"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // answers are the documents each built-in interaction answers with

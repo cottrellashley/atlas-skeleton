@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/tokens"
 )
 
 // sentinel mirrors SENTINEL_NONE: a falsy token used when there is no current/next/prev.

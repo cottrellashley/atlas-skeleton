@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/internal/refs"
+	"atlas.local/sdk/go/internal/refs"
 )
 
 // AP-CONV-002: every rule accepts exactly the strings grammar.json says it

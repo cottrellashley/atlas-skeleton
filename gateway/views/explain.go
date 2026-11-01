@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/documents"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol/documents"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // explain answers what fetch would do with the request, without doing it

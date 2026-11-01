@@ -9,9 +9,9 @@ import (
 	"strings"
 	"sync"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
 )
 
 var connectByArgsToSkip = map[string]bool{"connect": true, "where": true, "from_": true, "with_": true, "expressions": true}

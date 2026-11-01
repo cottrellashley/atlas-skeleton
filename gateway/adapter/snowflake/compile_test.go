@@ -11,7 +11,7 @@ import (
 
 	"github.com/apache/arrow-go/v18/arrow"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/ports"
 )
 
 var registered = [][]string{{"HARBOUR", "HOLDINGS"}}

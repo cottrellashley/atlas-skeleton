@@ -7,9 +7,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/trie"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/tokens"
+	"atlas.local/sqlglot/trie"
 )
 
 func (g *Generator) ceilFloor(e *exp.Expr) string {

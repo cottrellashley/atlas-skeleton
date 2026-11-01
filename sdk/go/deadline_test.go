@@ -10,9 +10,9 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/engine/fakegw"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // PR06, R028, CORE-DEADLINE-001: a gateway that accepts a call and holds

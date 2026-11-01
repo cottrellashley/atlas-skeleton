@@ -1,7 +1,5 @@
 # Vision
 
-Source: `IMG_2138.MOV` 00:00:54–00:02:04. Diagram and visible prose/tables manually reconstructed from full-resolution frames.
-
 Why Atlas exists and where it is going: a backend so complete, consistent and self-describing that an agent can build whatever anyone in the firm needs (a PM, an analyst, a CPM, sales, a developer, a researcher) by working through the Atlas CLI and SDKs alone; and, to grow it, one central gateway to which any team deploys its own services, with every client and all access managed by the front door.
 
 ### In short

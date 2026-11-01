@@ -25,7 +25,7 @@ This is the ledger of the 2026-10-31/11-01 hardening. **Sources:**
 | P1, R036 (explain) | Explain was offered, but the assembly could not serve it | Views run on the real `DataSource`, so explain is served from the same plan as fetch | Acceptance point 1 |
 | P1, A-141 (history) | Acceptance point 4 failed silently: the registry refuses a profile without its history, and a tautology hid the failure | The capability is staged with its history, and every point asserts its outcome | `make e2e`, acceptance point 4 |
 
-## The peer review of 2026-11-01 (R3-01 to R3-16), on branch `handoff`
+## The peer review of 2026-11-01 (R3-01 to R3-16), during handoff hardening
 
 Found by a static review (`docs/source/atlas-spec/review/PEER-REVIEW-2026-11-01.md`), and worked in `docs/HANDOFF.md`'s packages. Each fix began with a test named for its finding, shown to fail for the stated reason.
 
@@ -83,11 +83,11 @@ Lanes: D1 engine, D2 views and journey, P1 pipeline, P2 access, policy and regis
 | R012 | P1 | Audit to stdout (the default) refuses every call when stdout is a pipe | **FIXED** | A FIXED | `TestR012ASinkOverAPipeRecords`, `TestR012OnlyARegularFileIsSynced` |
 | R013 | P1 | A JWKS outage answers every caller 401 unauthenticated instead of unavailable | **FIXED** | A FIXED | `TestR013AKeyOutageIsNeverTheCallersFault`, `TestR013ReadyOnceTheKeysAreFetched` |
 | R014 | P1 | A broken policy file keeps the old policy deciding forever, so a revocation can silently fail | **FIXED** | P1 DEFERRED · P2 FIXED | `TestPR02AFileThatCannotBeReadIsAnError`, `TestPolicySourceSuite` |
-| R015 | P1 | atlas.clients tells every caller and agent to go install from the private jhgonline organisation | **FIXED** | — | integration: atlas.clients lists build-from-checkout instructions and a deployment's own list (assemble.Parts.Clients); tools/modcheck TestNothingTellsAnyoneToFetchThePrivateOrganisation, TestTheFetchPatternItself |
+| R015 | P1 | atlas.clients tells every caller and agent to go install from a nonportable internal package location | **FIXED** | — | integration: atlas.clients lists build-from-checkout instructions and a deployment's own list (assemble.Parts.Clients); tools/modcheck TestNothingTellsAnyoneToFetchLocalModules, TestTheFetchPatternItself |
 | R016 | P1 | SIGTERM cancels every call in flight, so the drain never lets running requests finish | **FIXED** | A FIXED | `TestR016ServeLetsRunningCallsFinish`, `TestR016ServeEndsWhatOutlivesTheGracePeriod` |
 | R017 | P1 | The cause of every provider, audit, policy or key failure is discarded: the call answers internal and nothing is logged | **FIXED** | P1 FIXED · P2 PARTIAL | `TestR017TheCauseIsLoggedNeverSent`, `TestR108AnAnswerTheEdgeCannotSendIsNoSuccess` |
 | R018 | P1 | The policy cache reads the store on the request path under a global lock, so a slow store serialises the replica | **FIXED** | P1 DEFERRED · P2 FIXED | `TestR018ARefreshNeverHoldsACall`, `TestR13AnIdleGatewayRenewsBeforeItDecides` |
-| R019 | P1 | atlas.clients tells agents to install unpublished packages from public npm and PyPI, and to fetch from the private jhgonline org | **FIXED** | — | integration: as R015; no public-registry names that are unpublished (dependency confusion) |
+| R019 | P1 | atlas.clients tells agents to install unpublished packages from public npm and PyPI, and to fetch from a nonportable internal package location | **FIXED** | — | integration: as R015; no public-registry names that are unpublished (dependency confusion) |
 | R020 | P1 | whoami omits the caller's authorized scope, and the data-scope refusal sends callers to whoami for it | **FIXED** | B FIXED | `TestR020WhoamiGivesTheCallersScope` |
 | R021 | P1 | atlas.describe and atlas.guide serve full profiles of capabilities the caller is denied or not granted | **FIXED** | B FIXED | `TestR021DescribeAndGuideServeOnlyWhatTheCallerMayUse`, `TestR021TheWorkingViewOverHTTP` |
 | R022 | P1 | The guide names capabilities the caller cannot use (Related, x-atlas-reference, errors' next) | **FIXED** | B FIXED | `TestR022TheGuideNamesOnlyWhatTheCallerCanUse`, `FuzzGuideProse` |
@@ -207,7 +207,7 @@ Lanes: D1 engine, D2 views and journey, P1 pipeline, P2 access, policy and regis
 | R130 | P2 | Method and Accept checks before authentication reveal which addresses are bound | **FIXED** | E FIXED | `TestPR08NoDisclosureBeforeAuthorisation` |
 | R131 | P2 | Content negotiation ignores the client's declared features and serves encodings and deliveries the edge cannot frame | **FIXED** | E FIXED | `TestR131NegotiationRespectsDeclaredFeatures`, `FuzzAccept` |
 | PR09 | P3 | Node accepts invalid stream completion markers | **FIXED** | N FIXED | `TestPR09AValidEndLineIsComplete`, `TestPR09EndLineMustSayEnd` |
-| R132 | P3 | The e2e harnesses build Go with GOTOOLCHAIN only, without the GOPRIVATE/GOVCS guard for jhgonline | **FIXED** | — | integration: every harness builds with GOPRIVATE and GOVCS=github.com/jhgonline:off |
+| R132 | P3 | The e2e harnesses build Go with GOTOOLCHAIN only, without the GOPRIVATE/GOVCS guard for local modules | **FIXED** | — | integration: every harness builds with GOPRIVATE and GOVCS=atlas.local:off |
 | R133 | P3 | Retry backoff sleeps on real time instead of the injected clock | **NOT_REAL** | C NOT_REAL | `TestR133RetryAfterAndTheDeadline`, `TestR087BackoffWithJitterKeepsTheKey` |
 | R134 | P3 | The fixture policy is parsed leniently, unlike production, so a misspelt member silently drops denies in every test | **FIXED** | P1 DEFERRED · P2 FIXED | `TestR134TheFixturePolicyIsReadStrictly`, `TestR134APolicyIsReadStrictly` |
 | R135 | P3 | No CORS restriction at the edge (spec requires named origins only, no wildcard, no cookie tokens) | **FIXED** | E FIXED | `TestR135CORSNamedOriginsOnly` |

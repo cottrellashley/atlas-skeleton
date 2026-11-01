@@ -10,10 +10,10 @@ import (
 
 	"github.com/apache/arrow-go/v18/arrow"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/pipeline"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
+	"atlas.local/gateway/core/pipeline"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/schema"
 )
 
 // rowTable is a table answer read a row at a time, as pipeline.Rows hands

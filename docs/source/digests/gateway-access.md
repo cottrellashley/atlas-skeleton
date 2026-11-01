@@ -1,26 +1,28 @@
 # Digest: inside the gateway, part 2 (access, limits, audit, reaching systems, data sources, implementation patterns)
 
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
+
 Reader 2026-10-31. Every fact carries its source. Copied text is in `code` or quotes. Notation:
 
 | Short | File (all read in full unless marked) |
 |---|---|
-| S62 | `/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/06-2-access-limits-and-audit.md` (184 lines) |
-| S63 | `.../atlas-spec/06-3-reaching-systems.md` (156 lines) |
-| S64 | `.../atlas-spec/06-4-data-sources.md` (103 lines) |
-| S67 | `.../atlas-spec/06-7-implementation-patterns.md` (321 lines) |
-| CORE | `.../atlas-spec/review/ATLAS-CORE.md` (245 lines, read in full; §3 L32-56, §9 L190-202, §11 L218-230 assigned) |
-| DR | `.../atlas-spec/review/DESIGN-REVIEW.md` (192 lines, read in full; R05 L66-74, R06 L76-82, R07 L84-90, R08 L92-98, R09 L100-106, R13 L140, R17 L144 assigned) |
-| RV | `/Users/ashleycottrell/repos/atlas-skeleton/docs/pass-2/REVIEW.md` (100 lines, read in full; governs the build) |
-| AG | `/Users/ashleycottrell/repos/atlas-skeleton/AGENTS.md` (72 lines, read in full) |
-| S221 | `.../atlas-spec/02-2-1-snowflake-data.md` (178 lines, read in full as a cross-check; not assigned) |
+| S62 | `docs/source/atlas-spec/06-2-access-limits-and-audit.md` (184 lines) |
+| S63 | `docs/source/atlas-spec/06-3-reaching-systems.md` (156 lines) |
+| S64 | `docs/source/atlas-spec/06-4-data-sources.md` (103 lines) |
+| S67 | `docs/source/atlas-spec/06-7-implementation-patterns.md` (321 lines) |
+| CORE | `docs/source/atlas-spec/review/ATLAS-CORE.md` (245 lines, read in full; §3 L32-56, §9 L190-202, §11 L218-230 assigned) |
+| DR | `docs/source/atlas-spec/review/DESIGN-REVIEW.md` (192 lines, read in full; R05 L66-74, R06 L76-82, R07 L84-90, R08 L92-98, R09 L100-106, R13 L140, R17 L144 assigned) |
+| RV | `docs/pass-2/REVIEW.md` (100 lines, read in full; governs the build) |
+| AG | `AGENTS.md` (72 lines, read in full) |
+| S221 | `docs/source/atlas-spec/02-2-1-snowflake-data.md` (178 lines, read in full as a cross-check; not assigned) |
 | S61, S03, S96, S97, S41, INT | Cross-checks only, excerpts read: `06-1-front-door-and-services.md`, `03-contracts.md`, `09-6-http-binding.md`, `09-7-clients.md`, `04-plugging-in.md`, `review/INTEGRATIONS.md` |
-| REF | `/Users/ashleycottrell/repos/atlas-skeleton/spec/protocol/references/` (`schemas/governance.schema.json` read in full; `schemas/builtins.schema.json` L928-1157 `audit_request`/`audit_record`; `schemas/problem.schema.json` code table; `README.md` L170-190; `QUESTIONS.md` grep) |
+| REF | `spec/protocol/references/` (`schemas/governance.schema.json` read in full; `schemas/builtins.schema.json` L928-1157 `audit_request`/`audit_record`; `schemas/problem.schema.json` code table; `README.md` L170-190; `QUESTIONS.md` grep) |
 
 Markers: **IN SCOPE** = the first build (the journey `portfolio.holdings@v1`, `portfolio.list@v1`, `portfolio.search@v1`, `data.status@v1`, then `portfolio.holdings-dates@v1`; RV L37-42). **DEFERRED** = not in the first build. **OVERRIDDEN BY REVIEW: Rnn** = RV/DR/CORE changes the spec. **AMBIGUOUS:** = readings listed. **MISSING:** = no source states it.
 
 Build context that frames every section (RV):
 - One Go deployable, plus a worker where durable work needs one; provider boundary in process and serialisable (RV L13; CORE L186).
-- Building without Docker; DuckDB and sqlglot-go fake Snowflake; fakes behind real adapters (RV L21).
+- Building without Docker; DuckDB and sqlglot fake Snowflake; fakes behind real adapters (RV L21).
 - Step 3 ("before metered or changing work"): R08, R06, R07, R09 — "Each R's acceptance test passes against the fakes" (RV L31).
 - Step 5 ("real systems"): "the Development source, direct downloads, events, delegated identity" are out of reach; "plug-in points and gated proofs are ready" (RV L33). So: **OBO, real Entra, real Cosmos, WORM blob, Log Analytics, real Snowflake = DEFERRED; their ports and fakes = IN SCOPE.**
 - Acceptance #3: "A second person with narrower data scope receives a correspondingly narrower result, or a clear refusal." (RV L48). #5: "Invalid requests, permission changes, exact decimals, incomplete streams, idempotent retries and source failures behave the same in every client." (RV L50).
@@ -464,7 +466,7 @@ Members: `kind` (`download`, `upload`, `connect`, `ticket`); `protocol` (`azure-
 Rules (S64 L52-55): services reach engines only through the port; "a batch that is not [in the writer schema] is a fault of the adapter"; ATLAS-SOURCE-001: battery passes against every adapter and "its profile's fingerprint is identical under each". R21 (RV L79): business lineage and method are distinguished from the execution engine.
 
 ### 7.2 The SQL library and the read-only guard
-- Spec (S64 L83): the Go SQL library "builds each plan as one typed syntax tree and renders it in the engine's dialect"; "Snowflake is the engine's dialect; DuckDB is rendered for the hermetic `DataSource` fake". It is `sqlglot-go` (INT L14; D28 S64 L95). Pinned at `3d81e5393850e249136284859f6203a34db29f16` (INT L10). Port it into the repo as a tested module (user memory, "In-repo modules").
+- Spec (S64 L83): the Go SQL library "builds each plan as one typed syntax tree and renders it in the engine's dialect"; "Snowflake is the engine's dialect; DuckDB is rendered for the hermetic `DataSource` fake". It is `sqlglot` (INT L14; D28 S64 L95). The tested local `sqlglot` module supplies it.
 - Guard (S64 L84): "Every statement is parsed by the library's Snowflake parser before it runs, and refused unless it is one read-only query over the objects its capability may read (`snowflake.query`: the registered schemas). The guard is never the only line: the connection's role can only read. The guard's cases are language-neutral vectors (accepted and refused statements), generated in `tools/spec/`."
 - INT planned-query path (INT L64-69): (1) validate the request and authorised data scope before planning; (2) "Build a typed AST from reviewed source objects and the capability's declared columns and filter operators. Bind scalar user values through the driver; never construct SQL by string concatenation."; (3) qualify names; walk "every relevant nested scope, source and function against Atlas's allowlists"; (4) "Generate strictly in the target dialect and validate the generated statement again"; (5) return "an immutable plan containing SQL, parameter bindings, referenced objects, output contract, request identity and provenance. Both `explain` and execution use this compiler path"; (6) the adapter owns execution, estimates, cancellation, Arrow/type checks.
 - INT rules (L75-82): require exactly one executable statement (not `ParseOneOpts`'s first); reject `exp.Command`, raw and unknown nodes; unsupported generation must fail, "and test that no driver call occurs on failure"; strict qualification ("Qualification is not resource authorization"); a SELECT root is not enough (inspect CTEs, nested queries, functions, identifiers, sources); bound SQL input size, AST depth/nodes and compilation concurrency (the parse API takes no cancellation context).

@@ -4,10 +4,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/adapter/snowflake"
-	"github.com/jhgonline/fi-app-atlas/gateway/adapter/snowflake/enginetest"
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/porttest"
+	"atlas.local/gateway/adapter/snowflake"
+	"atlas.local/gateway/adapter/snowflake/enginetest"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/porttest"
 )
 
 // R118, R072, ATLAS-DATA-004: the Snowflake Source keeps the DataSource

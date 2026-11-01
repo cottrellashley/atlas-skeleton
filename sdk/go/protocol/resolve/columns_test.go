@@ -8,10 +8,10 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/array"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/arrowschema"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
+	"atlas.local/sdk/go/protocol/arrowschema"
+	"atlas.local/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/schema"
 )
 
 // parity resolves records as a batch, column by column, and row by row, and

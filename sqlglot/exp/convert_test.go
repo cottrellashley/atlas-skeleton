@@ -6,8 +6,8 @@ import (
 	"time"
 	_ "time/tzdata"
 
-	_ "github.com/jhgonline/fi-app-atlas/sqlglot" // installs the generator backend
-	. "github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	_ "atlas.local/sqlglot" // installs the generator backend
+	. "atlas.local/sqlglot/exp"
 )
 
 // TestConvertValue is the Go equivalent of test_expressions.py's test_convert and

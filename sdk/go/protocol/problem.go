@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"unicode/utf8"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/resolve"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
+	"atlas.local/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/resolve"
+	"atlas.local/sdk/go/protocol/schema"
 )
 
 // Problem is the one shape of every failure (§4.1): RFC 9457 with Atlas's

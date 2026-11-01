@@ -1,5 +1,7 @@
 # Digest: inside the gateway, part 1 (structure, front door and services, packages, principles)
 
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
+
 Reader: gateway-front. Written 2026-10-31. Sources read in full: listed at the end.
 
 ## 0. How to read this digest
@@ -8,15 +10,15 @@ Reader: gateway-front. Written 2026-10-31. Sources read in full: listed at the e
 
 | Alias | File |
 |---|---|
-| `G6` | `~/Documents/ChatGPT/creation/atlas-spec/06-inside-the-gateway.md` (§6) |
-| `G61` | `~/Documents/ChatGPT/creation/atlas-spec/06-1-front-door-and-services.md` (§6.1) |
-| `G65` | `~/Documents/ChatGPT/creation/atlas-spec/06-5-packages.md` (§6.5) |
-| `G66` | `~/Documents/ChatGPT/creation/atlas-spec/06-6-principles.md` (§6.6) |
-| `CORE` | `~/Documents/ChatGPT/creation/atlas-spec/review/ATLAS-CORE.md` (the review's proposed core) |
-| `REV` | `~/repos/atlas-skeleton/docs/pass-2/REVIEW.md` (governs this build) |
-| `AG` | `~/repos/atlas-skeleton/AGENTS.md` |
-| `DR` | `~/Documents/ChatGPT/creation/atlas-spec/review/DESIGN-REVIEW.md` (the R findings; consulted, R05–R26 sections read) |
-| `G67` | `~/Documents/ChatGPT/creation/atlas-spec/06-7-implementation-patterns.md` (§6.7; consulted for §6.7.2, 6.7.3, 6.7.4, 6.7.5, 6.7.10–6.7.17 only) |
+| `G6` | `docs/source/atlas-spec/06-inside-the-gateway.md` (§6) |
+| `G61` | `docs/source/atlas-spec/06-1-front-door-and-services.md` (§6.1) |
+| `G65` | `docs/source/atlas-spec/06-5-packages.md` (§6.5) |
+| `G66` | `docs/source/atlas-spec/06-6-principles.md` (§6.6) |
+| `CORE` | `docs/source/atlas-spec/review/ATLAS-CORE.md` (the review's proposed core) |
+| `REV` | `docs/pass-2/REVIEW.md` (governs this build) |
+| `AG` | `AGENTS.md` |
+| `DR` | `docs/source/atlas-spec/review/DESIGN-REVIEW.md` (the R findings; consulted, R05–R26 sections read) |
+| `G67` | `docs/source/atlas-spec/06-7-implementation-patterns.md` (§6.7; consulted for §6.7.2, 6.7.3, 6.7.4, 6.7.5, 6.7.10–6.7.17 only) |
 | `G62` | `.../06-2-access-limits-and-audit.md` (§6.2.3 only, lines 91–104) |
 | `D93` | `.../09-3-documents.md` (§9.3.2 built-ins lines 43–70, §9.3.3 problem registry) |
 | `H96` | `.../09-6-http-binding.md` (§9.6.1–9.6.3, lines 11–60, and line 83) |
@@ -611,7 +613,7 @@ Module namespaces (G65:204–210):
 | Namespace | Interface | Modules today | First build |
 |---|---|---|---|
 | `service` | The service ports (`Adapter`, `Publisher`, `Operator`) | `service.harbour`, `service.yieldbook`, `service.nautilus`, ... | IN SCOPE (the journey's services) |
-| `datasource` | `DataSource` (§6.4) | `datasource.snowflake`, `datasource.duckdb` (tests) | IN SCOPE (DuckDB with sqlglot-go faking Snowflake, REV:21) |
+| `datasource` | `DataSource` (§6.4) | `datasource.snowflake`, `datasource.duckdb` (tests) | IN SCOPE (DuckDB with sqlglot faking Snowflake, REV:21) |
 | `encoding` | Writing an answer in one encoding | `encoding.json`, `encoding.ndjson`, `encoding.arrow`, `encoding.csv`, `encoding.parquet` | json and ndjson IN SCOPE. Arrow is an optimisation (R11). csv and parquet: AMBIGUOUS, probably DEFERRED |
 | `auditsink` | `AuditSink` | `auditsink.monitor`, `auditsink.memory` (tests) | memory IN SCOPE; monitor DEFERRED (real Azure) |
 | `controller` | A `kit/reconcile` controller | `controller.catalogue`, `controller.event-entities`, ... | catalogue IN SCOPE |
@@ -629,7 +631,7 @@ Module namespaces (G65:204–210):
 - "All share the store and the catalogue, so together they are one gateway" (G61:219).
 - Compute "Azure Container Apps" and ingress "Azure Front Door or Application Gateway"; "Azure API Management is not in the request path" (G61:219). DEFERRED (infrastructure).
 - When to split (G61:223): "a different scaling profile (long-lived connections), a different owner (Nautilus's services), a different runtime, a need for isolation (actions on Astronomer or Azure), or heavy compute (jobs)". CORE:186: "Split a service when its trust boundary, scale or release ownership justifies it."
-- AMBIGUOUS: which adapters are real in the first build. REV step 5 lists "Real systems: the Development source, direct downloads, events, delegated identity" as out of reach (REV:33). Cosmos, Blob and Key Vault are not named. Memory guidance: fakes behind real adapters first, then real tech. §6.5.11 step 4 requires each adapter to pass "its port's suite against an emulator or a recorded exchange" (G65:196). Readings: (a) first build = ports + fakes + the Snowflake adapter over DuckDB/sqlglot-go; Azure adapters later; (b) Azure adapters built against recorded exchanges now. Reading (a) matches REV:21 ("building without Docker, DuckDB and sqlglot-go faking Snowflake, fakes behind real adapters").
+- AMBIGUOUS: which adapters are real in the first build. REV step 5 lists "Real systems: the Development source, direct downloads, events, delegated identity" as out of reach (REV:33). Cosmos, Blob and Key Vault are not named. Memory guidance: fakes behind real adapters first, then real tech. §6.5.11 step 4 requires each adapter to pass "its port's suite against an emulator or a recorded exchange" (G65:196). Readings: (a) first build = ports + fakes + the Snowflake adapter over DuckDB/sqlglot; Azure adapters later; (b) Azure adapters built against recorded exchanges now. Reading (a) matches REV:21 ("building without Docker, DuckDB and sqlglot faking Snowflake, fakes behind real adapters").
 
 ### 5.7 Order of work (G65:189–198)
 
@@ -683,7 +685,7 @@ Precedence: "Where the pattern library and a principle differ, the principle win
 | 11 | A key reused with a different request is 422; a stale version 409 | `idempotency_conflict` (409); `precondition_failed` (412) |
 | 04 | Modules register themselves at start-up (`init`) | Each deployable registers its modules in one list |
 
-AG:9–15 lists these same six as the places the spec beats `cloud-gateway-patterns-go`.
+AG:9–15 lists these same six as the places the spec beats shared gateway patterns.
 
 ### 6.3 The 15-question review (G66:88–102), verbatim, with a concrete check
 
@@ -844,13 +846,13 @@ AMBIGUOUS: the Cosmos row says unbudgeted reads keep working "for 60 minutes"; R
 
 In full:
 
-- `/Users/ashleycottrell/repos/atlas-skeleton/AGENTS.md`
-- `/Users/ashleycottrell/repos/atlas-skeleton/docs/pass-2/REVIEW.md`
-- `.../atlas-spec/06-inside-the-gateway.md`
-- `.../atlas-spec/06-1-front-door-and-services.md`
-- `.../atlas-spec/06-5-packages.md`
-- `.../atlas-spec/06-6-principles.md`
-- `.../atlas-spec/review/ATLAS-CORE.md`. The whole file was read; §8 is the assigned part.
-- `/Users/ashleycottrell/repos/atlas-skeleton/sdk/go/layers.toml`
+- `AGENTS.md`
+- `docs/pass-2/REVIEW.md`
+- `docs/source/atlas-spec/06-inside-the-gateway.md`
+- `docs/source/atlas-spec/06-1-front-door-and-services.md`
+- `docs/source/atlas-spec/06-5-packages.md`
+- `docs/source/atlas-spec/06-6-principles.md`
+- `docs/source/atlas-spec/review/ATLAS-CORE.md`. The whole file was read; §8 is the assigned part.
+- `sdk/go/layers.toml`
 
 In part, as cited: G67, G62, D93, H96, C97, CAT, HB, D26 and DR (lines 60–192), and `binding.schema.json` (first 80 lines).

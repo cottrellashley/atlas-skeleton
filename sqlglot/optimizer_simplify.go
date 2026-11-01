@@ -3,17 +3,17 @@ package sqlglot
 // Port of sqlglot/optimizer/simplify.py.
 
 import (
+	"atlas.local/sqlglot/errs"
 	"fmt"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
 	"math/big"
 	"slices"
 	"sort"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/internal/pydate"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/internal/pydec"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
+	"atlas.local/sqlglot/internal/pydate"
+	"atlas.local/sqlglot/internal/pydec"
 )
 
 // Final means that an expression should not be simplified.

@@ -5,7 +5,7 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/ports"
 )
 
 // Audit keeps facts in memory, in the order they were recorded.

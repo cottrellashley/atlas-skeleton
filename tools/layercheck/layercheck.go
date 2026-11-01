@@ -32,7 +32,7 @@ import (
 )
 
 // Repo is the module path prefix every rule's paths are relative to.
-const Repo = "github.com/jhgonline/fi-app-atlas/"
+const Repo = "atlas.local/"
 
 // Rules is one layers.toml.
 type Rules struct {

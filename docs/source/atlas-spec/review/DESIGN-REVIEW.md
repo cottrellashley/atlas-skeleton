@@ -29,7 +29,7 @@ These strengths are already visible in [Vision](../00-vision.md), [Discovery](..
 
 ### R01 — A contract fingerprint cannot validate mutable documentation and live access
 
-**Evidence.** [§9.4](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/09-4-fingerprints.md:18) excludes prose and usage from the fingerprint, while calling that fingerprint a strong ETag. [§9.7](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/09-7-clients.md:102) caches profiles forever. [§9.6](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/09-6-http-binding.md:95) permits immutable exact-profile describe responses even though describe includes current governance and availability. [§3.1](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/03-contracts.md:129) says availability is never cached.
+**Evidence.** [§9.4](../09-4-fingerprints.md#L18) excludes prose and usage from the fingerprint, while calling that fingerprint a strong ETag. [§9.7](../09-7-clients.md#L102) caches profiles forever. [§9.6](../09-6-http-binding.md#L95) permits immutable exact-profile describe responses even though describe includes current governance and availability. [§3.1](../03-contracts.md#L129) says availability is never cached.
 
 **Consequence.** Corrected instructions can remain stale indefinitely; cached access and health can be mistaken for current truth. A strong HTTP validator must change with observable representation changes. [RFC 9110 §8.8.1](https://www.rfc-editor.org/rfc/rfc9110.html#section-8.8.1)
 
@@ -39,7 +39,7 @@ These strengths are already visible in [Vision](../00-vision.md), [Discovery](..
 
 ### R02 — The lock freezes routing that the spec calls safely movable
 
-**Evidence.** [§9.7's call algorithm](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/09-7-clients.md:88) chooses bindings from the locked/cached profile. [§3.3](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/03-contracts.md:595) allows an old binding to disappear after a window because clients follow served bindings. An unchanged locked profile has no specified way to learn the new binding. Exact ids alone also fail the literal “no discovery at runtime” rule; the [existing proof](../../atlas-proof-plan.md) records this.
+**Evidence.** [§9.7's call algorithm](../09-7-clients.md#L88) chooses bindings from the locked/cached profile. [§3.3](../03-contracts.md#L595) allows an old binding to disappear after a window because clients follow served bindings. An unchanged locked profile has no specified way to learn the new binding. Exact ids alone also fail the literal “no discovery at runtime” rule; the [existing proof](../../atlas-proof-plan.md) records this.
 
 **Proposed decision.** Pin semantic contracts, not network addresses. Package reader contracts with the lock; refresh current routing independently. Define “no discovery at runtime” as no new business-route selection. A lock does not pin the source data or confer access.
 
@@ -47,7 +47,7 @@ These strengths are already visible in [Vision](../00-vision.md), [Discovery](..
 
 ### R03 — Full transitive compatibility is not delivered by the stated lens rules
 
-**Evidence.** [§3.3](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/03-contracts.md:538) promises old and new readers can read every result within a version. Its change table nevertheless allows field removal after sunset, nullable-to-non-null changes and numeric promotion. [§9.5](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/09-5-resolution.md:45) allows reverse conversion to fail or to substitute null/default for removed information.
+**Evidence.** [§3.3](../03-contracts.md#L538) promises old and new readers can read every result within a version. Its change table nevertheless allows field removal after sunset, nullable-to-non-null changes and numeric promotion. [§9.5](../09-5-resolution.md#L45) allows reverse conversion to fail or to substitute null/default for removed information.
 
 **Counterexamples.** A required `market_value` disappears; no default can recover its actual old value. An integer becomes a floating-point field and the new producer sends `1.5`; an old integer reader cannot preserve that value. A newer non-null reader encounters historical nulls. These are contract issues, not implementation bugs solved by more lenses.
 
@@ -57,7 +57,7 @@ These strengths are already visible in [Vision](../00-vision.md), [Discovery](..
 
 ### R04 — The transformation language does not express its own examples
 
-**Evidence.** [§9.5](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/09-5-resolution.md:17) has one lens list for a whole profile, with top-level field operations. [§3.3's rename example](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/03-contracts.md:646) requires translating values inside `columns: ["mv"]`, not renaming a top-level request member. Field masks, sort keys, filters, request schemas and result schemas need distinct interpretation.
+**Evidence.** [§9.5](../09-5-resolution.md#L17) has one lens list for a whole profile, with top-level field operations. [§3.3's rename example](../03-contracts.md#L646) requires translating values inside `columns: ["mv"]`, not renaming a top-level request member. Field masks, sort keys, filters, request schemas and result schemas need distinct interpretation.
 
 **Proposed decision.** Under the smaller evolution model, keep explicit accepted aliases and their schema scope. If lenses remain, name their target schema/interaction and define projection/mask/filter translation. Validate the original request under its declared contract before transformation, and the transformed request afterward; do not silently discard unknown request fields.
 
@@ -65,7 +65,7 @@ These strengths are already visible in [Vision](../00-vision.md), [Discovery](..
 
 ### R05 — Capability access is not sufficient data scope
 
-**Evidence.** [§6.2.5](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/06-2-access-limits-and-audit.md:115) defers resource conditions, while [§6.3](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/06-3-reaching-systems.md:80) acknowledges sources reached as the gateway have only Atlas's grant as a limit.
+**Evidence.** [§6.2.5](../06-2-access-limits-and-audit.md#L115) defers resource conditions, while [§6.3](../06-3-reaching-systems.md#L80) acknowledges sources reached as the gateway have only Atlas's grant as a limit.
 
 **Consequence.** A caller allowed to invoke `portfolio.holdings` might supply a portfolio outside their entitlement if the source connection uses a broader service identity. This would violate the very thing the magic-wand interface is supposed to handle.
 
@@ -75,15 +75,15 @@ These strengths are already visible in [Vision](../00-vision.md), [Discovery](..
 
 ### R06 — A person's token and a confirmation header do not prove human approval
 
-**Evidence.** [§6.2](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/06-2-access-limits-and-audit.md:71) gives the agent its person's sign-in; the same section requires a person for Production actions and uses `Atlas-Confirm` for costly calls. A caller-controlled assertion cannot establish who approved an execution.
+**Evidence.** [§6.2](../06-2-access-limits-and-audit.md#L71) gives the agent its person's sign-in; the same section requires a person for Production actions and uses `Atlas-Confirm` for costly calls. A caller-controlled assertion cannot establish who approved an execution.
 
-**Proposed decision.** Distinguish authenticated caller context from approval evidence. Bind an approval or confirmation receipt from a trusted interaction to the principal, action, canonical request/plan, scope, approved maximum and expiry. Define what policy tightening does to outstanding plans. Treat approval as live policy, resolving its duplicate placement in [contract meaning](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/03-contracts.md:699) and [governance](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/03-contracts.md:611).
+**Proposed decision.** Distinguish authenticated caller context from approval evidence. Bind an approval or confirmation receipt from a trusted interaction to the principal, action, canonical request/plan, scope, approved maximum and expiry. Define what policy tightening does to outstanding plans. Treat approval as live policy, resolving its duplicate placement in [contract meaning](../03-contracts.md#L699) and [governance](../03-contracts.md#L611).
 
 **Acceptance.** An agent cannot authorize a new plan by changing a header, copying another user's receipt, increasing the amount or changing the request after approval.
 
 ### R07 — Exact shared budgets do not fit the proposed partition keys
 
-**Evidence.** [§6.1.5](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/06-1-front-door-and-services.md:143) reserves all counters in one transaction and partitions by caller plus capability. [§6.2.6](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/06-2-access-limits-and-audit.md:129) adds shared and firm-wide pools. Cosmos batch atomicity is limited to one container and logical partition, so the described layout does not atomically cover those shared pools. [Microsoft's transactional batch documentation](https://learn.microsoft.com/en-us/azure/cosmos-db/transactional-batch)
+**Evidence.** [§6.1.5](../06-1-front-door-and-services.md#L143) reserves all counters in one transaction and partitions by caller plus capability. [§6.2.6](../06-2-access-limits-and-audit.md#L129) adds shared and firm-wide pools. Cosmos batch atomicity is limited to one container and logical partition, so the described layout does not atomically cover those shared pools. [Microsoft's transactional batch documentation](https://learn.microsoft.com/en-us/azure/cosmos-db/transactional-batch)
 
 **Proposed decision.** Separate protective rate limits from hard spending admission. Choose a transaction boundary per shared budget authority, co-locate its atomic reservation set or allocate bounded sub-budgets. Reject unsupported combinations initially. Prove any broader cross-budget scheme before promising exactness.
 
@@ -91,7 +91,7 @@ These strengths are already visible in [Vision](../00-vision.md), [Discovery](..
 
 ### R08 — A crash must not release permission to repeat an uncertain effect
 
-**Evidence.** [§6.1 operation takeover](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/06-1-front-door-and-services.md:250) releases the idempotency key so a start can run again. [§6.7](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/06-7-implementation-patterns.md:202) promises the same key returns the same operation. The upstream could already have committed when the receipt was lost.
+**Evidence.** [§6.1 operation takeover](../06-1-front-door-and-services.md#L250) releases the idempotency key so a start can run again. [§6.7](../06-7-implementation-patterns.md#L202) promises the same key returns the same operation. The upstream could already have committed when the receipt was lost.
 
 **Proposed decision.** Retain one logical operation per key throughout its retention, including uncertain outcomes. Use provider deduplication and reconciliation. Fence workers after lease expiry. Include metered reads when a retry can duplicate a charge. Do not promise exactly-once external effects solely from HTTP deduplication.
 
@@ -99,7 +99,7 @@ These strengths are already visible in [Vision](../00-vision.md), [Discovery](..
 
 ### R09 — One immutable final audit record cannot contain later settlement
 
-**Evidence.** [§6.2.8](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/06-2-access-limits-and-audit.md:146) requires final usage and source history in one immutable record durable before the response ends. [§6.1](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/06-1-front-door-and-services.md:104) settles handoffs later; streaming completion likewise occurs after its headers and initial rows.
+**Evidence.** [§6.2.8](../06-2-access-limits-and-audit.md#L146) requires final usage and source history in one immutable record durable before the response ends. [§6.1](../06-1-front-door-and-services.md#L104) settles handoffs later; streaming completion likewise occurs after its headers and initial rows.
 
 **Proposed decision.** One logical invocation history, represented by immutable admission, outcome and settlement facts. Present a joined summary when people want one row. Specify the acknowledgement point and recovery when an effect succeeds but recording completion fails.
 
@@ -107,7 +107,7 @@ These strengths are already visible in [Vision](../00-vision.md), [Discovery](..
 
 ### R10 — Delivery credentials require technology-specific guarantees
 
-**Evidence.** [§6.3](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/06-3-reaching-systems.md:57) says OBO tokens never leave the gateway, but its [ticket remediation](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/06-3-reaching-systems.md:96) sends the person's OBO token. A read-only role can still authorize more than the one approved statement and bypass Atlas's per-call limits.
+**Evidence.** [§6.3](../06-3-reaching-systems.md#L57) says OBO tokens never leave the gateway, but its [ticket remediation](../06-3-reaching-systems.md#L96) sends the person's OBO token. A read-only role can still authorize more than the one approved statement and bypass Atlas's per-call limits.
 
 The spec also promises that direct links are usable only by their caller. That is a property to prove for the chosen mechanism, not a consequence of calling a URL “bound.” Current Azure documentation provides a **user-bound user delegation SAS** mode using `sduoid` and an end-user bearer token, from service version `2025-07-05`; ordinary SAS and Snowflake chunk links must not be assumed to have that behavior. [Azure user-bound SAS documentation](https://learn.microsoft.com/en-us/rest/api/storageservices/create-user-delegation-sas#user-bound-user-delegation-sas)
 
@@ -117,7 +117,7 @@ The spec also promises that direct links are usable only by their caller. That i
 
 ### R11 — Client parity is about behavior, not a shared filesystem or universal Arrow
 
-**Evidence.** [§9's Core level](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/09-atlas-protocol.md:45) is JSON with independent optional levels, while [§9.7](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/09-7-clients.md:198) requires every table to land as Arrow. The browser client cannot implement the mandatory local token file. Python's lazy-looking reference and Node's eager-looking fetch also leave the execution point unclear.
+**Evidence.** [§9's Core level](../09-atlas-protocol.md#L45) is JSON with independent optional levels, while [§9.7](../09-7-clients.md#L198) requires every table to land as Arrow. The browser client cannot implement the mandatory local token file. Python's lazy-looking reference and Node's eager-looking fetch also leave the execution point unclear.
 
 **Proposed decision.** Define one public lifecycle: a call executes once and yields a result/operation handle; reading a result does not silently execute again. Explain is a separate operation. Use runtime-appropriate credential providers and idiomatic values. Core can return JSON; Arrow and direct downloads are optimizations with identical logical meaning.
 
@@ -125,7 +125,7 @@ The spec also promises that direct links are usable only by their caller. That i
 
 ### R12 — The protocol still needs implementable schemas and unambiguous encodings
 
-**Evidence.** [§9.8](/Users/ashleycottrell/Documents/ChatGPT/creation/atlas-spec/09-8-conformance.md:20) marks much of the vector corpus and all scenario files as to write. None of the referenced schema/grammar/vector files is in the supplied transcription directory. Some may exist in the original project; their completeness was not established here.
+**Evidence.** [§9.8](../09-8-conformance.md#L20) marks much of the vector corpus and all scenario files as to write. The specification text alone does not establish the completeness of the [protocol reference corpus](../../../../spec/protocol/references/) or its implementation. Coverage must be demonstrated by the conformance suite.
 
 Other concrete encoding conflicts: JSON property order is immaterial but determines Arrow order; dynamic JSON tables are both arrays and objects with `columns`; optional-field absence becomes null in Arrow; timestamp precision varies; ignored Atlas annotations are also required validation assertions. See [§9.1](../09-1-conventions-and-grammar.md), [§9.2](../09-2-schemas.md), [§9.3](../09-3-documents.md) and [§9.6](../09-6-http-binding.md).
 
@@ -162,7 +162,7 @@ Three examples illustrate the remaining authoring work:
 - `signal.fvcm.curves`: selecting the last available curve and reading curve history may imply different time behavior. The capability must state what omitted dates select and whether a range has the same grain.
 - `dataset.upload`: it appears in the reaching-systems example but is absent from the 138-entry catalogue. It must be declared an illustration, given a real profile or renamed to an existing resource operation; consumers should not guess.
 
-The [handbook](CAPABILITY-HANDBOOK.md) preserves every catalogue entry and identifies these gaps. It does not invent 138 exact schemas from a video transcription. A completed capability card should be generated from a real definition whose examples are validated and executed.
+The [handbook](CAPABILITY-HANDBOOK.md) preserves every catalogue entry and identifies these gaps. It does not invent 138 exact schemas from catalogue names alone. A completed capability card should be generated from a real definition whose examples are validated and executed.
 
 ## How to simplify without reducing Atlas's usefulness
 

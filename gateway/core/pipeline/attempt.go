@@ -10,11 +10,11 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/profile"
 )
 
 // attempt is one call on its way through the steps: what it holds, the

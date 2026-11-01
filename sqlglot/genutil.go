@@ -3,7 +3,7 @@ package sqlglot
 import (
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/exp"
 )
 
 // Small helpers for translating Python generator idioms.

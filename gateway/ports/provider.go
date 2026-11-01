@@ -5,8 +5,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // Provider serves the interactions of capabilities: their business meaning

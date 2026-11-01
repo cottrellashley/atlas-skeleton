@@ -3,8 +3,8 @@ package fakes_test
 import (
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/porttest"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/porttest"
 )
 
 // The in-memory DataSource keeps the port's contract (§6.4.1, R118): the

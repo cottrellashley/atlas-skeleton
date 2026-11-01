@@ -1,3 +1,3 @@
-module github.com/jhgonline/fi-app-atlas/sqlglot
+module atlas.local/sqlglot
 
 go 1.23

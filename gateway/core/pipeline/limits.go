@@ -8,8 +8,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol"
 )
 
 // limiter holds the protective limits (§6.2.4): a rate, as a token bucket

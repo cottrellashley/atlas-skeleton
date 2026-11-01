@@ -3,8 +3,8 @@ package pyrt
 // Bindings for sqlglot.transforms.
 
 import (
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
 )
 
 func transformFn(name string, f sqlglot.Transform) *Fn {

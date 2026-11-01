@@ -8,15 +8,14 @@ The accompanying [core handoff plan](CORE-HANDOFF-PLAN.md) orders the work neede
 
 | Item | Reviewed state |
 |---|---|
-| Repository | `/Users/ashleycottrell/repos/atlas-skeleton` |
-| Branch and HEAD | `pass-2`, `0634137` |
-| State | HEAD **plus the current working tree**; much of the implementation remains uncommitted or untracked |
+| Implementation | Repository-local gateway, clients, adapters and protocol packages |
+| Historical scope | Findings describe the implementation observed on the review date; later closure is tracked in the [handoff progress](../../../HANDOFF-PROGRESS.md) |
 | Review date | 2026-11-01; source observations collected through approximately 18:38 UTC |
 | Method | Read-only inspection of implementation, regression-test source, pinned driver source, and the current hardening and plug-in documents |
 | Independent execution | No tests, builds, generators, or live service calls were run |
 | Changes made by this review | This report, the plan and their index in `atlas-spec/review/`; no implementation changes |
 
-This is a targeted peer review of the handoff boundaries and previously reported defects, not a certification of every file. Source locations refer to this working tree and can move as the builder continues. Finding IDs `R3-01` through `R3-16` belong to this review, not the implementation's existing `R001` or `PR01` ledgers.
+This is a targeted peer review of the handoff boundaries and previously reported defects, not a certification of every file. Source locations are historical evidence and can move as the implementation changes. Finding IDs `R3-01` through `R3-16` belong to this review, not the implementation's existing `R001` or `PR01` ledgers.
 
 The builder's [HARDENING.md](../../../../docs/pass-2/HARDENING.md) records green `make check` and `make e2e` runs and 126 fixed findings out of 150. Those are reported results, not independently reproduced results here. The source findings below identify cases those results do not establish.
 
@@ -173,7 +172,7 @@ These are not newly introduced regressions. They are deliberate limitations of t
 | Shared mechanisms for changes, metering and durable work remain planned | [HARDENING.md:28](../../../../docs/pass-2/HARDENING.md#L28) and [PLUGGING-IN.md:164](../../../../docs/pass-2/PLUGGING-IN.md#L164) explicitly list them | A company triggering jobs cannot be expected to implement idempotency, approvals, budget authority or operation lifecycle separately in each connector. These must be shared before the broad handoff. |
 | Proof is narrower than the intended platform claim | The same hardening document leaves protocol conformance, signed local identity, load/chaos and live services open | Green local checks establish useful progress, but do not establish independent extension, cross-client parity or enterprise-service operation. |
 
-SQLGlot belongs in the repository as a shared foundational library, as requested. Its availability to modules is not a layering defect. Preserve that integration and the provenance of the required cloud-gateway patterns. `bt-research` remains outside this review and plan.
+SQLGlot belongs in the repository as a shared foundational library, as requested. Its availability to modules is not a layering defect. Preserve that integration, the shared gateway mechanisms and their required license notices. Backtesting research remains outside this review and plan.
 
 ## Handoff recommendation
 

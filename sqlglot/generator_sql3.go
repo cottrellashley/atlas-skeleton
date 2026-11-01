@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/exp"
 )
 
 func (g *Generator) tableParts(e *exp.Expr) string {

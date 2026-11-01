@@ -18,7 +18,7 @@ import { AtlasProblem, atlas, canonical, type Client, signIn, type Warning } fro
 const repo = resolve(import.meta.dirname, '..', '..', '..');
 const prebuilt = process.env.ATLAS_NODE_TEST_BIN;
 const bin = prebuilt ?? mkdtempSync(join(tmpdir(), 'atlas-node-bin-'));
-const env = { ...process.env, GOTOOLCHAIN: 'local', GOPRIVATE: 'github.com/jhgonline', GOVCS: 'github.com/jhgonline:off' };
+const env = { ...process.env, GOTOOLCHAIN: 'local', GOPRIVATE: 'atlas.local', GOVCS: 'atlas.local:off' };
 const gateways: ChildProcess[] = [];
 let url = '';
 let capped = '';

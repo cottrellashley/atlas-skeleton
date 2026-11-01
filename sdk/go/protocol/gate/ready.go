@@ -5,9 +5,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/profile"
+	"atlas.local/sdk/go/protocol/schema"
 )
 
 // Ready is the agent-readiness check (§3.1.4a, ATLAS-VISION-002): every

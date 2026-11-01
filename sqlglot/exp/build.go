@@ -1,11 +1,11 @@
 package exp
 
 import (
+	"atlas.local/sqlglot/internal/pydec"
 	"encoding/hex"
 	"errors"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/internal/pydec"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
+	"atlas.local/sqlglot/errs"
 
 	"fmt"
 	"math"

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/tokens"
 )
 
 const anonymizeAlphabet = "abcdefghijklmnopqrstuvwxyz"

@@ -3,8 +3,8 @@ package sqlglot_test
 import (
 	"testing"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
 )
 
 // customSchema is a minimal Schema implementation: every table has one INT column "a".

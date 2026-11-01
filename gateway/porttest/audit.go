@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/protocol"
 )
 
 // Audit is an AuditSink under test, with what the suite needs to check it.

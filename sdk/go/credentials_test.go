@@ -11,10 +11,10 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/documents"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/engine/fakegw"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/protocol/documents"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // R26, PR01, R004, R008: the refuter's rogue gateway. A person signed in

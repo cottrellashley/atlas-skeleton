@@ -13,14 +13,14 @@ import (
 	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/apache/arrow-go/v18/arrow/array"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/access"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/arrowschema"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
+	"atlas.local/gateway/core/access"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/clock"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/arrowschema"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/schema"
 )
 
 // Rows is a table answer on its way to the caller (§9.3 rule 1, R05, R11).

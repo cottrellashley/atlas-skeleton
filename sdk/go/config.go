@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/grammar"
 )
 
 // maxConfig bounds config.toml.

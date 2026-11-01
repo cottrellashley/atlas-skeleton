@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/frame"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/engine/fakegw"
+	"atlas.local/sdk/go/protocol/frame"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 const (

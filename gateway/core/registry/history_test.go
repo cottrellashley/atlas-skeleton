@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
+	"atlas.local/sdk/go/protocol/profile"
 )
 
 const firstEvolution = `"evolution": {"lens": [], "changelog": [{"date": "2026-10-01", "change": "First."}]}`

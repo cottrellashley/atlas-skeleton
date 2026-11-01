@@ -3,9 +3,9 @@ package sqlglot_test
 import (
 	"fmt"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	_ "github.com/jhgonline/fi-app-atlas/sqlglot/dialects" // registers duckdb and snowflake
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	sqlglot "atlas.local/sqlglot"
+	_ "atlas.local/sqlglot/dialects" // registers duckdb and snowflake
+	"atlas.local/sqlglot/exp"
 )
 
 func ExampleTranspile() {

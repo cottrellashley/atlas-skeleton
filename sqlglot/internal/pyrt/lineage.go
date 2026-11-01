@@ -3,9 +3,9 @@ package pyrt
 // Bindings for sqlglot.lineage.
 
 import (
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/tokens"
 )
 
 var lineageNodes = map[*sqlglot.LineageNode]*LineageNodeV{}

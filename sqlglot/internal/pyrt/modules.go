@@ -6,9 +6,9 @@ package pyrt
 import (
 	"sort"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/helper"
 )
 
 // DecimalV is a decimal.Decimal, kept as its string form.

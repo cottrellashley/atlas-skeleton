@@ -1,9 +1,10 @@
 # Porting notes
 
-This is a port of SQLGlot v30.27.0 (upstream commit `5c101a2`). The code follows the Python
-modules closely so that upstream changes can be carried over by reading the Python diff and
-applying it to the matching Go code. Most Go files name the Python module they port in a
-`// Port of ...` comment.
+The local `atlas.local/sqlglot` module follows SQLGlot v30.27.0. The code follows
+the Python module structure closely so deliberate compatibility changes can be
+mapped to the matching Go code. Most Go files name that mapping in a `// Port of ...`
+comment. Generated sources, converted tests and fixtures are included in this
+repository; these source mappings are maintenance context, not build dependencies.
 
 ## Naming conventions
 
@@ -44,10 +45,17 @@ DuckDB, dialect helpers, transforms, JSONPath, time formats, schema, the whole o
 Not ported: the other 32 dialects. Their converted test suites are already in
 `tests/dialects` and run as soon as a dialect is registered.
 
-## Tools
+## Optional maintenance tools
 
-The `tools/port` scripts need a SQLGlot checkout at the matching commit. Run them with
-`python3 -I` from outside the checkout.
+Ordinary Go builds and `make check` use the generated sources and tests already in
+this repository. Run the tools below only for a deliberate compatibility update,
+using a scratch environment separate from the normal build.
+
+The Python helpers accept a directory containing the public `sqlglot` package,
+such as an isolated installation of version 30.27.0. Test conversion additionally
+requires the matching public Python test corpus; a package installation may omit
+those tests. Run Python helpers with `python3 -I` and consult each script's usage
+for its inputs.
 
 - `convert_tests.py` and `convert_all.sh` regenerate `tests/dialects` and `tests/core` from the
   Python test modules. The `PYTHON_ONLY` table of `convert_tests.py` lists the test methods that
@@ -57,14 +65,9 @@ The `tools/port` scripts need a SQLGlot checkout at the matching commit. Run the
   module of each expression class, for messages. `gen_config.py`, `gen_time.py`,
   `gen_typing.py` and `emit_typing.py` generated the base dialect tables.
 - `pysql.py` and `pyexec.py` are the Python halves of differential tests against
-  `internal/cmd/gosql` and `internal/cmd/goexec`:
-
-  ```sh
-  go build -o /tmp/gosql ./internal/cmd/gosql
-  python3 -I tools/port/pysql.py /path/to/sqlglot snowflake duckdb < queries.sql > py.txt
-  /tmp/gosql snowflake duckdb < queries.sql > go.txt
-  diff py.txt go.txt
-  ```
+  `internal/cmd/gosql` and `internal/cmd/goexec`. Their first argument is the
+  isolated directory containing the reference Python package. Feed both
+  implementations the same queries and compare their output.
 
 ## Test runtime
 

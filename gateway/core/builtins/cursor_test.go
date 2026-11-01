@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol"
 )
 
 // firstPage is Ana's catalogue, two to a page, and the cursor of page two.

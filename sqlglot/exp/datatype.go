@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
+	"atlas.local/sqlglot/errs"
 )
 
 // DType is a data type enum value (sqlglot's exp.DType / exp.DataType.Type). The string is

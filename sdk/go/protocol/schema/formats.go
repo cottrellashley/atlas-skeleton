@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/grammar"
 )
 
 // formats are the formats of §9.2.2. Each is an assertion.

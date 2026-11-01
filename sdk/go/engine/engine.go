@@ -31,13 +31,13 @@ import (
 	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	atlas "github.com/jhgonline/fi-app-atlas/sdk/go"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/problem"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/arrowschema"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/frame"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	atlas "atlas.local/sdk/go"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/kit/problem"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/arrowschema"
+	"atlas.local/sdk/go/protocol/frame"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // Name is the engine's client name in Atlas-Client.

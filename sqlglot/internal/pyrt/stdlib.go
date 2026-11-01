@@ -16,8 +16,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/internal/testutil"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/internal/testutil"
 )
 
 // FileV is an open text file.

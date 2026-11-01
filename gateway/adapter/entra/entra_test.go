@@ -22,10 +22,10 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/gateway/porttest"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/jwt"
+	"atlas.local/gateway/ports"
+	"atlas.local/gateway/porttest"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/kit/jwt"
 )
 
 const issuer = "https://login.microsoftonline.com/t1/v2.0"

@@ -1,5 +1,4 @@
-// Adapted from github.com/cottrellashley/cloud-gateway-patterns-go at 44ba81a
-// (patterns/config/config.go), MIT licence: see sdk/go/THIRD_PARTY_NOTICES.md.
+// Includes MIT-licensed serving utilities; see sdk/go/THIRD_PARTY_NOTICES.md.
 // Changes: import paths, package name; later edits are marked ATLAS.
 
 // Package config is hot-swappable configuration: the running config is an

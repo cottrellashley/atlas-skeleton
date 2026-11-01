@@ -10,11 +10,11 @@ import (
 	"sync"
 	"unicode"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/trie"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
+	"atlas.local/sqlglot/tokens"
+	"atlas.local/sqlglot/trie"
 )
 
 // NormalizationStrategy mirrors sqlglot's NormalizationStrategy.

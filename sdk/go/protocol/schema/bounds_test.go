@@ -12,8 +12,8 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // The body limit and nesting the edge parses a request within

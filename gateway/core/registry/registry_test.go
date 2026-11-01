@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol/profile"
 )
 
 type nobody struct{}

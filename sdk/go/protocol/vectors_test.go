@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/internal/refs"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/internal/refs"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // The registry is §9.3.3 exactly, with §9.7.6's exit codes.

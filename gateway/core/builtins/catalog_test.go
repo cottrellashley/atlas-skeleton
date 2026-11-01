@@ -9,12 +9,12 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/access"
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/documents"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
+	"atlas.local/gateway/core/access"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol/documents"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/schema"
 )
 
 func pageOf(t *testing.T, w *World, c Call) *ijson.Object {

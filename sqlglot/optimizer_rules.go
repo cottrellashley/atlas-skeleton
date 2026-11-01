@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
 )
 
 // ---------------------------------------------------------------------------------------

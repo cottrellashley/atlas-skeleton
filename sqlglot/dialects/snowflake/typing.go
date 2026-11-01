@@ -5,8 +5,8 @@ package snowflake
 import (
 	"fmt"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
 )
 
 type annotator = sqlglot.TypeAnnotator

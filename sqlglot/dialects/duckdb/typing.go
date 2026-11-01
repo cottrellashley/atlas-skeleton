@@ -3,8 +3,8 @@ package duckdb
 // Port of sqlglot/typing/duckdb.py.
 
 import (
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
 )
 
 var datetimeWithoutTZ = []any{

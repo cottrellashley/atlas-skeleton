@@ -10,9 +10,9 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/array"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/arrowschema"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/arrowschema"
 )
 
 // batchStream is a BatchStream over batches made from rows, each handed out

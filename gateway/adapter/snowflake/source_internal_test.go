@@ -14,8 +14,8 @@ import (
 
 	"github.com/apache/arrow-go/v18/arrow"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/conc"
 )
 
 // holdingsRead is a read of the journey's positions, in the writer

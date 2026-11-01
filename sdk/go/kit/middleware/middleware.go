@@ -1,5 +1,4 @@
-// Adapted from github.com/cottrellashley/cloud-gateway-patterns-go at 44ba81a
-// (patterns/middleware/middleware.go), MIT licence: see sdk/go/THIRD_PARTY_NOTICES.md.
+// Includes MIT-licensed serving utilities; see sdk/go/THIRD_PARTY_NOTICES.md.
 // Changes: import paths; later edits are marked ATLAS.
 
 // Package middleware is the handler-chain toolkit: composition, panic
@@ -29,8 +28,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/problem"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/sdk/go/kit/problem"
+	"atlas.local/sdk/go/protocol"
 )
 
 // Middleware wraps a handler.

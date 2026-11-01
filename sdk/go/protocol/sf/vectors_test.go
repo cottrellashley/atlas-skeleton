@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/internal/refs"
+	"atlas.local/sdk/go/internal/refs"
 )
 
 // Every field of the vectors parses, or not, as the references' RFC 9651

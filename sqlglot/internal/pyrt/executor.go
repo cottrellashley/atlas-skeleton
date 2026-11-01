@@ -6,9 +6,9 @@ import (
 	"math/big"
 	"time"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/executor"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/executor"
+	"atlas.local/sqlglot/exp"
 )
 
 // ExecTableV wraps an executor table.

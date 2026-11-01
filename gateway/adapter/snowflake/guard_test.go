@@ -5,9 +5,9 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/internal/refs"
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/gateway/internal/refs"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
 )
 
 // §6.4.3, the read-only guard: every case of the references' guard vectors,

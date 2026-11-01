@@ -1,7 +1,5 @@
 # §2.2.2 Vendor API data
 
-> Source: `IMG_2138.MOV` 00:04:42–00:05:08.
-
 Data capabilities served by calling a vendor's API: upstream until normalised into an Atlas-owned schema at the edge, metered and licensed, long calls as operations, always streamed by the gateway, throttled per vendor.
 
 ## In short

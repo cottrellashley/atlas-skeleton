@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/sf"
+	"atlas.local/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/sf"
 )
 
 // Headers of §9.6.3, and the HTTP headers the binding uses beside them.

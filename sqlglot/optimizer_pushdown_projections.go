@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"strconv"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/exp"
 )
 
 // PushdownProjections removes unused projections and CTEs while preserving all outermost

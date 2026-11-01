@@ -6,7 +6,7 @@ package datastatus
 import (
 	"embed"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/views"
+	"atlas.local/gateway/views"
 )
 
 //go:embed profiles views history

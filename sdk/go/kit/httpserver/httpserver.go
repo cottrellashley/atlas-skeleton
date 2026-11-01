@@ -1,5 +1,4 @@
-// Adapted from github.com/cottrellashley/cloud-gateway-patterns-go at 44ba81a
-// (patterns/httpserver/httpserver.go), MIT licence: see sdk/go/THIRD_PARTY_NOTICES.md.
+// Includes MIT-licensed serving utilities; see sdk/go/THIRD_PARTY_NOTICES.md.
 // Changes: import paths; later edits are marked ATLAS.
 
 // Package httpserver builds and runs an http.Server the way Caddy, Traefik and
@@ -34,8 +33,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/lifecycle"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/kit/lifecycle"
 )
 
 // Config is everything the server needs that is not the handler.

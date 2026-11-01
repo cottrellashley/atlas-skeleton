@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/access"
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/core/access"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/gateway/ports"
 )
 
 // startPolicyTimeout bounds the policy read a gateway makes as it starts.

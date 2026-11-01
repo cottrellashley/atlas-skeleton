@@ -5,8 +5,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/profile"
 )
 
 // The answer's encoding (§9.6.4, §9.C). It is the first media type Accept

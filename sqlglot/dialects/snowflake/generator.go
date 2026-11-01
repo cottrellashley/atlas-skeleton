@@ -7,11 +7,11 @@ import (
 	"slices"
 	"strings"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/internal/ghelp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
+	"atlas.local/sqlglot/internal/ghelp"
+	"atlas.local/sqlglot/tokens"
 )
 
 type gen = sqlglot.Generator

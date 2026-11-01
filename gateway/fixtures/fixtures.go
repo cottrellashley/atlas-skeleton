@@ -16,10 +16,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 //go:embed harbour.json

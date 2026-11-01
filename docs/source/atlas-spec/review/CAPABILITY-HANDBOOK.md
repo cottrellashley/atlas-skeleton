@@ -4,7 +4,7 @@
 
 The catalogue gives useful summaries. It does **not** supply 138 complete, executable profiles: most exact request schemas, field definitions, defaults, freshness promises and error contracts still need their owner's words. The four profiles in [§3.1](../03-contracts.md) are explicitly abbreviated examples. “Official” below is the catalogue's proposed stability classification; it is not evidence that a capability is deployed, healthy, accessible or production ready.
 
-`cloud-gateway-patterns-go` and `sqlglot-go` are required first integrations, per the project direction. This handbook describes their desired public experience without inventing their implementation boundaries. `bt-research` is deferred; it is not designed here.
+The shared gateway kit and local SQL library provide common mechanisms behind capability providers. This handbook describes the desired public experience without inventing implementation boundaries. Backtesting research is deferred; it is not designed here.
 
 Start with the [complete inventory](#complete-catalogue-inventory) to browse a capability, the [shared call examples](#one-journey-then-one-call-shape) to see the interface, or the [holdings page](#worked-human-page-portfolio-holdings) to see the proposed depth of a finished guide. The [name and overlap decisions](#names-and-overlaps-that-need-an-explicit-decision) identify unresolved catalogue choices.
 
@@ -199,7 +199,7 @@ For the many curated data domains, the standard set is **`fetch`, `explain`, `ex
 
 Every section below is sourced from its corresponding domain table in [§7 The catalogue](../07-the-catalogue.md). “Merged” means the source explicitly leaves schema equivalence between alternatives unresolved.
 
-The catalogue names Ashley Cottrell as owner for `atlas` and `event`, Ian Draves for `nautilus`, and QFI “to name” for the other domains. Named operational ownership remains unfinished for those 24 domains. Lifecycle, visibility, deadlines, exact schemas, freshness targets and business errors are generally missing at row level; do not infer “stable,” public visibility or a latency promise from “official.” The restart's preview/administrator restriction and the confidential administration entries are explicit exceptions already stated by the source.
+The catalogue assigns `atlas` and `event` to Atlas maintainers, `nautilus` to Nautilus maintainers, and leaves QFI ownership “to name” for the other domains. Named operational ownership remains unfinished for those 24 domains. Lifecycle, visibility, deadlines, exact schemas, freshness targets and business errors are generally missing at row level; do not infer “stable,” public visibility or a latency promise from “official.” The restart's preview/administrator restriction and the confidential administration entries are explicit exceptions already stated by the source.
 
 ### Atlas — 20 capabilities
 

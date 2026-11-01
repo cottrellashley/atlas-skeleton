@@ -4,8 +4,8 @@ package duckdb
 // sqlglot/generators/duckdb.py. The generator methods live in generator_methods*.go.
 
 import (
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
 )
 
 type gen = sqlglot.Generator

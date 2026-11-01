@@ -6,8 +6,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/ports"
 )
 
 var errBroken = errors.New("the store has failed")

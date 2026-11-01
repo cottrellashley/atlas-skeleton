@@ -8,9 +8,9 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
+	"atlas.local/sdk/go/engine/fakegw"
+	"atlas.local/sdk/go/kit/clock"
+	"atlas.local/sdk/go/kit/conc"
 )
 
 // stalled is a token endpoint that answers nothing until its request's

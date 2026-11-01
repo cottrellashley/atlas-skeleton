@@ -1,6 +1,6 @@
 # Pass 1, criticised
 
-This reviews pass 1 against the rewritten spec (`atlas-spec/`, 2026-10-31: 229 requirements) and the practices of `cloud-gateway-patterns-go`. Pass 1 proved the pattern in the hermetic setting: one front door, the Go client wrapped for Python, schema evolution behind a lock, streamed rows equal to handed-off rows. It is not the product.
+This reviews pass 1 against the rewritten spec (`atlas-spec/`, 2026-10-31: 229 requirements) and the shared gateway patterns documented in the specification. Pass 1 proved the pattern in the hermetic setting: one front door, the Go client wrapped for Python, schema evolution behind a lock, streamed rows equal to handed-off rows. It is not the product.
 
 Severity is what the defect would cost in production:
 
@@ -30,7 +30,7 @@ Severity is what the defect would cost in production:
 |---|---|---|---|---|
 | 12 | Blocker | The edge parses the capability name out of the URL path (`/v1/data/{address}`). The spec forbids routing by parsing a name. | §2.1 rule 1, §4.2 rule 2 | A binding router: the request path is looked up in the snapshot's binding table to find the address |
 | 13 | Blocker | `QUERY_TAG` is rendered into the SQL text. `explain` then can't equal `fetch` byte for byte, because the tag changes per call. | DATA-004, §2.2.1 | The tag passed out of band, as session or statement metadata. The statement depends only on the request |
-| 14 | Blocker | SQL is built by string concatenation with home-made quoting, and there is no statement guard. | §6.4.3, D28 | sqlglot-go typed trees rendered per dialect. The read-only guard parses with the Snowflake parser. Guard vectors |
+| 14 | Blocker | SQL is built by string concatenation with home-made quoting, and there is no statement guard. | §6.4.3, D28 | sqlglot typed trees rendered per dialect. The read-only guard parses with the Snowflake parser. Guard vectors |
 | 15 | Blocker | Limits are per-replica token buckets. They aren't reserved before the call and settled after, so they wouldn't hold across copies, and there are no budgets, output caps, concurrency release or confirmation threshold. | §6.2.6, §6.7.13, ACCESS-003 | Reserve every window in one conditional batch, then settle. Allowances, pools and ceilings, inherited |
 | 16 | Blocker | There is no idempotency anywhere. A retried write would act twice. | §6.7.8, MECH-008, GATEWAY-013 | Pipeline step 4: the JCS fingerprint, scoped to principal and address, kept 24 h. The key passed downstream |
 | 17 | Blocker | The audit is an in-memory list. Nothing is durable before the answer ends, and there's no WORM container or group commit. | ACCESS-004, §6.2.8 | An `AuditSink` doing group commit to an append blob (Azurite locally), shipped to Log Analytics by `AuditReader` |
@@ -41,7 +41,7 @@ Severity is what the defect would cost in production:
 | 22 | Major | There are no controllers or leases, so operations don't survive their replica. | §6.1.13, §6.7.6–6.7.7, OPERATION-001–003, RECONCILE-001–006 | `kit/reconcile` with a leader lease, and `kit/ops` with operation leases, checkpoints and takeover |
 | 23 | Major | Resilience is missing: no breakers, bulkheads, retry budgets, shedding, in-flight caps, pre-auth limit or drain behaviour. | §6.1.8, §6.7.2, §6.7.5 | `kit/retry` and per-upstream bulkheads. The edge's middleware exactly as §6.7.2 lists it |
 | 24 | Major | Built-ins: 4 of 20 exist. | §2.6, §9.3.2, AP-DOC-002 | All 20, with the exact request and result schemas |
-| 25 | Major | The fake warehouse evaluates filters with hand-written Go, so the SQL the adapter plans is never run. | §6.4.3 | DuckDB runs the adapter's own statement, transpiled from Snowflake to DuckDB by sqlglot-go |
+| 25 | Major | The fake warehouse evaluates filters with hand-written Go, so the SQL the adapter plans is never run. | §6.4.3 | DuckDB runs the adapter's own statement, transpiled from Snowflake to DuckDB by sqlglot |
 | 26 | Major | Telemetry is slog only: no OpenTelemetry, no spans per step, no redaction in one place, no bounded labels. | §6.1.12, §6.7.16, MECH-003/014/015 | The OTel API and slog, with redaction at one point. A test plants secrets and searches every sink for them |
 | 27 | Major | The layer check misses the spec's rule that services never import `core`. There are no vet checks for registration in `init`, bare `go` statements or `os.Getenv` outside configuration. | §6.5 rule 1, PACKAGES-008, MECH-012 | Extra layer rules, plus analyzers in `tools/vet` |
 | 28 | Minor | Serving values differ from the spec's (`:8000`, header bytes 64 KiB, shutdown sequence 5 s then 30 s). | §6.7.15 | The spec's values |

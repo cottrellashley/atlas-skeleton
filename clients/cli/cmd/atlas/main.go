@@ -25,9 +25,9 @@ import (
 	"strings"
 	"time"
 
-	atlas "github.com/jhgonline/fi-app-atlas/sdk/go"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	atlas "atlas.local/sdk/go"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 const usage = `atlas: the Atlas CLI

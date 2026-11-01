@@ -2,7 +2,7 @@ package sqlglot
 
 // Port of sqlglot/typing/__init__.py: the type annotation metadata of the base dialect.
 
-import "github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+import "atlas.local/sqlglot/exp"
 
 // AnnotateByNumericArg mirrors typing.annotate_by_numeric_arg: math functions (e.g. FLOOR)
 // that preserve numeric and unknown types, and return INT otherwise.

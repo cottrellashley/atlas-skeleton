@@ -9,7 +9,7 @@ import (
 	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/apache/arrow-go/v18/arrow/array"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/adapter/snowflake"
+	"atlas.local/gateway/adapter/snowflake"
 )
 
 // holdingsRecord is one record of answer's rows in Snowflake's encodings:

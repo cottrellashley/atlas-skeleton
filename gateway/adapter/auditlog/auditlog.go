@@ -29,10 +29,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/clock"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/protocol"
 )
 
 // WriteTimeout bounds one write to a pipe or a socket: a collector that

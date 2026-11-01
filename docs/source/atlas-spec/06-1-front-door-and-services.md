@@ -1,7 +1,5 @@
 # 6.1 Front door and services
 
-Source: `IMG_2138.MOV` 00:15:12–00:16:47.
-
 `spec/gateway/front-door.md` · proposed
 
 The Atlas Gateway as a front door of edges over one pipeline that decides every call and routes it to downstream services by a signed token; control and data planes; state and events; how services register and stay movable; resilience; deployables, compute and ingress; observability.

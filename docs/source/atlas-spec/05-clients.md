@@ -1,7 +1,5 @@
 # 5. Clients
 
-Source: `IMG_2138.MOV` 00:12:04–00:14:48.
-
 `spec/clients.md` · proposed
 
 The Atlas clients: each a wrapper over the Atlas Gateway, optimised for its language and the people who use it (the Python SDK for researchers and data engineers, the Node SDK for analysts' dashboards in Nautilus, the CLI for Nautilus and agents, the Go SDK for Go programs), each owning the reader side, and each with extras: work it does on the caller's machine without the gateway.
@@ -137,7 +135,6 @@ The sizing it rests on, as measured on 2026-10-14 for all of QFI's Snowflake use
 **Decided (2026-10-29):** one host. Every client calls the Atlas Gateway for every capability; each client is built for its language and its users; work on the caller's machine is a client extra, not a capability.
 
 **Open:**
-- The CLI's Go module is still `github.com/jhgonline/fi-app-atlas/cli`. Recommended: rename to `github.com/jhgonline/fi-app-atlas/clients/cli`.
 - `sdk/go` as the Go client, rather than a separate library. Recommended: yes.
 - Extras that read what a capability also serves (the Go SDK's `azure` and `astro` adapters, for `qfi`). Recommended: allowed for a person's own tools with their own access; an application for other people calls the capability.
 - Nautilus Desktop embeds the Node SDK for its dashboards and their extras. Recommended: yes; to confirm with Nautilus.
@@ -155,7 +152,7 @@ Atlas Python (fiatlas), built for researchers and data engineers: a Python face 
 ### In short
 
 - For **researchers and data engineers:** notebooks, datasets and pipelines on Astronomer.
-- `clients/python`, package `fi-lib-atlas`, import `fiatlas`.
+- `clients/python`, distribution `fiatlas`, import `fiatlas`.
 - **A Python face over the Go client engine.** The wheel carries `atlas-engine`, the Go SDK built as a small program (§5.4). Python starts it on first use and gives it every protocol job: sign-in, discovery, validation, fingerprints, calls, retries, resolution, handoffs, events, transfers. Python does what Python users need: the attribute form, `read_as`, exceptions, `async`, extras.
 - Levels: the engine's. Core, Streaming, Columnar, Bulk, Events, **Handoff**; Broker deferred (O54).
 - One wheel per platform, with no Python dependencies; `pyarrow`, `pandas` and `polars` are optional extras.
@@ -219,7 +216,7 @@ In a pipeline on Astronomer, the same call runs under the deployment's workload 
 | | |
 |---|---|
 | Built for | Researchers and data engineers: notebooks, datasets, pipelines on Astronomer |
-| Lives in | `clients/python` (package `fi-lib-atlas`, import `fiatlas`) |
+| Lives in | `clients/python` (distribution `fiatlas`, import `fiatlas`) |
 | Protocol | None of its own: `atlas-engine` (`sdk/go/cmd/atlas-engine`), the Go SDK as a program (§5.4) |
 | Calls | The Atlas Gateway over HTTPS, through the engine |
 | Levels | The engine's: Core, Streaming, Columnar, Bulk, Events, **Handoff**; Broker deferred (O54) |
@@ -321,8 +318,8 @@ flowchart TB
 An analyst asks Nautilus Desktop for a dashboard of 147HYC's holdings beside their own target weights. The dashboard has three panels:
 
 1. Holdings: `a.fetch('portfolio.holdings@v1', …)`, a call to the gateway.
-2. Targets: `extras.files.read('~/desk/targets-147HYC.csv')`, read from the analyst's own folder.
-3. Changes: `extras.git.log('~/desk/models')`, the analyst's model checkout.
+2. Targets: `extras.files.read('./data/targets-147HYC.csv')`, read from the analyst's own folder.
+3. Changes: `extras.git.log('./models')`, the analyst's model checkout.
 
 Its lock declares the capability and the two extras. Shared to a colleague in Nautilus Cloud, the holdings panel renders; the other two say "needs files and git on Nautilus Desktop".
 
@@ -371,9 +368,9 @@ Types are generated from an application's lock at its build; they call `call` an
 
 ```typescript
 import { extras } from '@atlas/sdk/extras';                 // Node only
-const targets = await extras.files.read('~/desk/targets-147HYC.csv');
-const log = await extras.git.log('~/desk/models', { limit: 20 });
-const prs = await extras.github.pullRequests('jhgonline/fi-app-atlas'); // the analyst's own gh sign-in
+const targets = await extras.files.read('./data/targets-147HYC.csv');
+const log = await extras.git.log('./models', { limit: 20 });
+const prs = await extras.github.pullRequests('<organization>/<repository>'); // the analyst's own gh sign-in
 ```
 
 | Extra | Does | Needs |
@@ -499,9 +496,10 @@ None is a capability. The harness commands are specified with the developer tool
 
 ### Decisions
 
+The CLI module lives in `clients/cli` and is named `atlas.local/clients/cli`.
+
 **Open:**
 - The commands in the code (`search`, `describe`, `invoke`, `usage`) become the surface verbs above, with `invoke` kept as an alias. Recommended: yes.
-- The Go module is named `github.com/jhgonline/fi-app-atlas/cli`. Recommended: rename to `github.com/jhgonline/fi-app-atlas/clients/cli`.
 - Where the harness commands are specified. Recommended: a tool concept under `spec/tools/`.
 
 ### Go deeper
@@ -561,7 +559,7 @@ flowchart TB
 | | |
 |---|---|
 | Built for | Go programs and platform tools |
-| Lives in | `sdk/go` (module `github.com/jhgonline/fi-app-atlas/sdk/go`) |
+| Lives in | `sdk/go` (module `atlas.local/sdk/go`) |
 | Protocol | `sdk/go/protocol`: the Go implementation of §9, its document types generated from §9.3's JSON Schemas; shared with the gateway (§6.5.6) |
 | Also builds | `atlas-engine`, the program the Python SDK ships (§5.1): the client behind the runner protocol of §9.8.3, with Arrow results on a second pipe; and the code generator for locks (`atlas lock gen go|python|ts`) |
 | Calls | The Atlas Gateway over HTTPS |

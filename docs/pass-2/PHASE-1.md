@@ -32,11 +32,11 @@ The requirement matrix (`make requirements`) now maps 22 requirements to tests; 
 
 ## Readings of the spec
 
-`ASSUMPTIONS.md` holds 21 of them (A-001 to A-021), each with the code that relies on it. The references session confirms or contradicts each one in its vectors.
+`ASSUMPTIONS.md` holds 21 of them (A-001 to A-021), each with the code that relies on it. The independently generated protocol vectors confirm or contradict each reading.
 
 ## Against the references
 
-The references session wrote `spec/protocol/references` from the text alone, in Python, with third-party implementations of the standards. It never read the Go code. Every vector file that covers Phase 1 passes in Go:
+The Python generator in `tools/spec` derives `spec/protocol/references` from the protocol text, independently of the Go implementation, using third-party implementations of the standards. Every vector file that covers Phase 1 passed in Go in this historical phase:
 
 | Vectors | Cases | Proves |
 |---|---:|---|
@@ -67,7 +67,7 @@ The validator now applies 2020-12's semantics to any schema, and the profile's r
 ## Not done in this phase
 
 - **Generated document types** (`tools/schemagen`). They are generated from the 21 document schemas, which now exist.
-- **`guard.json`** (the read-only SQL guard) and **`handoff/`** (Snowflake chunks). Both are Phase 5, where sqlglot-go and `snowarrow` meet them.
+- **`guard.json`** (the read-only SQL guard) and **`handoff/`** (Snowflake chunks). Both are Phase 5, where sqlglot and `snowarrow` meet them.
 - **The 50 scenarios.** They need the conformance runners of Phase 9. The requirement matrix lists each beside its requirement, which stays open until a runner runs it.
 
 ## Carried into Phase 2

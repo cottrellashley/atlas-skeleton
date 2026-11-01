@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/sdk/go/kit/clock"
+	"atlas.local/sdk/go/protocol"
 )
 
 // §6.7.9, R076: replicas that share a key accept each other's cursors; one

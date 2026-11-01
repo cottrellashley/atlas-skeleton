@@ -27,10 +27,10 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/memory"
 	"github.com/duckdb/duckdb-go/v2"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/adapter/snowflake"
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
+	"atlas.local/gateway/adapter/snowflake"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol/grammar"
 )
 
 // The engine's bounds: rows in one answer batch, and query records kept.

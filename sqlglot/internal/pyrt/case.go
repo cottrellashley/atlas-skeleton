@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
 )
 
 // Method is a method of a converted test class.

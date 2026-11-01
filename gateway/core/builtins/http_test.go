@@ -9,13 +9,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/builtins"
-	"github.com/jhgonline/fi-app-atlas/gateway/core/pipeline"
-	"github.com/jhgonline/fi-app-atlas/gateway/edge"
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/documents"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/gateway/core/builtins"
+	"atlas.local/gateway/core/pipeline"
+	"atlas.local/gateway/edge"
+	"atlas.local/gateway/fakes"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/documents"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // gateway is the world behind the real pipeline and edge, called in

@@ -14,8 +14,8 @@ import (
 const root = "../.."
 
 // Every module this repository holds resolves locally, so nothing ever asks
-// anyone for a path under the private organisation.
-func TestNothingFetchesThePrivateOrganisation(t *testing.T) {
+// a remote source for a project module.
+func TestProjectModulesResolveLocally(t *testing.T) {
 	mods, err := Modules(root)
 	if err != nil {
 		t.Fatal(err)
@@ -32,35 +32,35 @@ func TestNothingFetchesThePrivateOrganisation(t *testing.T) {
 	}
 }
 
-// The Makefile fences the private paths off, so that a replace that is
+// The Makefile fences the local namespace off, so that a replace that is
 // missing fails on this machine.
-func TestTheMakefileFencesThePrivateOrganisation(t *testing.T) {
+func TestTheMakefileFencesTheLocalNamespace(t *testing.T) {
 	b, err := os.ReadFile(filepath.Join(root, "Makefile"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, line := range []string{"export GOPRIVATE := github.com/jhgonline", "export GOVCS := github.com/jhgonline:off"} {
+	for _, line := range []string{"export GOPRIVATE := atlas.local", "export GOVCS := atlas.local:off"} {
 		if !strings.Contains(string(b), line+"\n") {
 			t.Errorf("the Makefile does not say %q", line)
 		}
 	}
 }
 
-// Nothing tells a reader, a caller or an agent to fetch a private path:
+// Nothing tells a reader, a caller or an agent to fetch a local module path:
 // no document, and no string in code or data either (atlas.clients once
 // answered every caller with a go install from it).
-// fetch matches an instruction that would reach the private organisation.
-var fetch = regexp.MustCompile(`go (get|install|run)\s+[^\s"'\x60]*github\.com/jhgonline|git (clone|pull|fetch|push|remote add)[^\n]*jhgonline|github\.com[:/]jhgonline/[^\s"'\x60]*\.git`)
+// fetch matches an instruction that would treat the local namespace as remote.
+var fetch = regexp.MustCompile(`go (get|install|run)\s+[^\s"'\x60]*atlas\.local|git (clone|pull|fetch|push|remote add)[^\n]*atlas\.local|atlas\.local[:/][^\s"'\x60]*\.git`)
 
 // The pattern catches what atlas.clients once told every caller, and lets
 // through building from a checkout and plain import paths.
 func TestTheFetchPatternItself(t *testing.T) {
 	for _, bad := range []string{
-		"go install github.com/jhgonline/fi-app-atlas/clients/cli/cmd/atlas@latest",
-		"go get github.com/jhgonline/fi-app-atlas/sdk/go",
-		"go run github.com/jhgonline/fi-app-atlas/tools/reqs@v0.1.0",
-		"git clone https://github.com/jhgonline/fi-app-atlas.git",
-		"git remote add origin git@github.com:jhgonline/fi-app-atlas.git",
+		"go install atlas.local/clients/cli/cmd/atlas@latest",
+		"go get atlas.local/sdk/go",
+		"go run atlas.local/tools/reqs@v0.1.0",
+		"git clone https://atlas.local/atlas.git",
+		"git remote add origin git@atlas.local:atlas.git",
 	} {
 		if !fetch.MatchString(bad) {
 			t.Errorf("not caught: %q", bad)
@@ -68,9 +68,9 @@ func TestTheFetchPatternItself(t *testing.T) {
 	}
 	for _, good := range []string{
 		"From a checkout of the Atlas repository: go -C clients/cli install ./cmd/atlas",
-		`import "github.com/jhgonline/fi-app-atlas/sdk/go"`,
-		"module github.com/jhgonline/fi-app-atlas/gateway",
-		"replace github.com/jhgonline/fi-app-atlas/sdk/go => ../sdk/go",
+		`import "atlas.local/sdk/go"`,
+		"module atlas.local/gateway",
+		"replace atlas.local/sdk/go => ../sdk/go",
 	} {
 		if fetch.MatchString(good) {
 			t.Errorf("refused: %q", good)
@@ -78,7 +78,7 @@ func TestTheFetchPatternItself(t *testing.T) {
 	}
 }
 
-func TestNothingTellsAnyoneToFetchThePrivateOrganisation(t *testing.T) {
+func TestNothingTellsAnyoneToFetchLocalModules(t *testing.T) {
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -95,7 +95,7 @@ func TestNothingTellsAnyoneToFetchThePrivateOrganisation(t *testing.T) {
 			return err
 		}
 		if m := fetch.Find(b); m != nil {
-			t.Errorf("%s tells someone to fetch the private organisation: %q", path, m)
+			t.Errorf("%s tells someone to fetch a local module: %q", path, m)
 		}
 		return nil
 	})
@@ -113,36 +113,36 @@ func TestTheCheckRefuses(t *testing.T) {
 		}
 		return Module{Dir: dir, Path: f.Module.Mod.Path, File: f}
 	}
-	a := parse("a", "module github.com/jhgonline/fi-app-atlas/a\n")
+	a := parse("a", "module atlas.local/a\n")
 	work, err := modfile.ParseWork("go.work", []byte("go 1.25.0\n\nuse (\n\t./a\n\t./b\n)\n"), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for name, b := range map[string]string{
-		"no replace":        "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\n",
-		"a module version":  "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => github.com/jhgonline/fi-app-atlas/a v1.0.0\n",
-		"the wrong place":   "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => ../c\n",
-		"an unknown module": "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/zzz v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/zzz => ../zzz\n",
-		// A company's module outside the private organisation (HANDOFF.md
+		"no replace":        "module atlas.local/b\nrequire atlas.local/a v0.0.0\n",
+		"a module version":  "module atlas.local/b\nrequire atlas.local/a v0.0.0\nreplace atlas.local/a => atlas.local/a v1.0.0\n",
+		"the wrong place":   "module atlas.local/b\nrequire atlas.local/a v0.0.0\nreplace atlas.local/a => ../c\n",
+		"an unknown module": "module atlas.local/b\nrequire atlas.local/zzz v0.0.0\nreplace atlas.local/zzz => ../zzz\n",
+		// A company's module outside the local namespace (HANDOFF.md
 		// C1) is held to the same rules: it reaches an in-repo module only
 		// through a replace to its directory.
-		"outside, requiring with no replace": "module example.com/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\n",
+		"outside, requiring with no replace": "module example.com/b\nrequire atlas.local/a v0.0.0\n",
 	} {
 		if got := Check(".", []Module{a, parse("b", b)}, work); len(got) == 0 {
 			t.Errorf("%s: accepted", name)
 		}
 	}
-	good := parse("b", "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => ../a\n")
+	good := parse("b", "module atlas.local/b\nrequire atlas.local/a v0.0.0\nreplace atlas.local/a => ../a\n")
 	if got := Check(".", []Module{a, good}, work); len(got) != 0 {
 		t.Errorf("a module replaced by its directory: %v", got)
 	}
-	company := parse("b", "module example.com/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => ../a\n")
+	company := parse("b", "module example.com/b\nrequire atlas.local/a v0.0.0\nreplace atlas.local/a => ../a\n")
 	if got := Check(".", []Module{a, company}, work); len(got) != 0 {
 		t.Errorf("a company module that reaches in-repo modules by their directories: %v", got)
 	}
-	// Any in-repo module, outside the organisation too, is required only
+	// Any in-repo module, under another namespace too, is required only
 	// through a replace, so the go command asks no one for it.
-	needsCompany := parse("a", "module github.com/jhgonline/fi-app-atlas/a\nrequire example.com/b v0.0.0\n")
+	needsCompany := parse("a", "module atlas.local/a\nrequire example.com/b v0.0.0\n")
 	if got := Check(".", []Module{needsCompany, parse("b", "module example.com/b\n")}, work); len(got) == 0 {
 		t.Error("an in-repo company module required with no replace: accepted")
 	}

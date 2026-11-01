@@ -8,11 +8,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/resolve"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/profile"
+	"atlas.local/sdk/go/protocol/resolve"
 )
 
 // The bounds of what discovery reads.

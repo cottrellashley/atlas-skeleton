@@ -1,33 +1,56 @@
-# atlas-skeleton
+# Atlas
 
-The Go core of Atlas, built from the transcribed spec ([`docs/source/atlas-spec`](docs/source/atlas-spec)). The plan for handing it to a company is [`docs/HANDOFF.md`](docs/HANDOFF.md). Its packages are laid out as in `fi-app-atlas` (§6.5), so they can be carried over.
+Atlas gives agents and applications one interface to discover, understand and call capabilities backed by warehouses, APIs and other services. The gateway owns identity, access, contracts and call accounting. Providers use the upstream platform's SDK or API and preserve its native behavior.
 
-**Pass 2 is in progress** on the `pass-2` branch.
+This repository contains the implementation, specification, reference fixtures, design decisions, lessons and remaining work. Every project-owned Go module resolves to a directory in this workspace. Public third-party dependencies remain declared in the module and package manifests; building requires normal package downloads and installed toolchains.
 
-- It rebuilds the core to the rewritten spec (229 requirements), as if it were the last pass.
-- Every external system sits behind a port, with a hermetic fake and a real adapter written against the vendor's SDK, so plugging a service in is configuration.
-- The plan, its phases and its exit criteria are in [docs/pass-2/PLAN.md](docs/pass-2/PLAN.md), and the review of pass 1 is in [docs/pass-2/CRITIQUE.md](docs/pass-2/CRITIQUE.md).
-- Pass 1, the hermetic proof of the pattern, is kept on the `pass-1` branch. Its record is [docs/pass-1/PROOF-0.md](docs/pass-1/PROOF-0.md).
+## Start here
 
-## Commands
+| Read | Purpose |
+|---|---|
+| [Vision](docs/source/atlas-spec/00-vision.md) and [platform overview](docs/source/atlas-spec/00-overview.md) | The domain and intended experience |
+| [Handoff plan](docs/HANDOFF.md) | Architecture, extension boundaries and acceptance gates |
+| [Implementation progress](docs/HANDOFF-PROGRESS.md) | What is implemented, what is proven and what remains |
+| [Lessons](docs/LESSONS.md) | Engineering rules and explicit pattern choices; preserve working implementations |
+| [Integration guide](docs/pass-2/PLUGGING-IN.md) | Run locally, configure adapters and add a capability |
+| [Protocol](docs/source/atlas-spec/09-atlas-protocol.md) and [reference fixtures](spec/protocol/references/README.md) | The contract shared by every client |
+| [Agent instructions](AGENTS.md) | How to extend this code and verify changes |
+
+The gateway, CLI, Go client, Python client and Node client are implemented for the documented read-only journey. The current progress ledger records remaining client correctness work and the unfinished handoff gates, durable operations and packaging milestones. Included design documents describe both implemented and planned behavior; they are not evidence that every proposed capability is available.
+
+## Build and verify
+
+Use Go 1.25, Python 3.12 or newer, `uv`, Node 23.6 or newer, and a C compiler for the local DuckDB gateway. The production gateway builds without cgo. Run from the repository root:
 
 ```bash
-make check          # gofmt, go vet + atlasvet, staticcheck, tests under -race (layer check included), tidy
-make requirements   # the requirement matrix: what proves each of the spec's 229 requirements
-make help           # every target
+make check          # formatting, vet, static analysis, race tests, module checks and production builds
+make e2e            # Python, Node and cross-client acceptance against the local fixture gateway
+make requirements   # map the local specification's requirements to test evidence
+make handoff        # source archive with a file manifest and checksum in dist/
+make help
 ```
 
-The commands need Go 1.25. `GOTOOLCHAIN=local` is set, so Go never downloads a newer toolchain.
+Use `make` for Go commands so the workspace namespace is kept local. No account, production credential or external project checkout is needed for the fixture tests. Public dependency downloads are permitted. Tests against real upstream systems require separately configured credentials and are not implied by local test results.
 
-## Layout today
+## Repository map
 
-| Path | What it is |
+| Path | Responsibility |
 |---|---|
-| `sdk/go/protocol` | The protocol, being rebuilt in Phase 1 |
-| `sdk/go/snowarrow` | `snowflake-arrow/1`: Snowflake's chunk encoding, decoded once for every client |
-| `sdk/go/kit` | The serving mechanics from `cloud-gateway-patterns-go` (MIT; `sdk/go/THIRD_PARTY_NOTICES.md`), being completed in Phase 2 |
-| `tools/vet` | `atlasvet`: the spec's vet checks (no `init` registration, no bare `go`, settings only in roots, one error envelope) |
-| `tools/layercheck` | The layer check, run against every module's `layers.toml` |
-| `tools/reqs` | The requirement matrix |
-| `spec/requirements.json` | The spec's requirements, indexed by `make requirements-index` |
-| `AGENTS.md` | The rules every person and agent working here follows |
+| [gateway](gateway) | Ports, pipeline, access, registry, providers, adapters and HTTP edge |
+| [gateway/cmd/gateway](gateway/cmd/gateway) | Production composition root |
+| [gateway/local](gateway/local) | Development gateway using DuckDB and synthetic fixtures |
+| [sdk/go](sdk/go) | Go client, protocol, shared serving kit and Python's engine |
+| [clients/cli](clients/cli) | Agent-facing command-line client |
+| [clients/python](clients/python) | `fiatlas` Python client |
+| [clients/node](clients/node) | `@atlas/sdk` Node client |
+| [extensions/support](extensions/support) | Separate company-module integration example |
+| [sqlglot](sqlglot) | In-repository SQL parsing and generation module |
+| [spec](spec) | Requirements and independent protocol fixtures |
+| [docs](docs) | Vision, specification, design, implementation evidence and lessons |
+| [tools](tools) | Architecture checks, requirements reporting and source packaging |
+
+## Handoff contents
+
+`make handoff` packages the project code, all Markdown guidance, manifests, tests and license notices under one `atlas/` directory. It excludes Git metadata, local environments, caches and compiled output. Extract it anywhere and follow this README; no original checkout location is required. The archive is a source handoff with public dependencies, not an offline dependency bundle.
+
+Third-party terms remain in [the SDK notices](sdk/go/THIRD_PARTY_NOTICES.md), [the SQL module license](sqlglot/LICENSE), and the notices beside their applicable fixtures. Protocol schema URIs are stable contract identifiers resolved from the included schemas; they are not instructions to fetch another repository.

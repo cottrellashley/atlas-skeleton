@@ -7,7 +7,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // Failure is one way an instance is invalid (§9.2.5): the instance's JSON

@@ -9,10 +9,10 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	atlas "github.com/jhgonline/fi-app-atlas/sdk/go"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/problem"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	atlas "atlas.local/sdk/go"
+	"atlas.local/sdk/go/kit/problem"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // fail prints a problem on standard error, as JSON in machine output and

@@ -10,11 +10,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/pipeline"
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
+	"atlas.local/gateway/core/pipeline"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/profile"
 )
 
 // maxDepth is the deepest a request body may nest.

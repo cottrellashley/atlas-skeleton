@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/exp"
 )
 
 // Edit is one step of an edit script: an Insert, Remove, Move, Update or Keep.

@@ -27,7 +27,7 @@ def _build(tmp: Path, module: str, package: str, name: str, override: str) -> st
         return os.environ[override]
     out = tmp / name
     subprocess.run(["go", "-C", str(REPO / module), "build", "-o", str(out), package], check=True,
-                   env={**os.environ, "GOTOOLCHAIN": "local", "GOPRIVATE": "github.com/jhgonline", "GOVCS": "github.com/jhgonline:off"}, capture_output=True)
+                   env={**os.environ, "GOTOOLCHAIN": "local", "GOPRIVATE": "atlas.local", "GOVCS": "atlas.local:off"}, capture_output=True)
     return str(out)
 
 

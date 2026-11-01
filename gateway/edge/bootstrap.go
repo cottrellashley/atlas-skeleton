@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/health"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/sdk/go/kit/health"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // bootstrapDoc is the bootstrap as one snapshot makes it: built once per

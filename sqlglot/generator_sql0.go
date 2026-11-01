@@ -7,8 +7,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
 )
 
 func (g *Generator) generate(e *exp.Expr, copy bool) string {

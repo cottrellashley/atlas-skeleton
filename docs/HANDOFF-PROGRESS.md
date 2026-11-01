@@ -1,36 +1,28 @@
 # Handoff progress
 
-## Summary (2026-11-01, paused for credit)
+## Summary (2026-11-01)
 
-**State of `handoff`:** every commit passes `make check` and `make e2e`.
+**Recorded verification:** the completed work packages passed `make check` and `make e2e`.
 - **Done:** C0 (R3-01 to R3-05), C1 (generic modules and company access dimensions; exit test in `extensions/support`) and C2 (R3-06 to R3-08, plus the review's fixes).
 - **C3, in part:** R3-09 (boolean items), R3-10 (ambiguous lenses refused, A-202), R3-11 (nested result renames breaking) and R3-12 (effective lifecycle in discovery) are fixed and tested. Still to do: R3-13 (Python Arrow from the reader schema), R3-14 (the Go client checks the Arrow physical schema; the design is to check it in `arrowschema`, against `Derive`'s fields and `atlas:profile`), and C3's cross-client exit matrix.
 - **Not started:** C4 (Gate A), C5 (Gate B), C6 (packaging). **Neither gate has been run.**
 
-**Lessons and rules for the next session:** [LESSONS.md](LESSONS.md).
+**Lessons and rules for continued work:** [LESSONS.md](LESSONS.md).
 
-**For Ashley to decide or provide:**
+**For the owners to decide or provide:**
 - A review of the proposed protocol amendment A-200 (`x-atlas-scope`, the dimension registry, whoami's `scope`), with the references owner.
 - The company's first integrations.
 - Real credentials, when live proofs are wanted. Nothing here has run against Snowflake, Entra or Azure.
 
 ---
 
-The log of the work on branch `handoff`, made from `pass-2` at `7f876ea`, following [HANDOFF.md](HANDOFF.md). Each package records what was done and the tests that prove it, what remains, the decisions taken, and the next step. "Hermetic" means proved against fakes, DuckDB and fixtures on this machine; nothing here has run against a real company system.
+This log follows [HANDOFF.md](HANDOFF.md). Each package records what was done and the tests that prove it, what remains, the decisions taken, and the next step. "Hermetic" means proved against fakes, DuckDB and fixtures; nothing here has run against a real company system.
 
-## Set-up, 2026-11-01
+## Baseline verification, 2026-11-01
 
-**The machine.** Arch Linux (Omarchy), kernel 7.2.5, x86_64. go1.25.14, Python 3.14.7, uv 0.12.10, Node v26.8.2, GCC 16.2.1. `gh` is signed in as cottrellashley.
+The baseline passed `make check` (3 min 44 s) and `make e2e` (22 s: Python, 73 Node tests and the six acceptance points). Linux verification used Go 1.25, Python 3.14, Node 26 and GCC 16. DuckDB's prebuilt `linux-amd64` library linked through cgo, as the macOS build does. These are recorded observations, not portable performance guarantees.
 
-**Baseline.** On a fresh clone, at `7f876ea`, before any change:
-- `make check` passes (3 min 44 s). Nothing needed changing for Linux: DuckDB's prebuilt `linux-amd64` library links through cgo with GCC 16 as it does on macOS.
-- `make e2e` passes (22 s): Python, Node (73 tests) and the six acceptance points.
-
-**Not on this machine, at first.** At set-up the spec transcription and the review documents were absent (`~/Documents/ChatGPT/creation/atlas-spec/`, `docs/source/`), so the first steps read the in-repo references, `REVIEW.md`, `ASSUMPTIONS.md` and `HANDOFF.md`. This was resolved within the hour: see *Source documents* below. D-0 is superseded.
-
-**Git.** `handoff` was made from `origin/pass-2` and its upstream unset, so that a bare `git push` can never reach `pass-2`. It is pushed explicitly, as `git push origin handoff`.
-
-**Source documents.** At 2026-11-01 Ashley added `docs/source/` to `pass-2` (`d0ccf3f`): the spec transcription, the review documents and the working digests. `handoff` took it by an ordinary merge of `origin/pass-2` (no history rewritten). From then on the work reads the spec there.
+The specification and reviews are maintained in `docs/source/`; the protocol references are in `spec/protocol/references/`.
 
 ## C0. The five P1 defects (done, 2026-11-01)
 
@@ -73,7 +65,7 @@ The log of the work on branch `handoff`, made from `pass-2` at `7f876ea`, follow
   - a failing desk is the capability's declared `desk_unavailable`.
 
   `TestC1APolicyInAnUndefinedDimensionStopsTheStart` proves the start refusal. The company module imports only Atlas's public packages (`ports`, `assemble`, `edge`, `fakes`, `protocol`), and no shared file was edited for it.
-- **`tools/modcheck`** refused any module outside `github.com/jhgonline`, so it refused the company module. It now allows one, and is stricter than before: every in-repo module, private or not, may be required only through a `replace` to its directory. The jhgonline guarantee is unchanged (`TestTheCheckRefuses` has the new cases).
+- **`tools/modcheck`** refused any module outside the original internal namespace, so it refused the company module. It now allows one, and is stricter than before: every in-repo module, private or not, may be required only through a `replace` to its directory. The local-resolution guarantee is unchanged (`TestTheCheckRefuses` has the new cases).
 - **Also fixed:** a flaky `TestAuditFacts`. It read the settlement fact before the settler had written it. `fakes.Audit.Await` now waits on a signal, bounded by a context; the test passed 20 of 20 runs under `-race`.
 
 **The review.** A fresh reviewer probed the C1 diff in a copy of the tree. It confirmed two scope holes and two regressions, all now fixed with tests that failed first:
@@ -119,7 +111,7 @@ Still open from the review:
 - a queued call that expires (the bulkhead tests);
 - a Node or Python cancelled refresh waiter (Go's is proved; Node's sharing is in R002 and R3-05);
 - the audit sink's regular-file and non-pollable fallback paths within the matrix (proved separately by R012 and R3-04);
-- R3-06 beyond the three cases the review named: the Go client's discovery and bootstrap budgets, and Python's stream consumption. The review's reviewer is checking these now.
+- R3-06 beyond the three cases the review named: the Go client's discovery and bootstrap budgets, and Python's stream consumption still need verification.
 
 **Next.** C3.
 
@@ -137,13 +129,11 @@ Remaining: R3-13, R3-14 and the exit matrix.
 
 | # | Decision | Why | Recorded in |
 |---|---|---|---|
-| D-0 | Work from the in-repo references where the spec transcription is absent (superseded by D-1) | It was not on this machine at first | This file |
-| D-1 | Take `docs/source/` by merging `origin/pass-2` into `handoff` | Ashley added it to `pass-2` mid-work; a merge rewrites nothing | This file |
 | D-2 | R3-01: the scope evidence is the scoped values the contract *requires*; an optional scoped member may be absent | An existing test profile has an optional, nullable scoped member, and HANDOFF.md says evidence is refused "where scope applies" | A-195 |
 | D-3 | R3-03: send `scope` with `client_id` | Entra v2 lists both for a refresh; the scopes are the binding's own | A-196 |
 | D-4 | Access dimensions: an `x-atlas-scope` annotation plus an immutable deployment registry; defining one grants nothing | The default the brief sets, and HANDOFF.md's recommendation | A-200 (proposed amendment) |
 | D-5 | `whoami`'s `scope` is declared in the gateway's built-in profile, inline, since the references' schema lacks it | C1 requires whoami to show scope; the pipeline withholds undeclared members (R106), so it was never sent | A-200 |
 | D-6 | A module's health is its own and never feeds `/readyz` | Constitution rule 13: a dependency's failure costs its own capabilities, never the catalogue | A-201 |
-| D-7 | The company module's path is `example.com/acme/atlas-extensions`, resolved by `replace` and `go.work` | A company's module is not under jhgonline; nothing fetches it | This file |
+| D-7 | The company module's path is `example.com/acme/atlas-extensions`, resolved by `replace` and `go.work` | A company module resolves locally without being forced into the core namespace | This file |
 | D-8 | A refusal at negotiation is a new audit step, `negotiate`, between access and request | HANDOFF.md C2's lifecycle puts negotiation third, after access and before validation | `ports.StepNegotiate` |
 | D-9 | A table's success outcome waits for delivery; a failure is recorded at once | The outcome is what the caller received (R09, R138); a failure cannot become more delivered | `Rows.record` |

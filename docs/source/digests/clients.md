@@ -1,24 +1,26 @@
 # Digest: the clients (Go client `atlas`, `atlas-engine`, CLI, Python SDK, Node SDK)
 
-Written 2026-10-31 for the pass-2 build of `/Users/ashleycottrell/repos/atlas-skeleton`. REVIEW.md governs it.
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
+
+Written for the second implementation; `docs/pass-2/REVIEW.md` governs the design choices.
 
 ## 0. Sources, citation keys and how to read this
 
 | Key | File (read in full) |
 |---|---|
-| C | `~/Documents/ChatGPT/creation/atlas-spec/05-clients.md` (608 lines) |
-| P7 | `~/Documents/ChatGPT/creation/atlas-spec/09-7-clients.md` (201 lines) |
-| P5 | `~/Documents/ChatGPT/creation/atlas-spec/09-5-resolution.md` (128 lines) |
-| P8 | `~/Documents/ChatGPT/creation/atlas-spec/09-8-conformance.md` (172 lines), read because C:230 and P7 delegate the runner protocol to §9.8.3 |
-| AC | `.../atlas-spec/review/ATLAS-CORE.md` (245 lines, read in full) |
-| DR | `.../atlas-spec/review/DESIGN-REVIEW.md` (192 lines, read in full) |
-| HB | `.../atlas-spec/review/CAPABILITY-HANDBOOK.md` lines 1-110 |
-| RV | `/Users/ashleycottrell/repos/atlas-skeleton/docs/pass-2/REVIEW.md` (100 lines) |
-| AG | `/Users/ashleycottrell/repos/atlas-skeleton/AGENTS.md` (72 lines) |
-| REF | `/Users/ashleycottrell/repos/atlas-skeleton/spec/protocol/references/` (paths below are relative to it) |
+| C | `docs/source/atlas-spec/05-clients.md` (608 lines) |
+| P7 | `docs/source/atlas-spec/09-7-clients.md` (201 lines) |
+| P5 | `docs/source/atlas-spec/09-5-resolution.md` (128 lines) |
+| P8 | `docs/source/atlas-spec/09-8-conformance.md` (172 lines), read because C:230 and P7 delegate the runner protocol to §9.8.3 |
+| AC | `docs/source/atlas-spec/review/ATLAS-CORE.md` (245 lines, read in full) |
+| DR | `docs/source/atlas-spec/review/DESIGN-REVIEW.md` (192 lines, read in full) |
+| HB | `docs/source/atlas-spec/review/CAPABILITY-HANDBOOK.md` lines 1-110 |
+| RV | `docs/pass-2/REVIEW.md` (100 lines) |
+| AG | `AGENTS.md` (72 lines) |
+| REF | `spec/protocol/references/` (paths below are relative to it) |
 | Q | `REF/QUESTIONS.md` (157 lines): the readings the references take where the spec is silent |
 
-The references I read in full: `schemas/token-store.schema.json`, `schemas/lock.schema.json`, `schemas/bootstrap.schema.json`, `schemas/problem.schema.json`, `README.md`, `QUESTIONS.md`, `vectors/problems.json` (all cases), and the scenarios `CORE-BOOT-002`, `CORE-SIGNIN-001` to `-005`, `CORE-CALL-005` and `CORE-LOCK-001`. I also read pass 1's engine and Python face from branch `pass-1` (`sdk/go/engine/engine.go`, `sdk/go/cmd/atlas-engine/main.go`, `clients/python/fiatlas/_engine.py`, `client.py`, `errors.py`), because RV:19 and RV:92 bring them back in step 4. I give them only as pointers. They are not the spec.
+The references I read in full: `schemas/token-store.schema.json`, `schemas/lock.schema.json`, `schemas/bootstrap.schema.json`, `schemas/problem.schema.json`, `README.md`, `QUESTIONS.md`, `vectors/problems.json` (all cases), and the scenarios `CORE-BOOT-002`, `CORE-SIGNIN-001` to `-005`, `CORE-CALL-005` and `CORE-LOCK-001`. I also read pass 1's engine and Python face from the first implementation (`sdk/go/engine/engine.go`, `sdk/go/cmd/atlas-engine/main.go`, `clients/python/fiatlas/_engine.py`, `client.py`, `errors.py`), because RV:19 and RV:92 bring them back in step 4. I give them only as pointers. They are not the spec.
 
 The markers used:
 - **IN SCOPE**: the first build (the journey, through CLI, Python and Node) must implement it.
@@ -448,7 +450,7 @@ HB:55 adds: "Inspect completion, effective dates, warnings and any partial/trunc
 
 ## 2. The Go client API (package `atlas`, module `sdk/go`)
 
-- Module `github.com/jhgonline/fi-app-atlas/sdk/go`; "Lives in `sdk/go`" (C:564).
+- Module `atlas.local/sdk/go`; "Lives in `sdk/go`" (C:564).
 - The protocol is `sdk/go/protocol`, "its document types generated from §9.3's JSON Schemas; shared with the gateway (§6.5.6)" (C:565).
 - "`sdk/go/protocol` imports nothing from the gateway; the gateway imports it. It changes only by the protocol" (C:551 rule 2).
 - C:550 rule 1: "The gateway, the CLI, `qfi`, the conformance gateway and `atlas-engine` use `sdk/go/protocol` for every protocol rule and never a second implementation; the CLI, `qfi` and `atlas-engine` make every Atlas call through the Go SDK."
@@ -497,7 +499,7 @@ Requirements:
 - ATLAS-GO-001: "The Go SDK passes the conformance suite at its levels" (C:554).
 - ATLAS-GO-002: "`atlas-engine` is built for every platform the Python SDK ships, by pure Go cross-compilation (no C compiler), from one Linux machine" (C:555). So nothing in the engine's import graph may need cgo. That is an inference; the requirement text says only "no C compiler".
 
-Pass-1 pointer (`git show pass-1:sdk/go/engine/engine.go`): the package was `sdk/go/client` (not `atlas`). It had `client.Connect(ctx, client.Options{URL, Token, Lock, Mem})`, `c.Fetch(ctx, address, request, client.CallOptions{Execution})` returning a `*client.Table`, `c.Call(ctx, address, request)`, `c.WhoAmI`, `c.Catalog(ctx)`, `c.Search`, `c.Describe`, `c.LockCurrent`, `client.LoadLock` and `client.FindLock`, and `client.Name`, `client.Version`, `client.Features.Levels`. Pass 1 has no `Env`, and spells `WhoAmI` where the spec has `Whoami`. Rename it to the spec's names when it comes back.
+Pass-1 pointer (`pass-1:sdk/go/engine/engine.go` (historical code label)): the package was `sdk/go/client` (not `atlas`). It had `client.Connect(ctx, client.Options{URL, Token, Lock, Mem})`, `c.Fetch(ctx, address, request, client.CallOptions{Execution})` returning a `*client.Table`, `c.Call(ctx, address, request)`, `c.WhoAmI`, `c.Catalog(ctx)`, `c.Search`, `c.Describe`, `c.LockCurrent`, `client.LoadLock` and `client.FindLock`, and `client.Name`, `client.Version`, `client.Features.Levels`. Pass 1 has no `Env`, and spells `WhoAmI` where the spec has `Whoami`. Rename it to the spec's names when it comes back.
 
 ---
 
@@ -511,7 +513,7 @@ Pass-1 pointer (`git show pass-1:sdk/go/engine/engine.go`): the package was `sdk
 - It is "one per Python process" (C:168).
 - C:566: "the client behind the runner protocol of §9.8.3, with Arrow results on a second pipe".
 - D43 (C:275): "a separate process speaking the runner protocol with Arrow results on a second pipe".
-- Review: AC:140: "The current Go engine used by the Python proof is worth retaining while measured. ... A subprocess is an implementation choice behind Python's public contract; neither moving it into the gateway nor rewriting it is a prerequisite". RV:19: "In step 4 the engine and the Python face come back from branch `pass-1` onto the new protocol rather than being rewritten."
+- Review: AC:140: "The current Go engine used by the Python proof is worth retaining while measured. ... A subprocess is an implementation choice behind Python's public contract; neither moving it into the gateway nor rewriting it is a prerequisite". RV:19: "In step 4 the engine and the Python face come back from the first implementation onto the new protocol rather than being rewritten."
 - O61 (the engine in the cloud; C:122-133): DEFERRED (C:278 "after Phase 2").
 
 ### 3.2 The runner protocol (§9.8.3) — IN SCOPE
@@ -575,7 +577,7 @@ The spec's flow:
 
 A pipeline on Astronomer: "the task's token is passed to `FIAtlas(token=…)` (or `ATLAS_TOKEN`), and the engine uses it" (C:187).
 
-Pass 1's framing (branch `pass-1`) **differs from §9.8.3**. Reconcile it when it comes back in step 4:
+Pass 1's framing (historical first implementation) **differs from §9.8.3**. Reconcile it when it comes back in step 4:
 
 | Point | §9.8.3 | Pass 1 (`sdk/go/engine/engine.go`, `clients/python/fiatlas/_engine.py`) |
 |---|---|---|
@@ -605,7 +607,7 @@ Pass 1's framing (branch `pass-1`) **differs from §9.8.3**. Reconcile it when i
 - Levels: "Core, Streaming, Columnar, Bulk, Events" (C:460).
 - AMBIGUOUS: C:96's side-by-side table gives the CLI "Core, Streaming, Columnar, Bulk, Events, Handoff", but C:460 gives no Handoff. Handoff is DEFERRED either way.
 - Released as "Signed builds published by the gateway; `atlas update` verifies and installs them" (C:461). DEFERRED.
-- Open: the module is still `github.com/jhgonline/fi-app-atlas/cli`. Recommended: `github.com/jhgonline/fi-app-atlas/clients/cli` (C:140, C:504).
+- The CLI module is already [`atlas.local/clients/cli`](../../../clients/cli/go.mod), matching its `clients/cli` directory; no module rename or relocation is needed.
 
 ### 4.1 Rules
 
@@ -682,7 +684,7 @@ AMBIGUOUS: the exit code after a truncated stream. `output_limit_exceeded` is a 
 
 ## 5. The Python SDK (`fiatlas`)
 
-- It lives in `clients/python`: package `fi-lib-atlas`, import `fiatlas` (C:158, C:222).
+- It lives in `clients/python`: the current [distribution name](../../../clients/python/pyproject.toml) and import are both `fiatlas`. The specification's packaging goals are described in §5.1.
 - "One wheel per platform, with no Python dependencies; `pyarrow`, `pandas` and `polars` are optional extras" (C:161).
 - Released "to the FIQ feed: one wheel per platform (`py3-none-<platform>`, every Python 3)", the engine built "for Linux (x86 and ARM), macOS (Intel and Apple silicon) and Windows". The optional dependencies are `[arrow]`, `[pandas]`, `[polars]` and `[airflow]` (C:226).
 - ATLAS-PY-006: "The wheel installs and passes the vectors on Python 3.11 to 3.14 on every platform it is built for, with no Go and no compiler present."

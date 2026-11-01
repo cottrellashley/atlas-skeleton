@@ -13,8 +13,8 @@ import (
 	"os/signal"
 	"strconv"
 
-	atlas "github.com/jhgonline/fi-app-atlas/sdk/go"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine"
+	atlas "atlas.local/sdk/go"
+	"atlas.local/sdk/go/engine"
 )
 
 func main() {

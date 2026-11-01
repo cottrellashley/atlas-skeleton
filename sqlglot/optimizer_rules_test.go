@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
 )
 
 func schemaFile(t *testing.T, name string) *sqlglot.SchemaMapping {

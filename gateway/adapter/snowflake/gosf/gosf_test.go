@@ -18,8 +18,8 @@ import (
 	sf "github.com/snowflakedb/gosnowflake"
 	"go.uber.org/goleak"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/adapter/snowflake"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/adapter/snowflake"
+	"atlas.local/gateway/ports"
 )
 
 // AGENTS.md: goleak where goroutines start; the driver and the pool start

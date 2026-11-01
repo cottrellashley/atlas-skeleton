@@ -9,8 +9,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/trie"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/trie"
 )
 
 // TokenType is the kind of a token.

@@ -26,11 +26,11 @@ import (
 
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/clock"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // Explain is the interaction that plans a read without running it.

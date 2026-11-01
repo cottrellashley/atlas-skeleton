@@ -13,7 +13,7 @@ import (
 	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/ports"
 )
 
 // Engine is what a Source runs its statements on: Snowflake through its

@@ -1,6 +1,5 @@
 # §2.6 Discovery
 
-> Source: `IMG_2138.MOV` 00:06:20–00:07:06.  
 > `spec/surface/discovery.md` · proposed
 
 How people and agents find and use Atlas: the bootstrap, the built-in capabilities, the working view that shows only what the caller can use here and now, the access view that shows the rest with reasons, and the journey an agent follows.

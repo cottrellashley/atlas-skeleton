@@ -20,7 +20,7 @@ The company will still supply service credentials, business semantics, source ma
 
 Explicit compiled registration is sufficient. A company composition root may import modules and wire providers. No runtime plug-in loader is required. The test is whether it can do this through a supported public interface, without copying the framework's assembly logic or patching shared code.
 
-Keep SQLGlot in-repo as the common SQL library. Keep the required cloud-gateway-patterns integration and provenance. Do not introduce `bt-research` requirements into this work.
+Keep SQLGlot in-repo as the common SQL library. Keep the shared gateway kit and its required license notices. Backtesting research remains outside this work.
 
 There are two release gates:
 

@@ -7,9 +7,9 @@ import (
 	"math/big"
 	"strings"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/internal/pydec"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/internal/pydec"
 )
 
 func lowerSQL(g *gen, e *exp.Expr) string {

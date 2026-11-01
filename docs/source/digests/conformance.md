@@ -1,22 +1,24 @@
 # Digest: conformance (§9.8) and the protocol references
 
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
+
 Reader: conformance and the protocol references. Written 2026-10-31.
 
 ## 0. Sources, citation keys, verdict
 
 | Key | File |
 |---|---|
-| `§9.8:N` | `~/Documents/ChatGPT/creation/atlas-spec/09-8-conformance.md`, line N (172 lines, read in full) |
-| `RD:N` | `~/repos/atlas-skeleton/spec/protocol/references/README.md`, line N (206 lines, read in full) |
-| `Q:N` | `~/repos/atlas-skeleton/spec/protocol/references/QUESTIONS.md`, line N (157 lines, read in full) |
-| `<ID>` | `~/repos/atlas-skeleton/spec/protocol/references/scenarios/<ID>.json` (all 50, read in full) |
+| `§9.8:N` | `docs/source/atlas-spec/09-8-conformance.md`, line N (172 lines, read in full) |
+| `RD:N` | `spec/protocol/references/README.md`, line N (206 lines, read in full) |
+| `Q:N` | `spec/protocol/references/QUESTIONS.md`, line N (157 lines, read in full) |
+| `<ID>` | `spec/protocol/references/scenarios/<ID>.json` (all 50, read in full) |
 | `GW` | `.../references/scenarios/fixtures/gateway.json` (5611 lines, read in full; every member, all 35 profiles). In my reading the 81 `$schema`/`$vocabulary` pairs were collapsed after I checked they are all identical (see 2.5) |
 | `GV` | `.../references/vectors/guard.json` (65 cases, read in full) |
-| `GPY:N` | `~/repos/atlas-skeleton/tools/spec/atlasref/guard.py` (160 lines, read in full: the reference guard) |
-| `REV:N` | `~/repos/atlas-skeleton/docs/pass-2/REVIEW.md` (100 lines, read in full) |
-| `AG:N` | `~/repos/atlas-skeleton/AGENTS.md` (72 lines, read in full) |
-| `AC:N` | `.../atlas-spec/review/ATLAS-CORE.md` (lines 99–164 and 160–245 read, for scope checks) |
-| `DR:N` | `.../atlas-spec/review/DESIGN-REVIEW.md` (lines 28–190 read, for R findings) |
+| `GPY:N` | `tools/spec/atlasref/guard.py` (160 lines, read in full: the reference guard) |
+| `REV:N` | `docs/pass-2/REVIEW.md` (100 lines, read in full) |
+| `AG:N` | `AGENTS.md` (72 lines, read in full) |
+| `AC:N` | `docs/source/atlas-spec/review/ATLAS-CORE.md` (lines 99–164 and 160–245 read, for scope checks) |
+| `DR:N` | `docs/source/atlas-spec/review/DESIGN-REVIEW.md` (lines 28–190 read, for R findings) |
 
 Markers: **IN SCOPE**, **DEFERRED**, **AMBIGUOUS:**, **OVERRIDDEN BY REVIEW (Rnn):**, **MISSING:**.
 
@@ -216,7 +218,7 @@ Ambiguities in the script format:
 - Rules (§9.8:155–156): "No client or the gateway is released without passing the suite at its declared levels." "A defect found in one client that the suite did not catch adds a vector or a scenario before it is fixed."
 - **AP-CONF-001.** "Every client's CI runs the vectors and the scenarios of its levels on every change." (§9.8:164)
 - **AP-CONF-002.** "The conformance gateway and the vectors are versioned with the protocol, and a protocol minor version adds cases without changing existing ones." (§9.8:165)
-- **AMBIGUOUS / scope conflict:** §9.8:140 forbids skipping a case at a level, but REV/R03/R06/R14 defer or override several Core scenarios (section 3). Readings: (a) the first build declares no Core level yet and reports per-case results; (b) the deferred Core scenarios are amended in the references (Q entries) to the review's model before the claim. AG:7 says "Where the spec is ambiguous, write the case down; don't guess". The decision belongs to Ashley.
+- **AMBIGUOUS / scope conflict:** §9.8:140 forbids skipping a case at a level, but REV/R03/R06/R14 defer or override several Core scenarios (section 3). Readings: (a) the first build declares no Core level yet and reports per-case results; (b) the deferred Core scenarios are amended in the references (Q entries) to the review's model before the claim. AG:7 says "Where the spec is ambiguous, write the case down; don't guess". The decision belongs to the product owner.
 
 ### 1.11 The gateway suite (§9.8:136)
 
@@ -915,7 +917,7 @@ Why each scope call holds:
 **Status in repo.** `gateway/adapter/snowflake/guard.go` (246 lines) and `guard_test.go` exist. The test reads `vectors/guard.json` and compares `Accepted`, `Reason` and `Objects`, **in order** (`slices.EqualFunc(..., slices.Equal)`). It also fuzzes the guard ("fails closed").
 - **AMBIGUOUS / wrong id:** that test is labelled `// ATLAS-DATA-006`. ATLAS-DATA-006 is "An export's files are readable only through its links, which expire, and only by the caller" (`02-2-data-surface.md:55`). §6.4.3 (`06-4-data-sources.md:84`) has no requirement id for the guard; I found none by searching the spec's requirement lines. Needs a correct id, or one recorded as missing.
 
-**Spec text** (06-4-data-sources.md:84): "Every statement is parsed by the library's Snowflake parser before it runs, and refused unless it is one read-only query over the objects its capability may read (`snowflake.query`: the registered schemas). The guard is never the only line: the connection's role can only read. The guard's cases are language-neutral vectors (accepted and refused statements), generated in `tools/spec/`." REV:21 and REV:32: sqlglot-go sits behind the Atlas compiler and guard (step 4).
+**Spec text** (06-4-data-sources.md:84): "Every statement is parsed by the library's Snowflake parser before it runs, and refused unless it is one read-only query over the objects its capability may read (`snowflake.query`: the registered schemas). The guard is never the only line: the connection's role can only read. The guard's cases are language-neutral vectors (accepted and refused statements), generated in `tools/spec/`." REV:21 and REV:32: sqlglot sits behind the Atlas compiler and guard (step 4).
 
 **Vector file** (GV):
 - `description`: "every statement is refused unless it is exactly one read-only query (SELECT, UNION, INTERSECT, EXCEPT, WITH) over the registered objects…". Generated with sqlglot 30.27.0's Snowflake parser.

@@ -5,8 +5,8 @@ package pyrt
 import (
 	"fmt"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
 )
 
 // EditV is a diff edit (Insert, Remove, Move, Update or Keep), compared structurally like the

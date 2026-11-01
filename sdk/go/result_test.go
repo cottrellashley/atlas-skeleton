@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/frame"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/engine/fakegw"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/frame"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // R001, STREAM-004, Q-DOC-15, ATLAS-CORE §10: a truncated table returns

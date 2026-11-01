@@ -10,10 +10,10 @@ import (
 	"testing/synctest"
 	"time"
 
-	atlas "github.com/jhgonline/fi-app-atlas/sdk/go"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/frame"
+	atlas "atlas.local/sdk/go"
+	"atlas.local/sdk/go/engine/fakegw"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/frame"
 )
 
 func isolate(t *testing.T) {

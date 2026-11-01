@@ -4,12 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/pipeline"
-	"github.com/jhgonline/fi-app-atlas/gateway/edge"
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/fixtures"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
+	"atlas.local/gateway/core/pipeline"
+	"atlas.local/gateway/edge"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/fixtures"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/clock"
 )
 
 func portsLimit(subject, capability string, concurrency int) ports.Limit {

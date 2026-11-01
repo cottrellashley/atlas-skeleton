@@ -5,8 +5,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/ports"
 )
 
 // Holdings is the object WarehouseTables holds.

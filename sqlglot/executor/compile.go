@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/exp"
 )
 
 // code is a compiled expression, evaluated in a context.

@@ -3,8 +3,8 @@ package pyrt
 import (
 	"fmt"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
 )
 
 // optimizerNS holds the names of the sqlglot.optimizer package and its submodules. Imported

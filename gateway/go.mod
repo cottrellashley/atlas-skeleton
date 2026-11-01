@@ -1,11 +1,11 @@
-module github.com/jhgonline/fi-app-atlas/gateway
+module atlas.local/gateway
 
 go 1.25.0
 
 require (
+	atlas.local/sdk/go v0.0.0
+	atlas.local/sqlglot v0.0.0-00010101000000-000000000000
 	github.com/apache/arrow-go/v18 v18.8.0
-	github.com/jhgonline/fi-app-atlas/sdk/go v0.0.0
-	github.com/jhgonline/fi-app-atlas/sqlglot v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -20,6 +20,6 @@ require (
 )
 
 replace (
-	github.com/jhgonline/fi-app-atlas/sdk/go => ../sdk/go
-	github.com/jhgonline/fi-app-atlas/sqlglot => ../sqlglot
+	atlas.local/sdk/go => ../sdk/go
+	atlas.local/sqlglot => ../sqlglot
 )

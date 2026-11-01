@@ -10,9 +10,9 @@ import (
 	"strings"
 	"unicode/utf16"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/internal/ghelp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/internal/ghelp"
 )
 
 // Template for ZIPF transpilation - placeholders get replaced with actual parameters

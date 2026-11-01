@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/ports"
 )
 
 // R134, AGENTS.md ("fakes stand in for real systems at the same seam"):

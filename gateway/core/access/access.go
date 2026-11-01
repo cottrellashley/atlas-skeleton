@@ -21,12 +21,12 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/profile"
+	"atlas.local/sdk/go/protocol/schema"
 )
 
 // Subject is a caller under one policy: who they are, their roles and the

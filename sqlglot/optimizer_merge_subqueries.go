@@ -5,8 +5,8 @@ package sqlglot
 import (
 	"sort"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
 )
 
 // CopyBudget caps the number of nodes copied by merges: merging copies an inner projection

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
 )
 
 // TypeValue is a type as used by the annotator: either an exp.DType or a DataType *exp.Expr

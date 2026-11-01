@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
 )
 
 // QualifyColumnsOptions are the keyword arguments of qualify_columns.

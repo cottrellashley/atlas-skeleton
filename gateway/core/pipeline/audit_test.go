@@ -7,9 +7,9 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/clock"
+	"atlas.local/sdk/go/protocol"
 )
 
 // R108, ATLAS-MECH-003 (every refused call's audit record names the step

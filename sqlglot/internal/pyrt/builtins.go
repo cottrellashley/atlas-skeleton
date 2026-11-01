@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/exp"
 )
 
 // BuiltinType is a builtin class such as str or int (callable and usable with isinstance).

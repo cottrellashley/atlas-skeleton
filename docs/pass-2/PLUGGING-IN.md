@@ -8,7 +8,7 @@ Each directory with a `go.mod` is a module of its own, so a build pulls in only 
 
 | Module | Holds | Builds |
 |---|---|---|
-| `sdk/go` | Several parts:<br>- the protocol: grammar, Structured Fields, schemas, profiles, the gate, resolution, framing, and the 21 protocol documents;<br>- the kit, from cloud-gateway-patterns-go;<br>- the Go client, package `atlas`;<br>- the engine. | `atlas-engine`: the runner protocol, and the Python SDK's engine |
+| `sdk/go` | Several parts:<br>- the protocol: grammar, Structured Fields, schemas, profiles, the gate, resolution, framing, and the 21 protocol documents;<br>- the shared gateway kit;<br>- the Go client, package `atlas`;<br>- the engine. | `atlas-engine`: the runner protocol, and the Python SDK's engine |
 | `sqlglot` | The in-repo port of SQLGlot 30.27.0, with every test (`sqlglot/PROVENANCE.md`) | `sqlglot` (CLI) |
 | `gateway` | Ports, fakes and port suites; the core (registry, access, pipeline, built-ins); the view-model engine; adapters with no vendor SDK (the Snowflake adapter's planner and guard, Entra, the policy file, the audit log); domain services; the HTTP edge; assembly. No vendor SDK, no cgo | a library |
 | `gateway/adapter/snowflake/gosf` | The Snowflake engine over gosnowflake: Arrow batches, exact decimals, the query tag out of band, synchronous cancellation, settlement from the query's own record | a library |

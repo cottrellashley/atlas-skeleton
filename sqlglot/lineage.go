@@ -8,8 +8,8 @@ import (
 	"iter"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
 )
 
 // LineageNode is one step of a column's lineage: the expression producing the column within

@@ -3,8 +3,8 @@ package sqlglot
 // Port of sqlglot/optimizer/canonicalize_internal_names.py.
 
 import (
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
 )
 
 // CanonicalizeInternalNames rewrites a query to a canonical structural form.

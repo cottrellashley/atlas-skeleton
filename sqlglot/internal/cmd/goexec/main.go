@@ -9,8 +9,8 @@ import (
 	"os"
 	"strings"
 
-	_ "github.com/jhgonline/fi-app-atlas/sqlglot/dialects"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/executor"
+	_ "atlas.local/sqlglot/dialects"
+	"atlas.local/sqlglot/executor"
 )
 
 func main() {

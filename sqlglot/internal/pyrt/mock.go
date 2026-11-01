@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
+	sqlglot "atlas.local/sqlglot"
 )
 
 // MockLoggerV is a mock.patch'ed sqlglot logger: it records the messages logged per level.

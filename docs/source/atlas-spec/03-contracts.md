@@ -1,7 +1,5 @@
 # 3. Contracts
 
-Source: `IMG_2138.MOV` 00:07:06–00:10:53.
-
 `spec/contracts.md` · proposed
 
 A capability's contract is its profile, which the gateway declares beside its code and serves: what each surface's contract holds, the types its schemas are written in, how it may change without any client release, and how a reader meets a writer that knows a different version.

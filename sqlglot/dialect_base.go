@@ -1,8 +1,8 @@
 package sqlglot
 
 import (
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/tokens"
 )
 
 func init() {

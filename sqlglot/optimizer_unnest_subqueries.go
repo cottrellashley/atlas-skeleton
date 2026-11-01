@@ -5,8 +5,8 @@ package sqlglot
 import (
 	"slices"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
 )
 
 // UnnestSubqueries rewrites the AST to convert some predicates with subqueries into joins:

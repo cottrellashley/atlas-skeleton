@@ -1,7 +1,5 @@
 # 6.2 Access, limits and audit
 
-Source: `IMG_2139.MOV` 00:00:00–00:00:46.
-
 `spec/gateway/access.md` · proposed
 
 Who is calling and how each hop proves it; how a call is decided (deny, grants, conditions, then validation, then limits); limits and budgets reserved before work and settled after; the enforcement points; the audit record; and the attacks these must defeat.

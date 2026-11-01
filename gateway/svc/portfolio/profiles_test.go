@@ -5,14 +5,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/svc/datastatus"
-	"github.com/jhgonline/fi-app-atlas/gateway/svc/portfolio"
-	"github.com/jhgonline/fi-app-atlas/gateway/views"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/gate"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
+	"atlas.local/gateway/svc/datastatus"
+	"atlas.local/gateway/svc/portfolio"
+	"atlas.local/gateway/views"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/gate"
+	"atlas.local/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/profile"
 )
 
 // load reads a profile as the gateway serves it (registry.Load).

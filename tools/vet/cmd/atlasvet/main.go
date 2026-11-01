@@ -6,7 +6,7 @@ package main
 import (
 	"golang.org/x/tools/go/analysis/multichecker"
 
-	"github.com/jhgonline/fi-app-atlas/tools/vet"
+	"atlas.local/tools/vet"
 )
 
 func main() {

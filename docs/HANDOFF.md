@@ -1,14 +1,14 @@
 # Atlas: the handoff plan
 
-**As of 2026-11-01, branch `pass-2`, at the commit that adds this file.** This plan is written for the people who will finish Atlas and hand it to a company: us, and then the company's engineers working with us. It says:
+**Plan baseline: 2026-11-01.** This plan is written for the people who will finish Atlas and hand it to a company: us, and then the company's engineers working with us. It says:
 - what is being handed off;
 - where the line runs between Atlas and the company;
 - what the repository holds today;
 - what still has to be done, in order, with the files to change and the tests that prove each step.
 
-It adopts the core handoff plan and the peer review of 2026-11-01 ([`docs/source/atlas-spec/review/`](source/atlas-spec/review)), and turns them into work on this repository. File links are relative to this file. Line numbers are those of this commit. They will move as the work proceeds, so each link also names the function or type it points at.
+It adopts the core handoff plan and the peer review of 2026-11-01 ([`docs/source/atlas-spec/review/`](source/atlas-spec/review)), and turns them into work on this repository. File links are relative to this file. Line references are historical navigation hints; locate the named function or type when surrounding code has moved.
 
-**Status on branch `handoff`** (kept by [HANDOFF-PROGRESS.md](HANDOFF-PROGRESS.md), which has the detail):
+**Implementation status** (kept by [HANDOFF-PROGRESS.md](HANDOFF-PROGRESS.md), which has the detail):
 
 | Package | Status |
 |---|---|
@@ -75,14 +75,14 @@ Each directory with a `go.mod` is its own module. In-repo modules require each o
 
 | Module | Holds |
 |---|---|
-| [`sdk/go`](../sdk/go) | The protocol (grammar, Structured Fields, schemas, profiles, the gate, resolution, framing, the 21 protocol documents); the kit, from cloud-gateway-patterns-go ([`sdk/go/kit/PROVENANCE.md`](../sdk/go/kit/PROVENANCE.md)); the Go client `atlas`; the engine (`sdk/go/engine`, `cmd/atlas-engine`) that the Python client drives |
+| [`sdk/go`](../sdk/go) | The protocol (grammar, Structured Fields, schemas, profiles, the gate, resolution, framing, the 21 protocol documents); the shared gateway kit ([`sdk/go/kit/PROVENANCE.md`](../sdk/go/kit/PROVENANCE.md)); the Go client `atlas`; the engine (`sdk/go/engine`, `cmd/atlas-engine`) that the Python client drives |
 | [`sqlglot`](../sqlglot) | The in-repo port of SQLGlot ([`sqlglot/PROVENANCE.md`](../sqlglot/PROVENANCE.md)) |
 | [`gateway`](../gateway) | Ports, fakes and port suites; the core; the view engine; adapters with no vendor SDK; domain services; the edge; the assembly. No vendor SDK and no cgo |
 | [`gateway/adapter/snowflake/gosf`](../gateway/adapter/snowflake/gosf) | The Snowflake engine over gosnowflake v1.19.1 |
 | [`gateway/cmd/gateway`](../gateway/cmd/gateway) | The production composition root. `make release` builds it with `CGO_ENABLED=0 -tags minicore_disabled`, for linux/amd64 and arm64 |
 | [`gateway/local`](../gateway/local) | The development gateway: DuckDB runs the Snowflake adapter's own statements, over the fixture |
 | [`clients/cli`](../clients/cli) | The CLI, `atlas` |
-| [`tools`](../tools) | atlasvet, the layer check, the private-organisation guard, the requirement matrix |
+| [`tools`](../tools) | atlasvet, the layer check, the local-module check, the requirement matrix |
 
 The other two clients are not Go modules. `clients/python` is `fiatlas`, over the engine, and `clients/node` is `@atlas/sdk`, TypeScript with no dependencies.
 
@@ -414,7 +414,7 @@ No capability-specific client code.
 ## 7. Rules that bind every change
 
 [`AGENTS.md`](../AGENTS.md) holds them in full. The ones that matter most here:
-- **github.com/jhgonline is a private organisation.** Atlas's module paths are names only. Nothing fetches from it or pushes to it. The Makefile fences it off (`GOPRIVATE`, and `GOVCS=github.com/jhgonline:off`), and [`tools/modcheck`](../tools/modcheck) proves that every in-repo module resolves locally.
+- **Internal modules resolve locally.** The `atlas.local` module names resolve through `go.work` and relative `replace` directives. [`tools/modcheck`](../tools/modcheck) verifies those relationships; build from this repository.
 - `make check` must pass before a commit, and `make e2e` for client or edge changes.
 - Every fix starts with a failing test named for its finding or requirement id.
 - Layers are enforced by `layers.toml` in each module, and the production root links no fakes and no cgo.
@@ -440,10 +440,10 @@ No capability-specific client code.
 - [`docs/pass-2/ASSUMPTIONS.md`](pass-2/ASSUMPTIONS.md): the spec readings the code relies on.
 - [`docs/pass-2/PHASE-1.md`](pass-2/PHASE-1.md) and [`docs/pass-2/CRITIQUE.md`](pass-2/CRITIQUE.md): the protocol phase, and pass 1's defects.
 - [`spec/protocol/references/`](../spec/protocol/references): the independent protocol references. These are the document schemas, the grammar, the vectors, the 50 scenarios and their fixture gateway, with `README.md` and `QUESTIONS.md`.
-- [`sdk/go/kit/PROVENANCE.md`](../sdk/go/kit/PROVENANCE.md) and [`sqlglot/PROVENANCE.md`](../sqlglot/PROVENANCE.md): the integrated repositories, at their pinned commits.
+- [`sdk/go/kit/PROVENANCE.md`](../sdk/go/kit/PROVENANCE.md) and [`sqlglot/PROVENANCE.md`](../sqlglot/PROVENANCE.md): the shared kit and SQL library, their integration boundaries and third-party notices.
 
-**The source documents.** Copies are in [`docs/source/`](source); the masters stay on the maintainer's machine:
-- **The Atlas spec,** a transcription in Markdown: [`docs/source/atlas-spec/`](source/atlas-spec). The section numbers here (for example §6.4.1, §9.8.3) are its.
+**The specification and engineering studies** are maintained in [`docs/source/`](source):
+- **The Atlas specification:** [`docs/source/atlas-spec/`](source/atlas-spec). The section numbers here (for example §6.4.1, §9.8.3) are its.
 - **The 2026-10-31 design review:** [`ATLAS-CORE.md`](source/atlas-spec/review/ATLAS-CORE.md), [`CAPABILITY-HANDBOOK.md`](source/atlas-spec/review/CAPABILITY-HANDBOOK.md), [`DESIGN-REVIEW.md`](source/atlas-spec/review/DESIGN-REVIEW.md) and [`INTEGRATIONS.md`](source/atlas-spec/review/INTEGRATIONS.md). Adopted in REVIEW.md.
 - **The peer review of 2026-11-01:** [`PEER-REVIEW-2026-11-01.md`](source/atlas-spec/review/PEER-REVIEW-2026-11-01.md), with findings R3-01 to R3-16, and the architecture gaps B1 to B4 above.
 - **The core handoff plan of 2026-11-01:** [`CORE-HANDOFF-PLAN.md`](source/atlas-spec/review/CORE-HANDOFF-PLAN.md), with the boundary, packages C0 to C6, and Gates A and B, which this plan adopts and maps onto the repository.

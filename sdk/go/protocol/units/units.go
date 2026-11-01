@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/grammar"
 )
 
 // Unit is an x-atlas-unit.

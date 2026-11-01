@@ -5,10 +5,10 @@ package snowflake
 import (
 	"strings"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
+	"atlas.local/sqlglot/tokens"
 )
 
 func seqGet(xs []*exp.Expr, i int) *exp.Expr {

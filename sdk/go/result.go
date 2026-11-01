@@ -12,13 +12,13 @@ import (
 
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/arrowschema"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/frame"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/resolve"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/arrowschema"
+	"atlas.local/sdk/go/protocol/frame"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/profile"
+	"atlas.local/sdk/go/protocol/resolve"
+	"atlas.local/sdk/go/protocol/schema"
 )
 
 // Warning is what a call's answer says beside its result: a deprecation,

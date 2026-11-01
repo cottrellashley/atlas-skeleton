@@ -1,51 +1,44 @@
 # The Atlas Protocol's references (atlas/1.0)
 
-The machine-readable part of §9 (`spec/protocol.md`): the JSON Schemas of its documents, its grammar, the test vectors of its algorithms, and the conformance scenarios. Together with the text, these are what a client in any language is written or generated from (§9, Purpose).
+The machine-readable companion to the [local protocol specification](../../../docs/source/atlas-spec/09-atlas-protocol.md): document schemas, grammar, independent algorithm vectors and conformance scenarios. These fixtures are included in the repository and require no separate source checkout.
 
-Everything here is written by `tools/spec/` (Python) from the spec's text, with its own small reference implementations of the algorithms. Nothing comes from an implementation's output: these files are the independent check of every implementation, Go's first (D22). Where the text is ambiguous or silent, the reading taken is in [QUESTIONS.md](QUESTIONS.md), and every vector case that depends on one names it (`"question": "Q-..."`).
+The reference cases specify expected behavior independently of the implementation. Ambiguities and provisional readings are recorded in [QUESTIONS.md](QUESTIONS.md). A vector depending on one names its question. Do not regenerate expected results from the implementation being tested merely to make a failure pass.
 
-## The one command
+## Validation
 
-From the repository's root:
+From the repository root:
 
 ```bash
+make check
+make e2e
+make requirements
 uv run --project tools/spec python -m atlasref check
-```
-
-It regenerates every file below in memory. It fails unless each is byte-identical to the file on disk, and unless every check of "What check proves" passes. To regenerate after changing a generator:
-
-```bash
-uv run --project tools/spec python -m atlasref write
-```
-
-The reference implementations' own tests, each proving an algorithm against cases hand-worked from the spec's examples (and running `check` itself):
-
-```bash
 uv run --project tools/spec pytest tools/spec
 ```
 
-The environment is `tools/spec/.venv`. The packages are pinned in `tools/spec/uv.lock`: rfc8785, jsonschema, pyarrow, sqlglot 30.27.0, http-sf (and pytest).
+The protocol and client tests consume the included vectors. The independent reference implementation lives in [tools/spec](../../../tools/spec), with its own pinned public dependencies and tests. Its `check` command regenerates artifacts in memory and compares them with the committed fixtures; `write` updates them after an approved specification change. The full conformance scenario runners remain unfinished, as [the handoff progress](../../../docs/HANDOFF-PROGRESS.md) records. Scenario definitions alone do not prove execution. Changes to references require a documented specification decision and independently derived expected results.
 
 ## The files
 
-| Path | Covers | Written by |
-|---|---|---|
-| `schemas/*.schema.json` | §9.3.1: the 21 documents, each with `$id` `https://atlas.jhg.com/protocol/1.0/<file>` | `atlasref/schemas.py` |
-| `grammar.abnf` | §9.1.3–§9.1.5: every rule, case-sensitive with `%s`, plus the strings §9 defines elsewhere | `atlasref/grammar.py` |
-| `vectors/fingerprints.json` | §9.4.4: profiles, their canonical form, SHA-256 and fingerprint | `atlasref/gen/fingerprints.py` |
-| `vectors/profiles/{data,resource,action,event}.json` | Complete, agent-ready profiles, one per family (§3.1.3, §3.1.4a) | `atlasref/profiles.py` |
-| `vectors/problems.json` | §9.3.3's registry and §9.7.6's CLI exit codes | `atlasref/problems.py` |
-| `vectors/grammar.json` | §9.1: strings each rule accepts and rejects, and why | `atlasref/gen/grammar.py` |
-| `vectors/schemas.json` | §9.2: validation results with pointers and keywords; schemas the profile refuses | `atlasref/gen/schemavectors.py` |
-| `vectors/headers.json` | §9.6.3: every Atlas header, its Structured Field parse and Atlas reading, or why it is absent | `atlasref/gen/headers.py` |
-| `vectors/structured-fields.json` | RFC 9651: 4,089 field values read as Item, List and Dictionary | `atlasref/gen/sf.py` |
-| `vectors/arrow.json` | §9.2.7: table schemas and their derived Arrow schemas | `atlasref/gen/arrow.py` |
-| `vectors/resolution.json` | §9.5.8: every case it lists, and §9.5.3–§9.5.5's edges | `atlasref/gen/resolution.py` |
-| `vectors/handoff/snowflake-arrow-1/synthetic/` | Snowflake chunks in the assumed encoding, their handoff documents, the expected Atlas batches | `atlasref/gen/handoff.py` |
-| `vectors/guard.json` | §6.4.3: statements the read-only guard accepts or refuses | `atlasref/gen/guard.py` |
-| `scenarios/<ID>.json` | §9.8.4: the 50 scenarios, one file each | `atlasref/gen/scenarios.py` |
-| `scenarios/fixtures/gateway.json` | What every scenario's conformance gateway serves | `atlasref/conformance.py` |
-| `README.md`, `QUESTIONS.md` | This page; the readings the text leaves open | By hand |
+| Path | Covers |
+| --- | --- |
+| `schemas/*.schema.json` | §9.3.1: the 21 documents, each with `$id` `https://atlas.jhg.com/protocol/1.0/<file>` |
+| `grammar.abnf` | §9.1.3–§9.1.5: every rule, case-sensitive with `%s`, plus the strings §9 defines elsewhere |
+| `vectors/fingerprints.json` | §9.4.4: profiles, their canonical form, SHA-256 and fingerprint |
+| `vectors/profiles/{data,resource,action,event}.json` | Complete, agent-ready profiles, one per family (§3.1.3, §3.1.4a) |
+| `vectors/problems.json` | §9.3.3's registry and §9.7.6's CLI exit codes |
+| `vectors/grammar.json` | §9.1: strings each rule accepts and rejects, and why |
+| `vectors/schemas.json` | §9.2: validation results with pointers and keywords; schemas the profile refuses |
+| `vectors/headers.json` | §9.6.3: every Atlas header, its Structured Field parse and Atlas reading, or why it is absent |
+| `vectors/structured-fields.json` | RFC 9651: 4,089 field values read as Item, List and Dictionary |
+| `vectors/arrow.json` | §9.2.7: table schemas and their derived Arrow schemas |
+| `vectors/resolution.json` | §9.5.8: every case it lists, and §9.5.3–§9.5.5's edges |
+| `vectors/handoff/snowflake-arrow-1/synthetic/` | Snowflake chunks in the assumed encoding, their handoff documents, the expected Atlas batches |
+| `vectors/guard.json` | §6.4.3: statements the read-only guard accepts or refuses |
+| `scenarios/<ID>.json` | §9.8.4: the 50 scenarios, one file each |
+| `scenarios/fixtures/gateway.json` | What every scenario's conformance gateway serves |
+| `README.md`, `QUESTIONS.md` | This page; the readings the text leaves open |
+
 
 ### Schemas
 
@@ -66,12 +59,12 @@ Every vector file is I-JSON: `{ "description", "cases": [ { "name", ...inputs, "
 - **profiles/*.json.** One case each: the profile as served (with `fingerprint`), and its `exact` id. It validates against `profile.schema.json`, and each schema against `atlas-schema.schema.json` in its role (one an interaction takes is a request). It passes the lint and the agent-readiness check.
 - **grammar.json.** `rule`, `input`, and `expected.valid`. A rejection's `why` is `"abnf"` (grammar.abnf refuses the string) or the sentence of the text that does: a length, `-0`, a real date or time.
 - **schemas.json.** Kind `validate` gives a `schema` and an `instance` (or `instance_text`, the exact JSON text, where its spelling is the point). Its `expected` is `{valid, errors: [{pointer, keyword}]}`, sorted by pointer then keyword (Q-VAL-1); the first error is invalid_request's target. Kind `profile` gives a `schema` in a `role`. It is accepted, or refused with `invalid_document` (target the offending member's pointer, `rule` the rule it breaks); each refused case breaks exactly one rule. `meta_schema` says whether atlas-schema.schema.json alone refuses it.
-- **headers.json.** `header` and its field `lines`. `expected.sf` is the RFC 9651 parse in the form of [httpwg/structured-field-tests](https://github.com/httpwg/structured-field-tests). `expected.value` is what Atlas reads, or `expected.absent` (with `why`) when a receiver treats the header as absent.
+- **headers.json.** `header` and its field `lines`. `expected.sf` is the RFC 9651 parse in the form of the included Structured Fields fixtures. `expected.value` is what Atlas reads, or `expected.absent` (with `why`) when a receiver treats the header as absent.
 - **structured-fields.json.** `field`, and for each of item, list and dictionary `{ok, serialised}`. The serialisation is `""` for an empty list or dictionary (the field is not sent).
 - **arrow.json.** A table `schema`, the `exact` id for `atlas:profile`, and the derived Arrow schema in the JSON form of Apache Arrow's integration tests (`fields`: name, nullable, type, children, metadata as key/value pairs). A schema the table cannot map is refused, at its property.
 - **resolution.json.** `chain`, oldest first, each step a profile's exact-id, its schema for this kind of record (`record_kind`), and its lens from the step before. Then `writer`, `reader`, `record` and `columns`, and the expected record, or resolution_failed with its target. Every row case also holds column by column (§9.5.7).
 - **handoff/snowflake-arrow-1/synthetic/cases.json.** Each case gives the writer profile (`writer`, `result_schema`, the derived `arrow_schema`), the `source_schema`, the chunk files with their SHA-256 and the `handoff` document. Then the expected batches, one per chunk, as JSON rows and as `expected.arrows` (an Arrow IPC stream), or invalid_document with `why`. The encoding is assumed (Q-SNOW-1): captured chunks replace these when the Snowflake spike runs.
-- **guard.json.** A `registered` set (identifiers as Snowflake resolves them), and for each `statement`, `accepted` with the `objects` it reads, or the `reason` it is refused (the first rule that refuses it, in guard.py's order).
+- **guard.json.** A `registered` set (identifiers as Snowflake resolves them), and for each `statement`, `accepted` with the `objects` it reads, or the `reason` it is refused (the first applicable refusal rule).
 - **problems.json.** One case per code, in the registry's order: its status, retryable, type URI and CLI exit code.
 
 ## Scenarios
@@ -189,18 +182,17 @@ Assertions on what the gateway recorded. A selector `{address | path | method | 
 | `conformance.change@v1` | `plan`, then `run` answers `approval_required` until `approve` |
 | `conformance.tick@v1` | `subscribe` and `publish` answer an emulator connect handover; `bus` sends the events |
 
-## What check proves
+## Reference invariants
 
-1. Every file regenerates byte-identically. No generator writes a file twice, and nothing under this directory is left that no generator makes, except this page and QUESTIONS.md.
-2. Every `.json` file is I-JSON (no duplicate members, no lone surrogates, no noncharacters).
-3. **Schemas.** The 21 schemas are valid JSON Schema 2020-12 with the right `$id`. The problem enum is §9.3.3's, and when the spec is on this machine (ATLAS_SPEC, else `~/Documents/ChatGPT/creation/atlas-spec`) it equals 09-3-documents.md's table. The resource envelope is in the Atlas Schema profile.
-4. **Grammar.** grammar.abnf parses (by `atlasref/abnf.py`, an ABNF engine) and defines every rule. Every grammar vector holds both by the hand matchers and by the ABNF itself, wherever the ABNF is the reason.
-5. **Fingerprints.** Every case's canonical form, SHA-256 and fingerprint, computed by tools/spec's RFC 8785 and by the rfc8785 package alike.
-6. **Profiles.** Every profile vector is valid against profile.schema.json, each schema against atlas-schema.schema.json and the profile's rules in its role. Each passes the lint and the agent-readiness check, its fingerprint is right, and its examples are valid requests.
-7. **Schema vectors.** Every validation result, by validator.py and, as a second evaluator, by jsonschema extended with the profile's I-Regexp, formats, logical types and binary64 integers. Every profile verdict, by profilecheck.py and the meta-schema.
-8. **Headers and Structured Fields.** Every header case by headers.py. Every Structured Field case by sfv.py and, case by case, by http_sf; every disagreement is marked Q-SF-1.
-9. **Arrow.** Every derived schema, round-tripped through pyarrow.
-10. **Resolution.** Every case, row by row and column by column.
-11. **Handoff.** Every chunk's SHA-256, every handoff document against handoff.schema.json, every decoding, and expected.arrows.
-12. **Guard.** Every case, on sqlglot 30.27.0.
-13. **Scenarios.** Exactly §9.8.4's 50 ids, each with its level, one expected result per command, known ops and assertions, and only exact-ids the fixtures serve. The fixtures' profiles have their exact-ids, and the bootstrap is valid.
+These are the checks to preserve when maintaining the fixtures. The generator checks fixture consistency; the progress ledger distinguishes these checks from full runtime conformance.
+
+1. JSON documents obey I-JSON, including unique object members and valid Unicode.
+2. The 21 document schemas agree with the local protocol specification and preserve their canonical identifiers.
+3. Grammar cases express both syntactic and semantic constraints, including bounds and calendar validity.
+4. Fingerprints have independently derived canonical text, SHA-256 and abbreviated identifiers.
+5. Profiles validate in their declared roles; examples are valid requests and compatibility is checked against retained history.
+6. Schema vectors include precise validation pointers; Structured Field disagreements are documented under Q-SF-1.
+7. Arrow field order, physical types, metadata and resolution are checked against the reference cases.
+8. Handoff fixtures carry content digests and expected decoded batches; synthetic encodings remain explicitly provisional.
+9. SQL guard cases cover allowed objects, unsupported constructs and multiple statements.
+10. The conformance scenarios have known operations, one expected result per command, and identifiers consistent with their fixture gateway.

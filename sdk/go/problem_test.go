@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
+	"atlas.local/sdk/go/engine/fakegw"
 )
 
 // R091, CORE-CALL-002, Q-DOC-9: a request that fails its schema is

@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol/grammar"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
 )
 
 // The bounds on what is compiled (INTEGRATIONS: parsing takes no

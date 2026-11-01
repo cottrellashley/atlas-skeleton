@@ -1,9 +1,9 @@
-# sqlglot-go
+# SQL library
 
-A Go port of [SQLGlot](https://github.com/tobymao/sqlglot), the SQL parser, transpiler,
+A local Go implementation of SQLGlot, the SQL parser, transpiler,
 optimizer and engine.
 
-It is a line-by-line port of SQLGlot v30.27.0 (upstream commit `5c101a2`): the same
+It follows SQLGlot v30.27.0: the same
 tokenizer, recursive descent parser, generator, expression tree, optimizer rules and dialect
 architecture, so behavior and output match the Python library, and SQLGlot's own test suites
 run against it (see [Testing](#testing)).
@@ -20,7 +20,10 @@ run against it (see [Testing](#testing)).
 
 ## Install
 
-This module lives in the Atlas repository (see [PROVENANCE.md](PROVENANCE.md)). Another module of the repository requires it at `v0.0.0`, with a `replace` to `../sqlglot`, as `gateway/go.mod` does.
+This module is `atlas.local/sqlglot` and lives in this repository (see
+[PROVENANCE.md](PROVENANCE.md)). Other repository modules require it at `v0.0.0`,
+with a relative `replace` to this directory, as [gateway/go.mod](../gateway/go.mod)
+does. Its sources, generated code, tests and fixtures are included here.
 
 Requires Go 1.23 or newer. There are no dependencies outside the standard library.
 
@@ -28,8 +31,8 @@ Dialects register themselves when their package is imported. Import the bundle t
 
 ```go
 import (
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	_ "github.com/jhgonline/fi-app-atlas/sqlglot/dialects" // snowflake, duckdb
+	sqlglot "atlas.local/sqlglot"
+	_ "atlas.local/sqlglot/dialects" // snowflake, duckdb
 )
 ```
 
@@ -149,9 +152,9 @@ from its parent, and nothing else. A minimal dialect:
 package mydialect
 
 import (
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/tokens"
 )
 
 func init() { sqlglot.Register("mydialect", New) }
@@ -197,7 +200,7 @@ dialects, patched parsers and registered kinds.
 ## Testing
 
 ```sh
-go test ./...
+go test -race ./...
 ```
 
 There are three layers of tests:
@@ -222,14 +225,10 @@ There are three layers of tests:
 3. **Go-native tests** for Go-specific API surface (custom dialects, registered kinds, custom
    schemas, the CLI, executor internals) and runnable examples.
 
-Regenerate the converted suites from a SQLGlot checkout with:
-
-```sh
-tools/port/convert_all.sh /path/to/sqlglot
-```
-
-`internal/cmd/gosql` with `tools/port/pysql.py`, and `internal/cmd/goexec` with
-`tools/port/pyexec.py`, give line-by-line differential comparisons against the Python library.
+Ordinary builds and tests use the included generated suites and do not need Python
+or regeneration. For deliberate compatibility work, the
+[optional maintenance tools](PORTING.md#optional-maintenance-tools) support test
+conversion and differential comparisons against the public SQLGlot package.
 
 ## Differences from SQLGlot
 

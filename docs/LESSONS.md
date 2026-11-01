@@ -1,6 +1,6 @@
 # Lessons learnt, and rules to keep
 
-Written at the end of the first handoff session (2026-11-01: C0 to C2, and C3 in part). Read it with [AGENTS.md](../AGENTS.md), [HANDOFF.md](HANDOFF.md) and [HANDOFF-PROGRESS.md](HANDOFF-PROGRESS.md). AGENTS.md binds; this records what the work taught, and what to watch.
+Recorded after the first handoff work packages (2026-11-01: C0 to C2, and C3 in part). Read it with [AGENTS.md](../AGENTS.md), [HANDOFF.md](HANDOFF.md) and [HANDOFF-PROGRESS.md](HANDOFF-PROGRESS.md). AGENTS.md binds; this records what the work taught, and what to watch.
 
 **Scope clarification, 2026-11-01:** the pattern choices in §6 guide new integrations and specific fixes within the existing handoff work. They are not a refactoring task. Preserve working providers, ports, clients, profiles and protocol behavior. Do not migrate existing capabilities, introduce replacement frameworks, or implement planned features just to match this guidance. A change to shared code needs a concrete defect or an existing handoff requirement, a bounded change, and its own proof. C0–C6 and their acceptance gates remain the work plan.
 
@@ -35,7 +35,7 @@ The risk is **incompleteness, not tangle**. Until C4 and C5 land, a company's ea
 12. **Test first, and see it fail for the stated reason.** Several "obvious" fixes were wrong until a test said so. The first R3-01 fix refused every valid projected Arrow answer; only `make e2e` caught it.
 13. **Test the happy path too, not only the refusal.** The R3-01 regression above lived in the gap between "it refuses bad answers" and "it still sends good ones".
 14. **One fresh adversarial reviewer per package, before the commit.** Every review found real holes the author had missed: scope under applicators, `$ref` siblings, a panic mid-write, a budget restarted after discovery.
-15. **Keep `handoff` green; commit at every green point.** Run `make check` and `make e2e` before each commit and push often, so a session that ends suddenly loses nothing.
+15. **Keep verified checkpoints.** Run `make check` and `make e2e` before a release checkpoint. Record the results and remaining work so another engineer can continue without relying on conversational history.
 16. **A test that hangs is not a test.** Under `synctest`, a goroutine blocked on a `sync.Mutex` stops fake time. Bound every wait, so that without the fix the test fails rather than hangs.
 17. **Read the dependency's source before fixing around it.** R3-02 was confirmed in gosnowflake's own code before it was fixed, then reproduced through the real driver.
 18. **Be honest about evidence levels.** "Hermetic" means fakes, DuckDB and fixtures. Snowflake, Entra and Azure have never been reached. Never mark something proven on the strength of a fake.
@@ -52,7 +52,7 @@ The risk is **incompleteness, not tangle**. Until C4 and C5 land, a company's ea
 | Records whose caller went away were audited as success (R3-07) | Records and tables must share one outcome path |
 | The built-in whoami never sent `scope` | The pipeline withholds members a contract does not declare (R106); unit tests that bypass the pipeline cannot see this |
 | An existing test asserted the defect (R3-12, `fund.bare`) | When a fix breaks an old test, ask whether the test encoded the bug |
-| `modcheck` refused any module outside jhgonline | A guard written for one case can block a legitimate one; generalise it so it gets stricter, not looser |
+| `modcheck` refused any module outside the original namespace | A guard written for one case can block a legitimate one; generalise it so it gets stricter, not looser |
 | `TestAuditFacts` raced the asynchronous settlement | Wait on a signal (`fakes.Audit.Await`), never on time |
 
 ## 4. Be careful: the known risks
@@ -61,7 +61,7 @@ The risk is **incompleteness, not tangle**. Until C4 and C5 land, a company's ea
 2. **Changing work has no shared mechanisms yet** (C5). See rule 3.
 3. **Profiles are heavy to write.** That is deliberate, because agents need the detail, but company engineers will feel it. Invest in `atlas-new` and the generated guides (C6), or engineers will copy and paste profiles and drift.
 4. **Evolution is narrow by design.** Top-level renames only, and no ambiguous lenses. Some contract changes will need a new major version. Make that cheap, rather than widening the gate unsafely.
-5. **The protocol amendments need an owner.** A-200 (company dimensions) awaits the references owner and Ashley. If amendments sit unanswered, code and references drift apart.
+5. **The protocol amendments need an owner.** A-200 (company dimensions) awaits the protocol and product owners. If amendments sit unanswered, code and references drift apart.
 6. **The gates are not run.** Gate A (C4) and Gate B (C5) are what prove the handoff. Until then, "it plugs in" is proven for a read-only HTTP capability on fakes, and nothing more.
 7. **Open C2 gaps.**
    - With no explicit deadline, Python's engine-lock wait and its connect are unbounded.

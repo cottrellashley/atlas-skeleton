@@ -20,8 +20,8 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/ipc"
 	sf "github.com/snowflakedb/gosnowflake"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/adapter/snowflake"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/adapter/snowflake"
+	"atlas.local/gateway/ports"
 )
 
 // snowflakeServer speaks just enough of Snowflake's REST protocol for the

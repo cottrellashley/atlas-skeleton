@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/trie"
+	"atlas.local/sqlglot/trie"
 )
 
 // FormatTime mirrors time.format_time: it converts a time format string using the given

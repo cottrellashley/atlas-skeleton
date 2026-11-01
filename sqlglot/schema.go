@@ -8,9 +8,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/trie"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/trie"
 )
 
 // SchemaMapping is a nested, ordered schema mapping (Python's dict[str, object]). Values are

@@ -28,12 +28,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/adapter/policyfile"
-	"github.com/jhgonline/fi-app-atlas/gateway/assemble"
-	"github.com/jhgonline/fi-app-atlas/gateway/local/devgateway"
-	"github.com/jhgonline/fi-app-atlas/gateway/views"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/httpserver"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/lifecycle"
+	"atlas.local/gateway/adapter/policyfile"
+	"atlas.local/gateway/assemble"
+	"atlas.local/gateway/local/devgateway"
+	"atlas.local/gateway/views"
+	"atlas.local/sdk/go/kit/httpserver"
+	"atlas.local/sdk/go/kit/lifecycle"
 )
 
 func main() {

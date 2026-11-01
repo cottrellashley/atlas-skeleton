@@ -7,7 +7,7 @@ package core_test
 import (
 	"testing"
 
-	. "github.com/jhgonline/fi-app-atlas/sqlglot/internal/pyrt"
+	. "atlas.local/sqlglot/internal/pyrt"
 )
 
 var _ = testing.Short

@@ -3,7 +3,7 @@ package sqlglot
 // Port of sqlglot/optimizer/optimizer.py.
 
 import (
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/exp"
 )
 
 // OptimizeOptions mirrors the keyword arguments of optimizer.optimize. Python's optimize hands

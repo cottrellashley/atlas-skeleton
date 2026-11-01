@@ -3,9 +3,9 @@ package sqlglot
 import (
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/trie"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/tokens"
+	"atlas.local/sqlglot/trie"
 )
 
 // FromArgList returns a FuncBuilder mirroring `exp.Kind.from_arg_list`.

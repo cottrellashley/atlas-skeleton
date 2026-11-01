@@ -1,12 +1,14 @@
-# Digest: pass 1's assets (branch `pass-1`), and what to bring back
+# Digest: pass 1's assets (historical first implementation), and what to bring back
+
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
 
 Written 2026-10-31 for the pass-2 build. Every fact cites its source.
 
 ## How to read this digest
 
-- `pass-1:<path>:<line>` is `git show pass-1:<path>` in `/Users/ashleycottrell/repos/atlas-skeleton`. Pass 1 is one commit, `6ee1b67` ("Pass 1: the hermetic core of Atlas").
-- `wt:<path>:<line>` is the pass-2 working tree. It includes uncommitted files: `gateway/` is untracked and `sdk/go/protocol/frame` is modified.
-- `spec:<file>:<line>` is `~/Documents/ChatGPT/creation/atlas-spec/<file>`, and `review:<file>:<line>` is its `review/` folder.
+- `pass-1:<path>:<line>` labels the historical first implementation discussed below. Its proof results are retained in `docs/pass-1/PROOF-0.md`.
+- `pass-2:<path>:<line>` labels the second implementation at the time of this review; use current source symbols to locate surviving code.
+- `spec:<file>:<line>` is `docs/source/atlas-spec/<file>`, and `review:<file>:<line>` is its `review/` folder.
 - `refs:` is `spec/protocol/references/` in the repository.
 - Labels:
   - **IN SCOPE**: the first build (the journey) must implement it.
@@ -17,7 +19,7 @@ Written 2026-10-31 for the pass-2 build. Every fact cites its source.
 
 ### What governs
 
-- REVIEW.md:92 says: "Pass 1's proof (branch `pass-1`) is an asset. Step 4 brings its engine, the Python face and the hermetic Snowflake fake back onto the new protocol."
+- REVIEW.md:92 says: "Pass 1's proof (historical first implementation) is an asset. Step 4 brings its engine, the Python face and the hermetic Snowflake fake back onto the new protocol."
 - REVIEW.md:19 says pass 1 is "Kept as an asset ... rather than being rewritten" (DESIGN-REVIEW, "keep the existing Go/Python proof"; ATLAS-CORE §6).
 - review:ATLAS-CORE.md:140 says: "The current Go engine used by the Python proof is worth retaining while measured ... A subprocess is an implementation choice behind Python's public contract".
 - review:DESIGN-REVIEW.md:182 says to keep the proof. It "records useful fake-backed tests of exact types, evolution, handoff renewal, final batches and process lifetime. ... This review did not rerun those tests."
@@ -26,7 +28,7 @@ Written 2026-10-31 for the pass-2 build. Every fact cites its source.
 
 ### What pass 1 contains: the files and their sizes
 
-`git ls-tree -r --name-only pass-1`. The assigned files are marked **(A)**. Line counts are from `git show | wc -l`.
+Historical file inventory. The assigned files are marked **(A)**; sizes describe the reviewed first implementation.
 
 | Path | Lines | |
 |---|---|---|
@@ -39,7 +41,7 @@ Written 2026-10-31 for the pass-2 build. Every fact cites its source.
 | `clients/python/fiatlas/{__init__,_engine,client,errors}.py` | 12 / 280 / 122 / 21 | (A) |
 | `clients/python/tests/{conftest,test_engine_process,test_evolution,test_tables}.py` | 70 / 141 / 72 / 87 | (A) |
 | `clients/python/pyproject.toml` | 22 | (A) |
-| `clients/cli/go.mod` | 3 | (A). This is the whole CLI: `module github.com/jhgonline/fi-app-atlas/clients/cli` / `go 1.25.0`. **There is no CLI code** (pass-1:README.md:95 "Not built yet"; PROOF-0.md:101) |
+| `clients/cli/go.mod` | 3 | (A). This is the whole CLI: `module atlas.local/clients/cli` / `go 1.25.0`. **There is no CLI code** (pass-1:README.md:95 "Not built yet"; PROOF-0.md:101) |
 | `gateway/adapter/snowflake/{snowflake,plan,snowflake_test}.go` | 162 / 181 / 157 | (A) |
 | `gateway/adapter/snowflake/snowfake/{snowfake,harbour}.go` | 492 / 132 | (A) |
 | `gateway/svc/harbour/{harbour,profiles}.go` | 189 / 155 | (A) |
@@ -55,14 +57,14 @@ Written 2026-10-31 for the pass-2 build. Every fact cites its source.
 | `sdk/go/snowarrow/{reader,snowarrow}.go` | 218 / 121 | Read too: the client's handoff path depends on them |
 | `sdk/go/kit/jwt/{verifier,jwks}.go`, `sdk/go/kit/problem/problem.go` | 166 / 279 / 62 | Read too: the issuer's verifier |
 
-Already carried into pass 2, by diff against the working tree:
+Already carried into pass 2, by diff against the pass-2 implementation:
 - `sdk/go/snowarrow/snowarrow.go` is identical.
 - `decode.go` differs by 12 diff-lines, and `encode.go` by 8.
-- **`reader.go` is absent from the working tree.**
+- **`reader.go` is absent from the pass-2 implementation.**
 - `kit/jwt/verifier.go`, `jws.go`, `kit/problem/problem.go` and `kit/middleware/middleware.go` are identical.
 - `kit/jwt/jwks.go` differs by 34 diff-lines.
 
-The module path is unchanged: `github.com/jhgonline/fi-app-atlas/...` (wt:sdk/go/go.mod:1). Ported files keep their import prefixes.
+The module path is unchanged: `atlas.local/...` (pass-2:sdk/go/go.mod:1). Ported files keep their import prefixes.
 
 ---
 
@@ -79,15 +81,15 @@ The module path is unchanged: `github.com/jhgonline/fi-app-atlas/...` (wt:sdk/go
 | `sdk/go/client` | **REWRITE** as package `atlas` (CRITIQUE #30). Port the lock walk, the fingerprint recheck and the resolving-reader shape | IN SCOPE (handoff part DEFERRED) |
 | `snowfake` Harbour generator (`harbour.go`) | **ADAPT** as deterministic fixture data for DuckDB or the fake warehouse, reshaped to the journey's profiles | IN SCOPE |
 | `snowfake` warehouse (`snowfake.go`): Go filter evaluation | **DROP** (CRITIQUE #25: "DuckDB runs the adapter's own statement") | — |
-| `snowfake` result storage (signed expiring links, header key, 24 h results) | Keep on the branch for the handoff proof | DEFERRED |
-| `adapter/snowflake` (`plan.go` string SQL) | **REWRITE**. The working tree has `compile.go`, `guard.go` and `warehouse.go` on sqlglot-go. Port the test assertions | IN SCOPE (as tests) |
+| `snowfake` result storage (signed expiring links, header key, 24 h results) | Retain the design for the handoff proof | DEFERRED |
+| `adapter/snowflake` (`plan.go` string SQL) | **REWRITE**. The pass-2 implementation has `compile.go`, `guard.go` and `warehouse.go` on sqlglot. Port the test assertions | IN SCOPE (as tests) |
 | `svc/harbour` | **REWRITE**: profiles become JSON files, the revisions follow R03, and the journey's five capabilities | IN SCOPE |
-| `core/*` | **REWRITE**. The working tree has `core/access`, `core/registry` and `core/pipeline/{limits,policy}.go`. Port the order and the tests | IN SCOPE |
+| `core/*` | **REWRITE**. The pass-2 implementation has `core/access`, `core/registry` and `core/pipeline/{limits,policy}.go`. Port the order and the tests | IN SCOPE |
 | `edge/http` | **REWRITE** as a binding router (CRITIQUE #12) on `protocol/frame`. Port its test list | IN SCOPE |
 | `e2e` | **ADAPT** the style: real binaries and a ready line (CRITIQUE "What survives") | IN SCOPE |
-| `ports`, `porttest/datasource.go` | **DROP**: superseded by `wt:gateway/ports/*` and `wt:gateway/porttest/warehouse.go`. Port the suite's checks | — |
-| `fakes.Limits`, `fakes.Audit` | **DROP**: superseded (`wt:gateway/fakes/audit.go`, `wt:gateway/core/pipeline/limits.go`; step 3 R07/R09) | — |
-| `fakes.Issuer` | **ADAPT**. The plan requires a fake issuer running the real `kit/jwt` verifier (wt:docs/pass-2/PLAN.md:88). The working tree has an opaque token table instead. See §3 and the ambiguities | IN SCOPE (AMBIGUOUS) |
+| `ports`, `porttest/datasource.go` | **DROP**: superseded by `pass-2:gateway/ports/*` and `pass-2:gateway/porttest/warehouse.go`. Port the suite's checks | — |
+| `fakes.Limits`, `fakes.Audit` | **DROP**: superseded (`pass-2:gateway/fakes/audit.go`, `pass-2:gateway/core/pipeline/limits.go`; step 3 R07/R09) | — |
+| `fakes.Issuer` | **ADAPT**. The plan requires a fake issuer running the real `kit/jwt` verifier (pass-2:docs/pass-2/PLAN.md:88). The pass-2 implementation has an opaque token table instead. See §3 and the ambiguities | IN SCOPE (AMBIGUOUS) |
 | `cmd/gateway` | **ADAPT** the ready line, the flags and the personas. Two identities with different portfolio scope (REVIEW.md:30) | IN SCOPE |
 
 ### 1.1 `sdk/go/client`: the Go client (`client.go`, `lock.go`, `table.go`, `table_test.go`)
@@ -164,21 +166,21 @@ It uses a checked allocator: `mem.AssertSize(t, 0)`.
 
 | Pass 1 | Pass 2 (as built in `sdk/go/protocol`) | |
 |---|---|---|
-| `protocol.Version = "atlas/0.1"`; the client accepts `atlas/0.` | `Version = "atlas/1.0"` (wt:sdk/go/protocol/protocol.go:16). The bootstrap has `protocols` and `minimum_protocol` (refs:schemas/bootstrap.schema.json, required: `protocols, minimum_protocol, environment, servers, builtins, sign_in, catalog_etag`) | REWRITE the version check |
+| `protocol.Version = "atlas/0.1"`; the client accepts `atlas/0.` | `Version = "atlas/1.0"` (pass-2:sdk/go/protocol/protocol.go:16). The bootstrap has `protocols` and `minimum_protocol` (refs:schemas/bootstrap.schema.json, required: `protocols, minimum_protocol, environment, servers, builtins, sign_in, catalog_etag`) | REWRITE the version check |
 | Bootstrap `{protocol, environment, servers, builtins{"atlas.whoami@v1:fetch": Binding}, sign_in{issuer, audience, dev_token}}` (pass-1:sdk/go/protocol/documents.go:10-29, 33-38) | `builtins` keyed by **id** (pattern `^atlas(\.[a-z](-?[a-z0-9])*)+$`), each `{version, interactions{<name>: {bindings[]}}}`. `sign_in{authority, client_id, scopes, token_endpoint, authorization_endpoint?, device_authorization_endpoint?}` (refs:schemas/bootstrap.schema.json `$defs`) | REWRITE |
-| `Atlas-Client` written by `fmt.Sprintf(%q)` | `protocol.Client.Format()` and `ParseClient`, as a Structured Field (wt:sdk/go/protocol/headers.go:66-108) | ADAPT |
-| `Features.String()` by string joining | `Features{Levels, Handoff, Lens, Deliveries, Encodings, Traits}.Format()` as an SF dictionary of inner lists of tokens. `CoreFeatures()` = levels `core`, deliveries `single operation`, encodings `json` (wt:sdk/go/protocol/headers.go:122-183) | ADAPT. The first build declares no `handoff` level (DEFERRED) |
-| `FormatDeadline` writes `"@"+unix` | `protocol.FormatDeadline` and `ParseDeadline` (wt:sdk/go/protocol/headers.go:225-231) | ADAPT |
-| `Atlas-Profile` read as a raw string | An SF String: `FormatExact` and `ParseExactHeader` (wt:sdk/go/protocol/headers.go:212-215) | ADAPT |
-| `Problem{Type:"about:blank", …}` (pass-1:sdk/go/protocol/problem.go:103) | `Problem` adds `instance`, `hop`, `estimate{amount, unit}`; `Type = "https://atlas.jhg.com/problems/" + code` (wt:sdk/go/protocol/problem.go:15-30, 94, 158-166) | REWRITE |
-| `arrowAnswer` | `frame.ArrowReader` (wt:sdk/go/protocol/frame/frame.go:377-457). Its end line requires `$atlas, rows, truncated, usage, problem` (37). **A row-count mismatch is `invalid_document`** (444-446), not pass 1's `upstream_failed` | Use `frame`. AMBIGUOUS: see the ambiguities |
-| NDJSON end `{"$atlas":"end","rows","truncated","problem"?}` (pass-1:sdk/go/protocol/documents.go:100-105) | `frame.End{Rows, Truncated, Usage, Problem}`. Every member is always written: `usage` is `{}` when unmeasured and `problem` is `null` (wt:sdk/go/protocol/frame/frame.go:25-34, 53-85) | Use `frame` |
+| `Atlas-Client` written by `fmt.Sprintf(%q)` | `protocol.Client.Format()` and `ParseClient`, as a Structured Field (pass-2:sdk/go/protocol/headers.go:66-108) | ADAPT |
+| `Features.String()` by string joining | `Features{Levels, Handoff, Lens, Deliveries, Encodings, Traits}.Format()` as an SF dictionary of inner lists of tokens. `CoreFeatures()` = levels `core`, deliveries `single operation`, encodings `json` (pass-2:sdk/go/protocol/headers.go:122-183) | ADAPT. The first build declares no `handoff` level (DEFERRED) |
+| `FormatDeadline` writes `"@"+unix` | `protocol.FormatDeadline` and `ParseDeadline` (pass-2:sdk/go/protocol/headers.go:225-231) | ADAPT |
+| `Atlas-Profile` read as a raw string | An SF String: `FormatExact` and `ParseExactHeader` (pass-2:sdk/go/protocol/headers.go:212-215) | ADAPT |
+| `Problem{Type:"about:blank", …}` (pass-1:sdk/go/protocol/problem.go:103) | `Problem` adds `instance`, `hop`, `estimate{amount, unit}`; `Type = "https://atlas.jhg.com/problems/" + code` (pass-2:sdk/go/protocol/problem.go:15-30, 94, 158-166) | REWRITE |
+| `arrowAnswer` | `frame.ArrowReader` (pass-2:sdk/go/protocol/frame/frame.go:377-457). Its end line requires `$atlas, rows, truncated, usage, problem` (37). **A row-count mismatch is `invalid_document`** (444-446), not pass 1's `upstream_failed` | Use `frame`. AMBIGUOUS: see the ambiguities |
+| NDJSON end `{"$atlas":"end","rows","truncated","problem"?}` (pass-1:sdk/go/protocol/documents.go:100-105) | `frame.End{Rows, Truncated, Usage, Problem}`. Every member is always written: `usage` is `{}` when unmeasured and `problem` is `null` (pass-2:sdk/go/protocol/frame/frame.go:25-34, 53-85) | Use `frame` |
 | The lock is `"id@vN" = "id@vN#fp"` | `lock.schema.json`: `capabilities{<id>: {version (int ≥1), fingerprint ^[0-9a-f]{16}$, dynamic?}}`, plus `extras` (refs:schemas/lock.schema.json) | REWRITE (CRITIQUE #8). **OVERRIDDEN BY REVIEW (R02)**: "A lock pins semantic contracts. Routing is fetched as current metadata" (REVIEW.md:60). The lock's format is still open (REVIEW.md:98) |
 | Handoff document `{kind, format, profile, rows, source{row_type}, first_chunk (bytes), chunks[{url, rows, bytes}], headers, expires, query_id}` (pass-1:sdk/go/protocol/documents.go:110-136) | `handoff.schema.json`: required `profile, format, source_schema, first_chunk, chunks, expires, operation`, plus `rows`. `first_chunk` is null or an inline chunk; `operation` matches `^operations/[a-z0-9][a-z0-9-]*$` | DEFERRED (R10, step 5) |
 | Resolution by any lens chain (`BuildChain`, `ResolveBatch`) | `protocol/resolve` is an **experiment** (REVIEW.md:90) | **OVERRIDDEN BY REVIEW (R03, R04)**: the client applies only aliases, defaults, UNKNOWN and projection |
 
 **Defects.**
-- From CRITIQUE (wt:docs/pass-2/CRITIQUE.md):
+- From CRITIQUE (pass-2:docs/pass-2/CRITIQUE.md):
   - #30: package `client`, not `atlas`.
   - #31: no environment order, `ATLAS_HOME`, token store, sign-in, disk profile cache, confirmation, deprecation hook, landing, transfers, export, events or wrappers.
   - #7: the address grammar.
@@ -203,10 +205,10 @@ It uses a checked allocator: `mem.AssertSize(t, 0)`.
 - **Verdict: REWRITE as package `atlas` at the root of `sdk/go`** (CRITIQUE #30 fix; spec:09-7-clients.md:42 `atlas.Connect(ctx, atlas.Options{URL, Env, Token})`). Concrete steps:
   1. Create `sdk/go/atlas.go` (package `atlas`) with `Connect`, `Whoami` (the spec spells it `.Whoami(ctx)`, 09-7:43), `Catalog`, `Search`, `Describe`, `Guide`, `Explain`, `Access` and `Call`. Data's `Fetch` is a shorthand for `Call(id:fetch)` (09-7:28).
   2. Port `FindLock`'s walk to the parents (lock.go:45-59) unchanged, but parse into the `lock.schema.json` shape (TOML, then validate).
-  3. Port `Describe`'s fingerprint recheck (client.go:209-212) onto `protocol.Fingerprint`, which is JCS (wt:sdk/go/protocol/fingerprint.go).
+  3. Port `Describe`'s fingerprint recheck (client.go:209-212) onto `protocol.Fingerprint`, which is JCS (pass-2:sdk/go/protocol/fingerprint.go).
   4. Port the resolving reader as a wrapper that checks each batch against the writer's derived Arrow schema (`arrowschema`) and applies only alias, default, UNKNOWN and projection.
   5. Replace `arrowAnswer` with `frame.ArrowReader`. Port `TestAnArrowAnswerIsCompleteOnlyWithItsFinalBatch` as a test of it. COL-002 is the matching scenario (refs:scenarios/COL-002.json).
-  6. Keep `handoffAnswer` and the renewal logic on the branch for step 5 (DEFERRED).
+  6. Keep `handoffAnswer` and the renewal logic as a deferred design for step 5 (DEFERRED).
   7. Keep the rule that built-ins carry no `Atlas-Profile-Expect`.
   8. Keep "the client follows the binding and never builds a path" (`server.URL + b.Address`). It is scenario CORE-CALL-003 (spec:09-8-conformance.md:98).
 
@@ -228,7 +230,7 @@ The runner protocol is set out in full in §2. Here, the summary.
    - engine.go:112, `go func()`;
    - main.go:35, `go endWhenOrphaned()`.
 
-   AGENTS.md:41 allows a bare `go` only inside `sdk/go/kit`; everything else goes through `kit/conc.Go`. `kit/conc` provides `Go(fn func() error) (wait func() error)`, `Group`, `WithContext`, `SetLimit` and `TryGo` (wt:sdk/go/kit/conc/conc.go:39-97).
+   AGENTS.md:41 allows a bare `go` only inside `sdk/go/kit`; everything else goes through `kit/conc.Go`. `kit/conc` provides `Go(fn func() error) (wait func() error)`, `Group`, `WithContext`, `SetLimit` and `TryGo` (pass-2:sdk/go/kit/conc/conc.go:39-97).
 2. `time.Tick` in `endWhenOrphaned` (main.go:47) is a ticker never stopped. Harmless, since the process exits, but not clock-injected.
 3. The queue holds 64 jobs (engine.go:110). When 64 commands are queued, the stdin scanner blocks on `queue <- job`, so **a `cancel` line cannot be read until a slot frees**.
 4. A `cancel` of an unknown or finished id is silently ignored, and no cancel ever gets an answer line (engine.go:126-133).
@@ -246,7 +248,7 @@ The runner protocol is set out in full in §2. Here, the summary.
 
 | Field | Value |
 |---|---|
-| `name` | `"fi-lib-atlas"` |
+| Distribution name | Current local name: `fiatlas` (see `clients/python/pyproject.toml`); the remaining rows describe the historical pass-1 packaging. |
 | `version` | `"0.1.0"` |
 | `requires-python` | `">=3.11"` |
 | `dependencies` | `[]` |
@@ -254,7 +256,7 @@ The runner protocol is set out in full in §2. Here, the summary.
 | Build | `hatchling`, wheel `packages = ["fiatlas"]` |
 | pytest | `testpaths = ["tests"]`, `pythonpath = ["."]` |
 
-This matches spec:05-clients.md:158-161 (package `fi-lib-atlas`, import `fiatlas`), except that pass 1 has **no `[polars]` or `[airflow]` extra** and **no per-platform wheel with `bin/atlas-engine`** (spec:05-clients.md:226).
+The import is `fiatlas`. Compared with the packaging goals in §5.1, pass 1 has **no `[polars]` or `[airflow]` extra** and **no per-platform wheel with `bin/atlas-engine`**. The current distribution is also named `fiatlas`; consult its local package declaration before building or installing it.
 
 **Public API** (pass-1:clients/python/fiatlas/):
 - `__init__.py:9-12` exports `FIAtlas`, `Table`, `AtlasError` and `EngineError`.
@@ -324,7 +326,7 @@ PROOF-0.md:6 counts 16. They break down as 9 in `test_engine_process`, 2 in `tes
 | `test_no_engine_outlives_the_python_process_that_started_it[idle / mid-call]` | A subprocess Python prints the engine pid and then `SIGKILL`s itself. The engine must be gone within 2.0 s, polled with `os.kill(pid, 0)` every 0.05 s (115-141) | ATLAS-PY-007 | **BRING BACK** |
 | `test_a_locked_application_keeps_its_dataframe_while_the_contract_evolves` | Built against revision 1 (`-pin portfolio.holdings@v1=1`). After a redeploy, the locked application reads the same columns `V1 = [portfolio, security, as_of, mv, weight, oas, sector]`, the same dtypes and values (oas within `rel_tol=1e-9`), and `UNKNOWN` for Supranational, streamed or handed off. An old request with `columns: [mv, oas]` returns `["mv", "oas"]` (pass-1:clients/python/tests/test_evolution.py:15-57) | §3, §9.5 | **REWRITE**. It relies on `convert_unit` (oas bp → fraction) within v1. **OVERRIDDEN BY REVIEW (R03)**: "a unit change … is a new major version" (REVIEW.md:61). Keep: the rename through an alias (`mv` → `market_value`; the reference profile has `x-atlas-aliases: ["mv"]`, refs:vectors/profiles/data.json:264-270), a new enum value read as `UNKNOWN`, an added optional field, and the old request's columns |
 | `test_a_capability_added_later_is_callable_with_no_client_change` | With `-pin index.constituents@v1=0`, search does not find it. After a redeploy, search finds it first, and `fetch(id+"@v1:fetch", {"indices": ["H0A0"]})` returns only `H0A0` rows (64-72) | ATLAS-CORE-009 | **ADAPT** to `portfolio.holdings-dates@v1` (REVIEW.md:42), from all three clients (REVIEW.md:49) |
-| `test_every_column_keeps_the_type_its_profile_declares` | `market_value` is `pa.decimal128(18, 2)`, `weight` `decimal128(9, 6)`, `as_of` `date32`, `oas` `float64`, `portfolio` `string`. The pandas dtype is `"decimal128(18, 2)[pyarrow]"`, and the value is a `Decimal` with exponent -2 (pass-1:clients/python/tests/test_tables.py:18-33) | ATLAS-PY-002 | **ADAPT** to the new Arrow derivation. In pass 2, `Money` is `struct<amount: decimal128(38, 6), currency: string>` (wt:sdk/go/protocol/arrowschema/arrowschema.go:26-29), and the reference holdings profile's `market_value` is `x-atlas-logical: Money` (refs:vectors/profiles/data.json:264-267) |
+| `test_every_column_keeps_the_type_its_profile_declares` | `market_value` is `pa.decimal128(18, 2)`, `weight` `decimal128(9, 6)`, `as_of` `date32`, `oas` `float64`, `portfolio` `string`. The pandas dtype is `"decimal128(18, 2)[pyarrow]"`, and the value is a `Decimal` with exponent -2 (pass-1:clients/python/tests/test_tables.py:18-33) | ATLAS-PY-002 | **ADAPT** to the new Arrow derivation. In pass 2, `Money` is `struct<amount: decimal128(38, 6), currency: string>` (pass-2:sdk/go/protocol/arrowschema/arrowschema.go:26-29), and the reference holdings profile's `market_value` is `x-atlas-logical: Money` (refs:vectors/profiles/data.json:264-267) |
 | `test_streamed_and_handed_off_tables_are_identical[7 / 10000]` | The streamed and handed-off `pa.Table` are equal (36-43) | ATLAS-CORE-005 | DEFERRED with handoff. Keep the idea for "NDJSON = Arrow = JSON form" |
 | `test_the_json_form_and_the_arrow_form_carry_the_same_values` | Through the raw `Engine`, the JSON-form rows equal the Arrow rows converted: decimals as `format(v, "f")`, dates by `isoformat()` (46-68) | §9.8.3 | **BRING BACK**. It proves the engine's two forms agree |
 | `test_problems_arrive_as_exceptions_with_their_codes_and_the_engine_carries_on` | The outsider gets `not_granted`. `{"portfolios": "147HYC"}` gives `invalid_request` ("refused before it is sent"). `portfolio.missing@v1:fetch` gives `not_found`. The same engine pid follows (71-87) | §9.7.6 | **BRING BACK**. The rename is `AtlasProblem` |
@@ -400,7 +402,7 @@ PROOF-0.md:6 counts 16. They break down as 9 in `test_engine_process`, 2 in `tes
   2. The latest-date filter takes the **whole table's** `MAX(AS_OF_DATE)`, not each portfolio's. The reference profile's `as_of` is "the portfolio's last valuation on or before as_of" (refs:vectors/profiles/data.json:356).
   3. `ORDER BY` uses Go `%q` quoting.
   4. `TIMESTAMP_TZ(6)`, but §2.2.1.5 says "every timestamp converted to UTC" (spec:02-2-1-snowflake-data.md, "The contract in the planned SQL").
-- **Verdict: REWRITE.** The working tree already has `gateway/adapter/snowflake/compile.go` (289 lines), `guard.go` (246) and `warehouse.go` (219) with sqlglot-go, and `gateway/local/duckwh` (85). Bring back as tests on `compile.go`'s output:
+- **Verdict: REWRITE.** The pass-2 implementation already has `gateway/adapter/snowflake/compile.go` (289 lines), `guard.go` (246) and `warehouse.go` (219) with sqlglot, and `gateway/local/duckwh` (85). Bring back as tests on `compile.go`'s output:
   - the `TestPlanWritesTheContractIntoTheStatement` assertions, minus `QUERY_TAG`, which moves out of band (CRITIQUE #13);
   - the enum-to-UNKNOWN `CASE`;
   - `explain` showing byte for byte the statement that runs (ATLAS-DATA-004; scenario CORE-EXPLAIN-001, spec:09-8-conformance.md:95).
@@ -414,7 +416,7 @@ Detailed in §4. **Verdict:**
 - the Go evaluator: DROP (CRITIQUE #25);
 - the result storage and links: DEFERRED (handoff).
 
-The working tree's `gateway/fakes/warehouse.go` (328 lines) already holds tables in memory with "SQL's three-valued comparisons, nulls last, the latest of each group chosen before the query's own conditions" (wt:gateway/fakes/warehouse.go:24-27). The Harbour generator can feed it, or DuckDB.
+The pass-2 implementation's `gateway/fakes/warehouse.go` (328 lines) already holds tables in memory with "SQL's three-valued comparisons, nulls last, the latest of each group chosen before the query's own conditions" (pass-2:gateway/fakes/warehouse.go:24-27). The Harbour generator can feed it, or DuckDB.
 
 ### 1.7 `gateway/svc/harbour` (`harbour.go`, `profiles.go`)
 
@@ -477,7 +479,7 @@ The working tree's `gateway/fakes/warehouse.go` (328 lines) already holds tables
   3. There is no scope enforcement. **R05 requires it from the first shared-credential source** (REVIEW.md:63).
   4. Revision 3 breaks R03.
   5. The column `security` differs from the reference profile's `isin` (refs:vectors/profiles/data.json:242).
-- **Verdict: REWRITE.** Keep the separation of "the contract" from "the mapping to source columns per revision" ("that mapping is not part of the contract and may change freely", harbour.go:5-6). It becomes the provider's mapping. Drop the Ed25519 `VerifyCall` per call: R20 keeps providers in process with serialisable boundaries (REVIEW.md:78), and the working tree's `ports/provider.go` defines the boundary.
+- **Verdict: REWRITE.** Keep the separation of "the contract" from "the mapping to source columns per revision" ("that mapping is not part of the contract and may change freely", harbour.go:5-6). It becomes the provider's mapping. Drop the Ed25519 `VerifyCall` per call: R20 keeps providers in process with serialisable boundaries (REVIEW.md:78), and the pass-2 implementation's `ports/provider.go` defines the boundary.
 
 ### 1.8 `gateway/core` (`builtins`, `catalog`, `governance`, `pipeline`)
 
@@ -546,7 +548,7 @@ The working tree's `gateway/fakes/warehouse.go` (328 lines) already holds tables
   - admission and reservation (step 6);
   - "Record durable admission" (step 7).
 - The audit becomes admission, outcome and settlement facts. **OVERRIDDEN BY REVIEW (R09)** (REVIEW.md:67).
-- **Verdict: REWRITE.** The working tree has `core/access/access.go` (274), `core/registry/registry.go` (232) and `core/pipeline/{limits,policy}.go`. Bring back:
+- **Verdict: REWRITE.** The pass-2 implementation has `core/access/access.go` (274), `core/registry/registry.go` (232) and `core/pipeline/{limits,policy}.go`. Bring back:
   1. authorisation before validation, and no limit spent on an invalid request (ATLAS-ACCESS-009, -010; the test is in §1.9);
   2. deny wins, and a domain grant reaches only reads;
   3. the working view shows only what the caller holds, and describe refuses `not_granted` with `next`;
@@ -602,10 +604,10 @@ The working tree's `gateway/fakes/warehouse.go` (328 lines) already holds tables
 - My own reading:
   1. `Accept` is matched by substring.
   2. A problem written after the final-batch failure is lost.
-  3. The edge carries none of `Atlas-Governance-Revision`, `Atlas-Limit-Remaining`, `Deprecation` or `Sunset` (wt:sdk/go/protocol/headers.go:31-37).
+  3. The edge carries none of `Atlas-Governance-Revision`, `Atlas-Limit-Remaining`, `Deprecation` or `Sunset` (pass-2:sdk/go/protocol/headers.go:31-37).
 - AMBIGUOUS on ZSTD:
   - The spec says "Arrow IPC with ZSTD buffer compression, or NDJSON for Core clients" (spec:02-2-1-snowflake-data.md:129).
-  - Pass 2's `frame.NewArrowWriter` sets no compression (wt:sdk/go/protocol/frame/frame.go:338).
+  - Pass 2's `frame.NewArrowWriter` sets no compression (pass-2:sdk/go/protocol/frame/frame.go:338).
   - Readings: (a) compress, as §2.2.1.4 says; (b) send uncompressed, for every reader including Node's Arrow JS. Whether Arrow JS reads ZSTD-compressed IPC buffers must be checked, not assumed.
 - **Verdict: REWRITE** as a binding router. The request path is looked up in the snapshot's binding table (CRITIQUE #12 fix), and it writes through `protocol/frame`. Port the seven tests above against the journey.
 
@@ -650,7 +652,7 @@ The working tree's `gateway/fakes/warehouse.go` (328 lines) already holds tables
   - for a handoff: `profile`, `rows` and `format` match, the handed-off rows equal the streamed rows, and so do the renewed links.
 
   `ReadRows` renders each row as `ValueStr` joined with `|` (96-116).
-- **Verdict: DROP** the types; the working tree's `gateway/ports/{provider,warehouse,audit,identity,policy}.go` supersede them. **Port** the suite's checks into `wt:gateway/porttest/warehouse.go`, which exists: explain equals the statement, and settlement rows equal the rows streamed. The handoff checks are DEFERRED.
+- **Verdict: DROP** the types; the pass-2 implementation's `gateway/ports/{provider,warehouse,audit,identity,policy}.go` supersede them. **Port** the suite's checks into `pass-2:gateway/porttest/warehouse.go`, which exists: explain equals the statement, and settlement rows equal the rows streamed. The handoff checks are DEFERRED.
 
 ### 1.12 `gateway/fakes`
 
@@ -870,7 +872,7 @@ The test requires the whole chain in under 1.0 s and the same engine pid afterwa
 | `version` answer | `name, version, protocol, levels` | "its client's name, version, protocol and levels" (spec:09-8-conformance.md:53) | Same members. Values become `atlas/1.0` and the declared levels |
 | Arrow on the second pipe | `options.results = "arrow"`; the answer carries `stream: id` | "A command may ask for `"results": "arrow"`. A table then comes back as an answer naming a stream … on a second pipe the face passed in at start, ended by the protocol's final zero-row batch (§9.6.5)" (spec:05-clients.md:236) | Keep. AMBIGUOUS: where `results` sits now that options are inside `args` |
 | Cancel | `{"op":"cancel","id":n}`; the answer is `cancelled:true`, or a stream without its final batch | "`{"op": "cancel", "id": n}` cancels the work of command `n`; its answer is the problem `deadline_exceeded` or the cancellation" (spec:05-clients.md:237) | AMBIGUOUS (PROOF-0.md:81-85). **OVERRIDDEN BY REVIEW (R17)**: "Cancellation is reported as requested or confirmed" (REVIEW.md:75) |
-| The end line in the final batch | `{"$atlas", "rows", "truncated", "problem"?}` | `$atlas, rows, truncated, usage, problem` are all required; `problem` is null on success (refs:schemas/chunk-end.schema.json; wt:sdk/go/protocol/frame/frame.go:37) | Write with `frame.ArrowWriter.End`. It requires `atlas:profile` and `atlas:protocol` schema metadata (frame.go:333-337) |
+| The end line in the final batch | `{"$atlas", "rows", "truncated", "problem"?}` | `$atlas, rows, truncated, usage, problem` are all required; `problem` is null on success (refs:schemas/chunk-end.schema.json; pass-2:sdk/go/protocol/frame/frame.go:37) | Write with `frame.ArrowWriter.End`. It requires `atlas:profile` and `atlas:protocol` schema metadata (frame.go:333-337) |
 | Failure | `{"id","ok":false,"problem"}` | the same (spec:09-8-conformance.md:51) | Same. The problem gets the pass-2 members |
 
 ### 2.5 Steps to bring the engine back
@@ -881,7 +883,7 @@ The test requires the whole chain in under 1.0 s and the same engine pid afterwa
    - one command at a time;
    - the answer-line-first, then results-pipe order;
    - EOS always.
-2. Start the goroutines with `conc.Go` (wt:sdk/go/kit/conc/conc.go:42). Wait for them at the end of `Run`.
+2. Start the goroutines with `conc.Go` (pass-2:sdk/go/kit/conc/conc.go:42). Wait for them at the end of `Run`.
 3. Make the queue unbounded for cancels. Two ways: read cancels on a separate path that never blocks behind a full queue, or refuse new commands with a problem while the queue is full. AGENTS.md:45 forbids unbounded queues, so the second is safer.
 4. Change the shapes to §2.4: `args.options.{deadline_ms, accept, results, execution, person, confirm}`; answers `{"id", "ok", "value", "warnings", "calls"}` or `{"id", "ok": false, "problem"}`.
 5. Write the JSON form batch by batch from a `frame` reader, without building every row in memory first. One answer line still holds every row, so either cap it (§9.7.13's `max_memory`) or document the bound.
@@ -920,7 +922,7 @@ Source: pass-1:gateway/fakes/issuer.go.
 
 (pass-1:sdk/go/kit/jwt/jwks.go:116-267, 54-69.)
 
-**The real verifier** (pass-1:sdk/go/kit/jwt/verifier.go:83-166; identical in the working tree):
+**The real verifier** (pass-1:sdk/go/kit/jwt/verifier.go:83-166; identical in the pass-2 implementation):
 - `Algorithms` default to `["RS256"]`. `alg` empty, `none` or unlisted is `ErrAlgorithm`.
 - A non-empty `crit` is refused. An empty `kid` is refused.
 - Key lookup failure, or a bad signature, is `ErrSignature`.
@@ -943,11 +945,11 @@ Source: pass-1:gateway/fakes/issuer.go.
 The bootstrap advertises it as `sign_in: {"issuer", "audience", "dev_token": "/.dev/token"}` (pass-1:gateway/cmd/gateway/main.go:175; documents.go:25-29).
 
 **Defects, and the mapping to pass 2:**
-1. No clock injection: `sign` uses `time.Now()` (issuer.go:61). AGENTS.md:56 says "Inject the clock". The working tree has `sdk/go/kit/clock`.
+1. No clock injection: `sign` uses `time.Now()` (issuer.go:61). AGENTS.md:56 says "Inject the clock". The pass-2 implementation has `sdk/go/kit/clock`.
 2. `http.Error` is used (issuer.go:82, 91, 96), which breaks the `nohttperror` analyzer (AGENTS.md:43).
-3. There are no `tid`, `azp` or `appid`, and no person/workload marker. The pass-2 `ports.Identity` has `Principal` (Entra's oid), `Name`, `Kind` ("person" or "workload", "from the token, never from the caller's own claim"), `Tenant`, `Application` (azp or appid) and `Groups` (wt:gateway/ports/identity.go:10-24). AMBIGUOUS: which claim gives `Kind`. The files I read do not fix it, so check §6.2/§6.7.
+3. There are no `tid`, `azp` or `appid`, and no person/workload marker. The pass-2 `ports.Identity` has `Principal` (Entra's oid), `Name`, `Kind` ("person" or "workload", "from the token, never from the caller's own claim"), `Tenant`, `Application` (azp or appid) and `Groups` (pass-2:gateway/ports/identity.go:10-24). AMBIGUOUS: which claim gives `Kind`. The files I read do not fix it, so check §6.2/§6.7.
 4. `aud` is a single string, which is accepted.
-5. There is no JWKS, OIDC discovery, refresh, device code or claims challenge. PLAN.md asks the fake issuer for "RS256, JWKS, OIDC discovery, device code, refresh, claims challenge", proven by "The real `kit/jwt` verifier in every test" (wt:docs/pass-2/PLAN.md:88). Scenarios CORE-SIGNIN-002/003/004 need refresh, `401 invalid_token` and a claims challenge (spec:09-8-conformance.md:88-90).
+5. There is no JWKS, OIDC discovery, refresh, device code or claims challenge. PLAN.md asks the fake issuer for "RS256, JWKS, OIDC discovery, device code, refresh, claims challenge", proven by "The real `kit/jwt` verifier in every test" (pass-2:docs/pass-2/PLAN.md:88). Scenarios CORE-SIGNIN-002/003/004 need refresh, `401 invalid_token` and a claims challenge (spec:09-8-conformance.md:88-90).
 6. The development token endpoint sits on the gateway's own mux. pass-2 bootstrap `sign_in` needs `authority`, `client_id`, `scopes` and `token_endpoint` (refs:schemas/bootstrap.schema.json `$defs.sign_in`).
 
 **Verdict: ADAPT.**
@@ -955,9 +957,9 @@ The bootstrap advertises it as `sign_in: {"issuer", "audience", "dev_token": "/.
 2. Serve a JWKS (`{"keys":[{"kty":"RSA","kid","use":"sig","alg":"RS256","n","e"}]}`, the members `kit/jwt.JWK` reads, jwks.go:42-52). Verify through `kit/jwt.KeySet` rather than `StaticKeys`, so the production path runs.
 3. Inject the clock. Write problems through `kit/problem`.
 4. Add `tid` and `azp`, and a claim for `Kind`.
-5. Add an adapter from `kit/jwt.Claims` to `ports.Identity` behind `ports.Authenticator` (wt:gateway/ports/identity.go:37-39). Map `jwt.ErrExpired` to `ports.ErrTokenExpired`, and other `ErrInvalidToken` to `ports.ErrUnauthenticated`.
+5. Add an adapter from `kit/jwt.Claims` to `ports.Identity` behind `ports.Authenticator` (pass-2:gateway/ports/identity.go:37-39). Map `jwt.ErrExpired` to `ports.ErrTokenExpired`, and other `ErrInvalidToken` to `ports.ErrUnauthenticated`.
 6. Personas: **two identities with different portfolio scope** plus an outsider (REVIEW.md:30, 48). The groups carry the scope; the typed scope rules are R05.
-7. **AMBIGUOUS**: the working tree already has `gateway/fakes/tokens.go`, an opaque token table: `Issue(token, Identity, expires)`, `Revoke`, `Authenticate` (wt:gateway/fakes/tokens.go:12-57). It is a fake at the `Authenticator` port, which is *below* the JWT verifier. AGENTS.md:58 says "Never fake below the code you mean to test". Readings: (a) the opaque table for core unit tests, and the RS256 issuer with the real verifier for e2e and the clients; (b) the issuer only. The build lead must choose.
+7. **AMBIGUOUS**: the pass-2 implementation already has `gateway/fakes/tokens.go`, an opaque token table: `Issue(token, Identity, expires)`, `Revoke`, `Authenticate` (pass-2:gateway/fakes/tokens.go:12-57). It is a fake at the `Authenticator` port, which is *below* the JWT verifier. AGENTS.md:58 says "Never fake below the code you mean to test". Readings: (a) the opaque table for core unit tests, and the RS256 issuer with the real verifier for e2e and the clients; (b) the issuer only. The build lead must choose.
 
 ---
 
@@ -1066,14 +1068,14 @@ Reference holdings profile: refs:vectors/profiles/data.json:220-356.
 | Two identities with different portfolio scope | Governance grants by domain or capability only; there is no row scope | The fixture assigns, for example, persona A all four named portfolios and persona B only `147HYC`. The acceptance check is "a correspondingly narrower result, or a clear refusal" (REVIEW.md:48) |
 | Exact decimals | The values are scaled integers: exact | Keep. Prove that `market_value.amount` arrives as `decimal128(38,6)` in Arrow and as a decimal string in JSON |
 | Determinism and an independent check | splitmix64, pure | Keep. "its result can be checked independently against the source fixture" (REVIEW.md:51) |
-| Latest-date semantics | Global MAX over the table | Per portfolio, "last valuation on or before as_of". The working-tree fake warehouse chooses "the latest of each group" (wt:gateway/fakes/warehouse.go:26) |
+| Latest-date semantics | Global MAX over the table | Per portfolio, "last valuation on or before as_of". The pass-2 fake warehouse chooses "the latest of each group" (pass-2:gateway/fakes/warehouse.go:26) |
 | Index constituents | Present | Not in the journey. Keep only as a second domain for "only my domain" tests, if wanted |
 
 ---
 
 ## 5. Every lesson in CRITIQUE.md, as a rule for pass 2
 
-Each rule is stated as an instruction. In brackets: the defect number and its severity; then its scope under REVIEW.md. Source: wt:docs/pass-2/CRITIQUE.md:13-65.
+Each rule is stated as an instruction. In brackets: the defect number and its severity; then its scope under REVIEW.md. Source: pass-2:docs/pass-2/CRITIQUE.md:13-65.
 
 ### The protocol
 
@@ -1093,7 +1095,7 @@ Each rule is stated as an instruction. In brackets: the defect number and its se
 
 12. **[#12 Blocker]** Route by looking the request path up in the snapshot's binding table. Never parse a capability name out of the URL. IN SCOPE.
 13. **[#13 Blocker]** Pass the query tag out of band, as session or statement metadata. The statement depends only on the request, so `explain` equals `fetch` byte for byte. IN SCOPE.
-14. **[#14 Blocker]** Build SQL only as sqlglot-go typed trees rendered per dialect. Parse every statement with the Snowflake parser in the read-only guard before it runs, with guard vectors. IN SCOPE (step 4; REVIEW.md:32).
+14. **[#14 Blocker]** Build SQL only as sqlglot typed trees rendered per dialect. Parse every statement with the Snowflake parser in the read-only guard before it runs, with guard vectors. IN SCOPE (step 4; REVIEW.md:32).
 15. **[#15 Blocker]** Never label per-replica buckets exact. Reserve, then settle. IN SCOPE in reduced form. **OVERRIDDEN BY REVIEW (R07)**: "One budget authority per metered provider and an atomic reservation set. Unsupported combinations are refused" (REVIEW.md:65). Protective rate limits are kept apart (REVIEW.md:16).
 16. **[#16 Blocker]** Make every write repeatable: an idempotency key scoped to principal and address, kept 24 h, and passed downstream. **OVERRIDDEN BY REVIEW (R08)**: "One logical operation per key for its whole retention, uncertain outcomes included. Workers are fenced after their lease and reconciled" (REVIEW.md:66). It is step 3, before metered or changing work. The journey is reads, so it is AMBIGUOUS whether the first build needs it; metered reads need it (review:ATLAS-CORE.md:198).
 17. **[#17 Blocker]** Make audit durable before the answer ends, never an in-memory list. **OVERRIDDEN BY REVIEW (R09)**: "Immutable admission, outcome and settlement facts, joined for reading" (REVIEW.md:67). Every attempt, failed authentication included, leaves a fact (review:ATLAS-CORE.md:182). IN SCOPE (step 3).
@@ -1104,7 +1106,7 @@ Each rule is stated as an instruction. In brackets: the defect number and its se
 22. **[#22 Major]** Operations survive their replica: leases and takeover. IN SCOPE only "where that journey needs them" (review:ATLAS-CORE.md:238). **OVERRIDDEN BY REVIEW (R08, R17)**: see 16 and 34.
 23. **[#23 Major]** Resilience: breakers, bulkheads, retry budgets, shedding, in-flight caps, a pre-authentication limit and drain. The edge middleware exactly as §6.7.2 lists it. IN SCOPE as far as the journey's one deployable needs.
 24. **[#24 Major]** Serve the built-ins with the exact §9.3.2 schemas. IN SCOPE for those the journey uses: `whoami`, `catalog`, `search`, `describe`, `guide`, `access` (review:ATLAS-CORE.md:238). The rest are AMBIGUOUS: whether all 20 are first-build.
-25. **[#25 Major]** The fake warehouse runs the adapter's own statement. Never evaluate filters in hand-written Go. DuckDB runs the Snowflake statement transpiled by sqlglot-go. IN SCOPE.
+25. **[#25 Major]** The fake warehouse runs the adapter's own statement. Never evaluate filters in hand-written Go. DuckDB runs the Snowflake statement transpiled by sqlglot. IN SCOPE.
 26. **[#26 Major]** Telemetry is the OTel API plus slog, with spans per step, redaction at one point and bounded labels. A test plants secrets and searches every sink for them. IN SCOPE (AGENTS.md:47-48).
 27. **[#27 Major]** Enforce "services never import `core`". No registration in `init`, no bare `go`, no `os.Getenv` outside configuration: analyzers in `tools/vet`. Done in Phase 0 (REVIEW.md:88). **Applies to every ported file**: the engine, its main and the snowarrow reader all have bare `go`; the client has `os.Getenv`; the issuer has `http.Error`.
 28. **[#28 Minor]** Use the spec's serving values (§6.7.15), not pass 1's `:8000`, 64 KiB header bytes, or 5 s then 30 s shutdown. IN SCOPE.
@@ -1134,14 +1136,14 @@ Each rule is stated as an instruction. In brackets: the defect number and its se
 35. **[#35 Major]** Trace every requirement: `make requirements` maps every ATLAS- and AP- id to a test, or marks it checked by review. Tests name their ids (AGENTS.md:54). IN SCOPE.
 36. **[#36 Minor]** Walk the paved road: `AGENTS.md`, `cmd/atlas-new`, review records per service. `AGENTS.md` exists. IN SCOPE: `atlas-new` (AGENTS.md:64) and the 15-question review.
 
-### What survives from pass 1 (wt:docs/pass-2/CRITIQUE.md:67-78), as rules
+### What survives from pass 1 (pass-2:docs/pass-2/CRITIQUE.md:67-78), as rules
 
-37. Keep the `snowflake-arrow/1` codec and its list of `ASSUMPTION`s (pass-1:sdk/go/snowarrow/snowarrow.go:6-24). It is already in the working tree. DEFERRED in clients with handoff.
+37. Keep the `snowflake-arrow/1` codec and its list of `ASSUMPTION`s (pass-1:sdk/go/snowarrow/snowarrow.go:6-24). It is already in the pass-2 implementation. DEFERRED in clients with handoff.
 38. Keep the final-batch framing: a zero-row batch with the end line as message metadata `atlas:end`. EOF alone is never success (review:ATLAS-CORE.md:206). IN SCOPE, through `protocol/frame`.
-39. Keep the handoff reader, with renewal and resume: bounded prefetch, resume at the failed chunk, at most 3 renewals. `reader.go` is **not** in the working tree yet. DEFERRED. When it returns, its bare `go` statements (reader.go:82, 91) move onto `kit/conc`, and renewal goes through the handoff's `operation` (spec:09-6-http-binding.md:75), not `Atlas-Renew`.
+39. Keep the handoff reader, with renewal and resume: bounded prefetch, resume at the failed chunk, at most 3 renewals. `reader.go` is **not** in the pass-2 implementation yet. DEFERRED. When it returns, its bare `go` statements (reader.go:82, 91) move onto `kit/conc`, and renewal goes through the handoff's `operation` (spec:09-6-http-binding.md:75), not `Atlas-Renew`.
 40. Keep the engine's pipe design: Arrow on a second pipe, cancel, and dying with its parent. IN SCOPE.
 41. Keep the Python face's process rules: fork, Ctrl+C and exit. IN SCOPE.
-42. Keep the copied kit packages as the start of `kit/serve`. They are carried, with provenance (`wt:sdk/go/kit/PROVENANCE.md`).
+42. Keep the copied kit packages as the start of `kit/serve`. They are carried, with provenance (`pass-2:sdk/go/kit/PROVENANCE.md`).
 43. Keep the layer check's shape. Done (`tools/layercheck`; R24).
 44. Keep the end-to-end test style: real binaries, with ready lines on stdout. IN SCOPE.
 
@@ -1157,7 +1159,7 @@ Each rule is stated as an instruction. In brackets: the defect number and its se
 ## Ambiguities (collected)
 
 1. **The cancel answer.**
-   - §5.1 says the answer is "the problem `deadline_exceeded` or the cancellation" (spec:05-clients.md:237). The registry has no cancellation code (wt:sdk/go/protocol/problem.go:107-132).
+   - §5.1 says the answer is "the problem `deadline_exceeded` or the cancellation" (spec:05-clients.md:237). The registry has no cancellation code (pass-2:sdk/go/protocol/problem.go:107-132).
    - Pass 1 answers `{"ok":false,"cancelled":true}` before the stream, and ends the stream without its final batch once it has begun (PROOF-0.md:81-85).
    - R17: "Cancellation is reported as requested or confirmed" (REVIEW.md:75).
    - Readings:
@@ -1168,10 +1170,10 @@ Each rule is stated as an instruction. In brackets: the defect number and its se
 3. **How the stream is named.** Pass 1 uses `result.stream = <id>`. §5.1 says "an answer naming a stream", with no member name. With `value`, readings: `value: {"stream": id}`, or a sibling member `stream`.
 4. **The face's metadata in the JSON form.** §9.8.3 makes `value` an array of row records (spec:09-8-conformance.md:53). The face needs `writer`, `reader` and `via` (pass-1:clients/python/fiatlas/client.py:89). Readings: extra members beside `value` (the tolerant reader ignores them), or only in the Arrow-form answer.
 5. **What `calls` counts** (spec:09-8-conformance.md:48, `"calls": 1`). It is undefined. Readings: HTTP requests sent, including retries and describes; or calls of the capability alone.
-6. **The code for an end-line row-count mismatch.** Pass 1 used `upstream_failed` (pass-1:sdk/go/client/table.go:150-151). Pass 2's `frame` uses `invalid_document` (wt:sdk/go/protocol/frame/frame.go:444-446). §9.6.5 and AP-HTTP-002 are not re-read here.
+6. **The code for an end-line row-count mismatch.** Pass 1 used `upstream_failed` (pass-1:sdk/go/client/table.go:150-151). Pass 2's `frame` uses `invalid_document` (pass-2:sdk/go/protocol/frame/frame.go:444-446). §9.6.5 and AP-HTTP-002 are not re-read here.
 7. **ZSTD for Arrow.** §2.2.1.4 says "Arrow IPC with ZSTD buffer compression" (spec:02-2-1-snowflake-data.md:129). Pass 1 used `ipc.WithZstd()` (edge.go:164). Pass 2's `frame` writes uncompressed (frame.go:338). Whether Arrow JS reads ZSTD-compressed IPC must be checked before Node is promised Columnar.
-8. **The fake identity.** The working tree has an opaque token table at the `Authenticator` port (wt:gateway/fakes/tokens.go). PLAN.md:88 asks for an RS256, JWKS and OIDC fake issuer verified by the real `kit/jwt`. AGENTS.md:58 says never to fake below the code under test. See §3, verdict 7.
-9. **The claim for `Identity.Kind`** (person or workload). It is not fixed in the files read (wt:gateway/ports/identity.go:15-17).
+8. **The fake identity.** The pass-2 implementation has an opaque token table at the `Authenticator` port (pass-2:gateway/fakes/tokens.go). PLAN.md:88 asks for an RS256, JWKS and OIDC fake issuer verified by the real `kit/jwt`. AGENTS.md:58 says never to fake below the code under test. See §3, verdict 7.
+9. **The claim for `Identity.Kind`** (person or workload). It is not fixed in the files read (pass-2:gateway/ports/identity.go:15-17).
 10. **The token to the engine.** Pass 1 passes it in `connect.args.token`. §9.7.3 has workloads pass it to `connect` or `ATLAS_TOKEN`, and people use the store. R26 binds credentials. Scenarios provide the token file. Readings: support both, as §9.7.3 does; or the store only for people.
 11. **The `lock` op.** It is not a §9.7.1 operation. Pass 1 exposes it to Python. Readings: keep it as an engine-only op, or leave locking to the CLI (`atlas lock`, spec:09-7-clients.md:144).
 12. **Python features in the first build.** async (ATLAS-PY-005 names "an `asyncio` cancellation"), polars and DuckDB for `read_as`, and the attribute form. REVIEW.md does not list them. Readings: defer all but pyarrow and pandas; or implement PY-005 in full.
@@ -1194,7 +1196,7 @@ Each rule is stated as an instruction. In brackets: the defect number and its se
 - Package `atlas` (the Go client), using `protocol/frame`, `headers`, `ijson`, `arrowschema` and `schema`. Built-ins carry no `Atlas-Profile-Expect`. It follows bindings and never builds paths.
 - The fake issuer (RS256, `kid`, JWKS, loopback token endpoint, clock injected) and two personas with different portfolio scope plus an outsider.
 - The Harbour synthetic generator (splitmix64, deterministic) reshaped to the journey's profiles and owner choices, feeding DuckDB or the fake warehouse. Latest-date per portfolio.
-- The adapter assertions ported to sqlglot-go output: casts, the enum→UNKNOWN `CASE`, `explain` = statement; `QUERY_TAG` out of band.
+- The adapter assertions ported to sqlglot output: casts, the enum→UNKNOWN `CASE`, `explain` = statement; `QUERY_TAG` out of band.
 - The edge test checklist: bootstrap without sign-in, no token is 401 and audited, authorise before validate with no limit spent, the working view, an old request resolved forward through an alias, pinning.
 - The e2e style: real binaries, `-addr 127.0.0.1:0`, a JSON ready line, `-pin` for changes from the back.
 

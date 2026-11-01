@@ -13,9 +13,9 @@ import (
 	"github.com/apache/arrow-go/v18/arrow"
 	"github.com/apache/arrow-go/v18/arrow/array"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/conc"
 )
 
 // Rig is a DataSource under test and the hooks of the engine behind it:

@@ -9,9 +9,9 @@ import (
 
 	"github.com/apache/arrow-go/v18/arrow"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/arrowschema"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol/arrowschema"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // defaultLimit is how many matches a search answers when its request

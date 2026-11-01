@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/internal/refs"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/internal/refs"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // The embedded documents are the references' own, byte for byte.

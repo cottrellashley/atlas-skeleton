@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/ports"
 )
 
 // Issuer makes the tokens an Authenticator under test is given.

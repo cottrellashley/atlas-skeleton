@@ -3,8 +3,8 @@ package views
 import (
 	"fmt"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/gateway/ports"
 )
 
 // Warehouse is the upstream every view-model capability reaches, so they

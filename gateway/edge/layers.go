@@ -7,9 +7,9 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/middleware"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/telemetry"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/sdk/go/kit/middleware"
+	"atlas.local/sdk/go/kit/telemetry"
+	"atlas.local/sdk/go/protocol"
 )
 
 // layer is one of the edge's middleware, by its name.

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/ports"
 )
 
 // Policy is a PolicySource that answers the policy it was given, or the

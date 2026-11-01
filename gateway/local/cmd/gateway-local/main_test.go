@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
+	"atlas.local/sdk/go/kit/conc"
 )
 
 // R016: a start-up error ends the development gateway with that error, with

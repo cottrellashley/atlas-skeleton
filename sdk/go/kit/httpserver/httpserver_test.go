@@ -1,5 +1,4 @@
-// Adapted from github.com/cottrellashley/cloud-gateway-patterns-go at 44ba81a
-// (patterns/httpserver/httpserver_test.go), MIT licence: see sdk/go/THIRD_PARTY_NOTICES.md.
+// Includes MIT-licensed serving utilities; see sdk/go/THIRD_PARTY_NOTICES.md.
 // Changes: import paths; later edits are marked ATLAS.
 
 package httpserver
@@ -20,8 +19,8 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/lifecycle"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/kit/lifecycle"
 )
 
 // ATLAS: every test below runs in a synctest bubble over an in-memory

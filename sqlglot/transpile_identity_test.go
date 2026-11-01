@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/internal/testutil"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/internal/testutil"
 )
 
 func TestIdentityFixtures(t *testing.T) {

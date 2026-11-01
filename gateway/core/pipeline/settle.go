@@ -3,7 +3,7 @@ package pipeline
 import (
 	"sync"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
+	"atlas.local/sdk/go/kit/conc"
 )
 
 // settler runs settlements (ATLAS-CORE §8 step 9: usage settled from the

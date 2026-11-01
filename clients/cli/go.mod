@@ -1,8 +1,8 @@
-module github.com/jhgonline/fi-app-atlas/clients/cli
+module atlas.local/clients/cli
 
 go 1.25.0
 
-require github.com/jhgonline/fi-app-atlas/sdk/go v0.0.0
+require atlas.local/sdk/go v0.0.0
 
 require (
 	github.com/apache/arrow-go/v18 v18.8.0 // indirect
@@ -16,4 +16,4 @@ require (
 	golang.org/x/sys v0.47.0 // indirect
 )
 
-replace github.com/jhgonline/fi-app-atlas/sdk/go => ../../sdk/go
+replace atlas.local/sdk/go => ../../sdk/go

@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol"
 )
 
 // StatusClientClosedRequest is what the access log records for a caller that

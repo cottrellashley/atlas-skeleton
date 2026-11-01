@@ -1,6 +1,5 @@
 # §2.3 Resources
 
-> Source: `IMG_2138.MOV` 00:05:08–00:05:32.  
 > `spec/surface/resources.md` · proposed
 
 Objects the platform owns and keeps (dashboards, knowledge bases, grants, operations), served through standard methods with field masks, ETags, idempotency keys and paging, and served in several versions of one stored form.

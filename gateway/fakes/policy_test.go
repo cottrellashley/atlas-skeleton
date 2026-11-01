@@ -4,9 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/gateway/porttest"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/ports"
+	"atlas.local/gateway/porttest"
 )
 
 type policyHarness struct{ src *fakes.Policy }

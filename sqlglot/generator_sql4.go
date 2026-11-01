@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/exp"
 )
 
 func (g *Generator) selectSQL(e *exp.Expr) string {

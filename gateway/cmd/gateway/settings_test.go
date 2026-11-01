@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/httpserver"
+	"atlas.local/sdk/go/kit/httpserver"
 )
 
 // goodSettings are settings the production gateway starts with, as

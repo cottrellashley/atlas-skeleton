@@ -1,8 +1,8 @@
 package exp
 
 import (
+	"atlas.local/sqlglot/errs"
 	"fmt"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
 	"math/big"
 	"strconv"
 	"strings"

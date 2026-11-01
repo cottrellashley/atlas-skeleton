@@ -10,9 +10,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol"
 )
 
 // logs is a log the test reads back: one JSON record a line.

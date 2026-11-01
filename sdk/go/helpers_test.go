@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/sdk/go/engine/fakegw"
+	"atlas.local/sdk/go/protocol"
 )
 
 // isolate keeps the machine's own Atlas settings out of a test.

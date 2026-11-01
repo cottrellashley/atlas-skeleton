@@ -1,15 +1,17 @@
 # Digest: contracts and capabilities (profile, families, traits, readiness, evolution, errors)
 
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
+
 Reader: contracts. Written 2026-10-31.
 
 ## Sources and how to read the citations
 
 | Short name | File | Read |
 |---|---|---|
-| C | `~/Documents/ChatGPT/creation/atlas-spec/03-contracts.md` (875 lines) | in full |
-| CAP | `~/Documents/ChatGPT/creation/atlas-spec/02-1-capabilities.md` (207 lines) | in full |
-| SURF | `~/Documents/ChatGPT/creation/atlas-spec/02-the-surface.md` (65 lines) | in full |
-| TERMS | `~/Documents/ChatGPT/creation/atlas-spec/01-terms-and-conventions.md` (76 lines) | in full |
+| C | `docs/source/atlas-spec/03-contracts.md` (875 lines) | in full |
+| CAP | `docs/source/atlas-spec/02-1-capabilities.md` (207 lines) | in full |
+| SURF | `docs/source/atlas-spec/02-the-surface.md` (65 lines) | in full |
+| TERMS | `docs/source/atlas-spec/01-terms-and-conventions.md` (76 lines) | in full |
 | V-data, V-res, V-act, V-evt | `spec/protocol/references/vectors/profiles/{data,resource,action,event}.json` | in full |
 | PS | `spec/protocol/references/schemas/profile.schema.json` | in full (needed for required-ness) |
 | BS | `spec/protocol/references/schemas/binding.schema.json` | in full |

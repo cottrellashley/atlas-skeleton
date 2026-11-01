@@ -1,6 +1,5 @@
 # §2.5 Events
 
-> Source: `IMG_2138.MOV` 00:05:54–00:06:20.  
 > `spec/surface/events.md` · proposed
 
 Something that happened, for whoever may know: event types registered in the catalogue with their publisher, topics, queues and subscriptions created by the gateway for those granted them, and publishing and listening done by the client directly on Service Bus as the person, with the gateway as the broker and the same contracts and versioning as every capability.

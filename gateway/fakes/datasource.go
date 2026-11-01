@@ -16,8 +16,8 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/decimal128"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol/grammar"
 )
 
 // Run is one query an engine began, as its record keeps it.

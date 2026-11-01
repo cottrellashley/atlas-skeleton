@@ -2,7 +2,7 @@
 
 package sqlglot
 
-import "github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+import "atlas.local/sqlglot/exp"
 
 func baseTypingData(m map[exp.Kind]*ExprMetadata) {
 	{

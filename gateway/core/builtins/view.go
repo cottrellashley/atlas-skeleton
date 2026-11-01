@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/access"
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
+	"atlas.local/gateway/core/access"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/profile"
 )
 
 // view is the caller as one built-in call answers them: who they are under

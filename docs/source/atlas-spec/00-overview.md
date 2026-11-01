@@ -1,10 +1,8 @@
 # Overview
 
-Source: `IMG_2138.MOV` 00:00:00–00:00:54. Manually verified from full-resolution frames at 00:00:00–00:00:50.
-
 Atlas is the one door to the platform's data and work: the Atlas Gateway, its one host, offers capabilities that describe themselves in profiles it serves (the writer side), and clients in any language, each optimised for its language and its users, read those profiles and turn what arrives into what their caller asked for (the reader side), over one language-neutral protocol.
 
-**Atlas on one page.** Built in `jhgonline/fi-app-atlas`: the Atlas Gateway in `gateway/`, the clients in `clients/python/`, `clients/node/` and `clients/cli/`, and the Go SDK in `sdk/go/`. Why it exists: [the vision](00-vision.md): an agent can build whatever anyone in the firm needs, through the CLI and SDKs alone.
+**Atlas on one page.** Built in this repository: the Atlas Gateway in `gateway/`, the clients in `clients/python/`, `clients/node/` and `clients/cli/`, and the Go SDK in `sdk/go/`. Why it exists: [the vision](00-vision.md): an agent can build whatever anyone in the firm needs, through the CLI and SDKs alone.
 
 ### In short
 

@@ -1,14 +1,15 @@
-module github.com/jhgonline/fi-app-atlas/gateway/cmd/gateway
+module atlas.local/gateway/cmd/gateway
 
 go 1.25.0
 
 require (
-	github.com/jhgonline/fi-app-atlas/gateway v0.0.0
-	github.com/jhgonline/fi-app-atlas/gateway/adapter/snowflake/gosf v0.0.0
-	github.com/jhgonline/fi-app-atlas/sdk/go v0.0.0
+	atlas.local/gateway v0.0.0
+	atlas.local/gateway/adapter/snowflake/gosf v0.0.0
+	atlas.local/sdk/go v0.0.0
 )
 
 require (
+	atlas.local/sqlglot v0.0.0-00010101000000-000000000000 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.2 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.4.0 // indirect
@@ -46,7 +47,6 @@ require (
 	github.com/google/flatbuffers v25.12.19+incompatible // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c // indirect
-	github.com/jhgonline/fi-app-atlas/sqlglot v0.0.0-00010101000000-000000000000 // indirect
 	github.com/klauspost/compress v1.19.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
 	github.com/mtibben/percent v0.2.1 // indirect
@@ -68,8 +68,8 @@ require (
 )
 
 replace (
-	github.com/jhgonline/fi-app-atlas/gateway => ../..
-	github.com/jhgonline/fi-app-atlas/gateway/adapter/snowflake/gosf => ../../adapter/snowflake/gosf
-	github.com/jhgonline/fi-app-atlas/sdk/go => ../../../sdk/go
-	github.com/jhgonline/fi-app-atlas/sqlglot => ../../../sqlglot
+	atlas.local/gateway => ../..
+	atlas.local/gateway/adapter/snowflake/gosf => ../../adapter/snowflake/gosf
+	atlas.local/sdk/go => ../../../sdk/go
+	atlas.local/sqlglot => ../../../sqlglot
 )

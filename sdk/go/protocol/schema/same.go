@@ -3,7 +3,7 @@ package schema
 import (
 	"bytes"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // annotations are the keywords that describe a value without deciding

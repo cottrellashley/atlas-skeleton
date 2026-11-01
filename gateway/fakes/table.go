@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol/grammar"
 )
 
 // Table is a warehouse object held in memory: its columns, and its rows,

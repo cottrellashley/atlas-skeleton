@@ -19,7 +19,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/ports"
 )
 
 // MaxSize is the largest policy file read: a policy is a few kilobytes,

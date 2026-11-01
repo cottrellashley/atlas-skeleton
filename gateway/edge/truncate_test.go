@@ -10,10 +10,10 @@ import (
 
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/frame"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/frame"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // ndjsonRows reads an NDJSON answer whole: its rows, its end line, and the

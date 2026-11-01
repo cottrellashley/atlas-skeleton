@@ -3,8 +3,8 @@ module example.com/acme/atlas-extensions
 go 1.25.0
 
 require (
-	github.com/jhgonline/fi-app-atlas/gateway v0.0.0
-	github.com/jhgonline/fi-app-atlas/sdk/go v0.0.0
+	atlas.local/gateway v0.0.0
+	atlas.local/sdk/go v0.0.0
 )
 
 require (
@@ -20,7 +20,7 @@ require (
 )
 
 replace (
-	github.com/jhgonline/fi-app-atlas/gateway => ../gateway
-	github.com/jhgonline/fi-app-atlas/sdk/go => ../sdk/go
-	github.com/jhgonline/fi-app-atlas/sqlglot => ../sqlglot
+	atlas.local/gateway => ../gateway
+	atlas.local/sdk/go => ../sdk/go
+	atlas.local/sqlglot => ../sqlglot
 )

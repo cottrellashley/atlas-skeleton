@@ -1,7 +1,5 @@
 # 6.3 Reaching systems
 
-Source: `IMG_2139.MOV` 00:00:46–00:01:28.
-
 `spec/gateway/systems.md` · proposed
 
 How the Atlas Gateway reaches every system behind it: in one of three patterns (it runs the work, it hands the bytes off, or it brokers a connection the client makes), as one of three identities (its own, a workload's, or the person's), for each system now and in the target; the one rule every credential that leaves the gateway obeys; and the one exchange that lets the gateway act as the person.

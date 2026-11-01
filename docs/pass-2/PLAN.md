@@ -6,7 +6,7 @@
 > - Contract evolution is conservative.
 > - Handoff and events are deferred, as gated proofs.
 >
-> The phases below are replaced by REVIEW.md's order of work. Phases 0 and 1 are done (`709bb24`, `0634137`).
+> The phases below are replaced by REVIEW.md's order of work. Phases 0 and 1 are done.
 
 Pass 2 rebuilds the skeleton from the rewritten spec (229 requirements) as if it were the last pass. By the end, each real system plugs in through configuration and an adapter that is already written and tested.
 
@@ -23,7 +23,7 @@ Pass 2 is done when all of these are true:
 2. **Every external system sits behind a port**, with three things around it:
    - a hermetic fake that passes the port's suite
    - a real adapter, written against the vendor's SDK and tested as far as this machine allows
-   - a line in [PLUG-IN.md](PLUG-IN.md) (written at the end) saying exactly what plugging it in takes
+   - a line in [PLUG-IN.md](PLUGGING-IN.md) (written at the end) saying exactly what plugging it in takes
 3. **Every one of the 229 requirements maps to a test**, or is marked as checked by review (`make requirements`).
 4. **It holds under load and failure:**
    - load tests with SLOs as pass criteria
@@ -35,19 +35,19 @@ Pass 2 is done when all of these are true:
 
 | # | Decision | Why |
 |---|---|---|
-| P2-1 | Rebuild in place in `~/repos/atlas-skeleton`, after committing pass 1 as the baseline | One history, and pass 1 is kept |
+| P2-1 | Rebuild within this repository while preserving the first implementation’s proof results and useful client behavior | Carry forward proven behavior; keep historical findings distinct from current status |
 | P2-2 | §9 is normative. `spec/protocol/references/` holds the JSON Schemas of all 21 documents, the grammar, the vectors and the scenarios. They are authored from the text in Python (`tools/spec/`), with its own reference implementations (`rfc8785`, `jsonschema` plus the profile's rules, `pyarrow`, Python `sqlglot` 30.27.0), never from Go's output | D22: the vectors are an independent check, so Go can't be both the implementation and the oracle |
 | P2-3 | Go document types are generated from those schemas (`tools/schemagen`) | §6.5.6: never written by hand |
 | P2-4 | Two composition roots. `cmd/gateway` has real adapters only: no fakes, no cgo. `cmd/gateway-local` has the fakes, DuckDB, Azurite and the fake upstreams. The layer check enforces the split | O26: only the local root runs fakes. Production stays pure Go |
 | P2-5 | `sdk/go` stays pure Go. CI cross-compiles `atlas-engine` for the five wheel platforms | GO-002 |
-| P2-6 | **The fake Snowflake is DuckDB running the adapter's own SQL.** The Snowflake adapter plans a typed tree with sqlglot-go and renders it in the Snowflake dialect. The fake warehouse transpiles that statement to DuckDB, runs it, and serves `snowflake-arrow/1` chunks from fake result storage behind signed, expiring links | Planning, the guard, chunking, decoding, renewal, resume and settlement are all the adapter's real code. Only the warehouse is fake |
+| P2-6 | **The fake Snowflake is DuckDB running the adapter's own SQL.** The Snowflake adapter plans a typed tree with sqlglot and renders it in the Snowflake dialect. The fake warehouse transpiles that statement to DuckDB, runs it, and serves `snowflake-arrow/1` chunks from fake result storage behind signed, expiring links | Planning, the guard, chunking, decoding, renewal, resume and settlement are all the adapter's real code. Only the warehouse is fake |
 | P2-7 | **Events, hermetically:** an in-memory broker with Service Bus semantics, and a client connector that exists only in builds tagged `atlas_hermetic` and is accepted only when the bootstrap's environment is `local` or `conformance`, the same rule as `emulator`. The real path is AMQP through `azservicebus`. With Docker running, the official Service Bus emulator is used too | No AMQP fake to write. Release clients carry no test protocol |
 | P2-8 | The Cosmos DB, Blob, Service Bus, Entra, Key Vault and Log Analytics adapters are written now against the Azure SDKs. Blob is tested against Azurite, run here with `npx`. Cosmos DB and Service Bus are tested against their emulators when Docker runs (build tag `integration`); otherwise they are compiled and unit-tested | Plugging in is configuration, not new code |
 | P2-9 | The token from the front door to a service is a JWS behind a `TokenSigner` port: a local key now, Entra in the target (O22). It carries the address, subject, request id, deadline, idempotency key and trace | GATEWAY-002. Replaceable without touching services |
 | P2-10 | The service protocol runs over HTTP/2 with JSON and Arrow (O21). Every service's battery runs in process and over loopback | GATEWAY-003: proves every service movable |
 | P2-11 | Telemetry uses the OpenTelemetry API and slog. Redaction happens in one place. The exporter is configured only in the deployables | §6.1.12, §6.7.16 |
 | P2-12 | Exemplars per pattern, not all 138 capabilities. The remaining capabilities come from `cmd/atlas-new` once each pattern is proven | Prove each shape once. The generator makes the rest cheap and the same |
-| P2-13 | The spec's pattern ids (P01–P19, in `plan/exemplars.md`) aren't in the transcription, so §5 defines a provisional list, to be reconciled at work | The spec's own patterns aren't readable here |
+| P2-13 | The detailed P01–P19 exemplar catalogue is not included; §5 defines a provisional list that needs reconciliation before the generator is implemented | The provisional list is design guidance, not a completed generator |
 
 ## 3. The shape
 
@@ -81,7 +81,7 @@ tools/load/                 load generator, scenarios, report
 
 | System | Port(s) | Hermetic now | Real adapter, written in pass 2 | Proven now by | Plugging in takes |
 |---|---|---|---|---|---|
-| Snowflake | `DataSource` (adapter-internal `Warehouse` seam) | DuckDB + sqlglot-go; fake result storage | `gosnowflake`: async, Arrow batches, higher precision, query tag, fetch by id, query history, cancel by tag | The port suite and every Snowflake battery, run against DuckDB | Account, warehouse, read-only role, OBO scope; the O36 spike for chunk links (handoff ships with its switch off until then) |
+| Snowflake | `DataSource` (adapter-internal `Warehouse` seam) | DuckDB + sqlglot; fake result storage | `gosnowflake`: async, Arrow batches, higher precision, query tag, fetch by id, query history, cancel by tag | The port suite and every Snowflake battery, run against DuckDB | Account, warehouse, read-only role, OBO scope; the O36 spike for chunk links (handoff ships with its switch off until then) |
 | Cosmos DB | `Store`, `Limits`, `Operations`, `Idempotency`, `Lease`, `ChangeFeed`, `ServiceRegistry` | Memory fakes passing the suites | `azcosmos`: transactional batches of conditional patches, ETags, TTL, change feed, leases | Suites against fakes; against the emulator when Docker runs | Endpoint, managed identity, containers and partition keys (`fi-infra`) |
 | Blob storage | `TransferLinks`, `BlobStore` (LKG, exports), `AuditSink` (WORM append) | Azurite | `azblob`: user delegation SAS, append blobs, immutability | Suites against Azurite | Account, containers, immutability policy, roles |
 | Service Bus | `EventBus` (entities, rights, publish) | In-memory broker | `azservicebus`, `armservicebus`, `armauthorization` | Suites against the fake; the emulator when Docker runs | Namespace, scoped RBAC admin, SAS off |
@@ -120,12 +120,12 @@ The work is built bottom-up, as §6.5.11 orders it. Each phase ends green on `ma
 
 | Phase | Builds | Exit (requirements proven) | Size |
 |---|---|---|---|
-| **0 Ground** | Commit pass 1; the layout; `AGENTS.md` (constitution, review, layers); `Makefile`; analyzers in `tools/vet` (no `init` registration, no bare `go`, no `os.Getenv` outside configuration, no `http.Error`); staticcheck; goleak; the requirement matrix tool | PACKAGES-004/008, MECH-012, PRINCIPLES-002 tooling | S |
+| **0 Ground** | Preserve the pass-1 baseline findings; the layout; `AGENTS.md` (constitution, review, layers); `Makefile`; analyzers in `tools/vet` (no `init` registration, no bare `go`, no `os.Getenv` outside configuration, no `http.Error`); staticcheck; goleak; the requirement matrix tool | PACKAGES-004/008, MECH-012, PRINCIPLES-002 tooling | S |
 | **1 Protocol** | `references/` (Python, independent) and `sdk/go/protocol`: generated documents, I-JSON, grammars, RFC 9651, the Atlas Schema validator and meta-schema, JCS fingerprints, Arrow derivation, §9.5 resolution as rows and columns, units, problems, framing, the §3.3 classifier, lint, the agent-readiness check, `snowarrow` | AP-CONV, AP-SCHEMA, AP-FP, AP-RESOLVE, AP-HTTP, AP-DOC-003; TYPES-001–003; RESOLVE-001–004 (1M-row benchmark); fuzzers on every parser | L |
-| **2 Kit** | The 13 `kit` packages, adapted from the patterns repository with notices and tests, at §6.7's values | MECH-005/006/008/009/013/016; RECONCILE-001–006 (unit); goleak clean | M |
+| **2 Kit** | The 13 `kit` packages, with their tests and applicable notices, at §6.7's values | MECH-005/006/008/009/013/016; RECONCILE-001–006 (unit); goleak clean | M |
 | **3 Ports** | Every port of §6.5.3, plus `Lease`, `ChangeFeed`, `BlobStore` and `Clock`. A suite per port: concurrency, burst exactness, store semantics, takeover. Fakes with fault hooks and counters. The fake issuer | PACKAGES-002; ACCESS-003 at the port; RESOURCE-001–007 at the port | M |
 | **4 Core** | The pipeline (nine steps, spans, the refusing step); access; limits (reserve, settle, inherit, budgets, caps, confirmation); operations (leases, takeover, cancel by tag); registry and generations; the catalogue controller (admission, a checked snapshot, LKG, change feed); switches; degraded mode; house rules; all 20 built-ins with the guide writer; the settlement, publications, event-entities and event-rights controllers; audit with group commit; bulkheads and shedding | ACCESS-001–010; DISCOVERY-001–010; GATEWAY-001/006/008–014; OPERATION-001–003; MECH-003/007/010/011/017; VERSION-007/009; PROFILE-001–005; a fault-injection test per blast-radius row | L |
-| **5 Adapters** | Snowflake: the sqlglot-go planner (alias, cast, UTC, enum conformance, pushdown); the guard and its vectors; the tag out of band; `Warehouse` on gosnowflake and on DuckDB; handoff, resume, settle, export. Then Cosmos DB, Blob, Service Bus, Log Analytics, Entra, Key Vault and `vendorhttp` | PACKAGES-002 against fakes and emulators; SOURCE-001; DATA-004 (explain equals fetch byte for byte); SNOWFLAKE-001/003/004 | L |
+| **5 Adapters** | Snowflake: the sqlglot planner (alias, cast, UTC, enum conformance, pushdown); the guard and its vectors; the tag out of band; `Warehouse` on gosnowflake and on DuckDB; handoff, resume, settle, export. Then Cosmos DB, Blob, Service Bus, Log Analytics, Entra, Key Vault and `vendorhttp` | PACKAGES-002 against fakes and emulators; SOURCE-001; DATA-004 (explain equals fetch byte for byte); SNOWFLAKE-001/003/004 | L |
 | **6 Services** | Each exemplar: its profile files (agent-ready), its service, its fake upstream, and its family battery, run in process and over loopback | GATEWAY-003/007; CAP-001–006; DATA-001–007; RESOURCE-001–007; ACTION-001–003; EVENT-001–006; VENDOR-001/002; CATALOGUE-001 | L |
 | **7 Edges and roots** | `edge/http`: binding router, every delivery's framing, `Accept`, caching, CORS. `edge/mcp`: the fixed tools. `edge/service`. All six deployables. The generator with every pattern. Generated OpenAPI and AsyncAPI. An image with one binary and the CA certificates | MECH-001/002/015/016; PACKAGES-005–007; BINDING-001–003; MECH-018 | M |
 | **8 Clients** | `atlas` (§9.7 in full); `atlas-engine` (the exact runner protocol); `clients/cli` (commands from profiles at run time, exit codes, sign-in, locks); `fiatlas` (the §9.7.1 names, refs, `read_as` for pandas, polars, Arrow and DuckDB, `AtlasProblem` per code, async, operations, events, export, upload, the core extras); wheels per platform, installed and tested with no Go present | CLIENTS-001–006; GO-001/002; CLI-001/002; PY-001–007; AP-CLIENT-001–005; AP-EVENTS-001/002; CORE-009 end to end | L |
@@ -151,9 +151,9 @@ Each scenario has an SLO as its pass criterion. The tests run against `gateway-l
 | Cosmos DB down | Degraded mode | Ready within 45 s from LKG; the §6.1.14 table holds (GATEWAY-008/009) |
 | A switch turned off | Propagation | Every replica within 60 s (GATEWAY-011) |
 
-## 8. Following the patterns repository
+## 8. Applying the shared implementation patterns
 
-`AGENTS.md` carries the constitution, the 15-question review and the patterns' 12 mechanism rules. Each rule is mapped to the package that applies it and the test that checks it. Where the patterns repository and the spec differ, the spec wins:
+`AGENTS.md` carries the constitution, the 15-question review and the patterns' 12 mechanism rules. Each rule is mapped to the package that applies it and the test that checks it. The shared kit must implement these Atlas-specific rules:
 
 - every interaction is a POST to its binding
 - there is no `spec` member
@@ -166,15 +166,15 @@ Every service is admitted only after its review answers are recorded (PRINCIPLES
 
 ## 9. Running it
 
-- **Split the references into their own session.** Writing the schemas, vectors and scenarios is independent of the Go code, and the spec requires that independence. A separate session, in a disjoint folder (`spec/`, `tools/spec/`), writes them from the text while this session builds Phase 0 and the Go protocol against them. Mismatches are settled by the spec's text.
-- **Split more once the ports are frozen** (end of Phase 3): the Azure adapters, the CLI and the Python face can each run in a session of their own.
+- **Keep reference generation independent.** Derive schemas, vectors and scenarios in `spec/` and `tools/spec/` from the protocol text rather than the Go implementation. Test the Go protocol against those references; settle mismatches through a recorded interpretation of the specification.
+- **Parallelize once the ports are frozen** (end of Phase 3): the Azure adapters, CLI and Python face can be developed independently against the agreed interfaces and conformance cases.
 - **Stop or redirect at any phase boundary.** Each phase ends with a short report.
 
-## 10. Decisions for you
+## 10. Historical planning defaults
 
-Starting means accepting these defaults:
+These defaults describe the original plan. The adopted [review](REVIEW.md) and [current progress](../HANDOFF-PROGRESS.md) govern subsequent scope.
 
-1. **Commit pass 1 now** as the baseline. *Default: yes.*
+1. **Retain pass-1 findings** as the engineering baseline.
 2. **Docker.** Starting Docker Desktop lets the Cosmos DB and Service Bus adapters be tested against their emulators. *Default: build without it, and run those tests when it is up.*
 3. **Node SDK** (TypeScript) is out of scope. *Default: yes.*
 4. **Exemplars per pattern** (§5), not all 138 capabilities. *Default: yes.*

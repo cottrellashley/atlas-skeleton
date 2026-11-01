@@ -233,7 +233,7 @@ Result reuse must include environment, effective authorization scope, request, c
 
 The initial scope is a complete narrow journey, not a fraction of every subsystem:
 
-1. Integrate the pinned cloud pattern packages and `sqlglot-go` behind Atlas-owned interfaces.
+1. Integrate the shared gateway kit and the repository-local SQL library behind Atlas-owned interfaces.
 2. Author complete profiles for a small, coherent domain journey, including its identifier lookups and freshness/status capability.
 3. Implement bootstrap, identity, authorized catalogue/search, describe/guide, the call path, problems, data streaming and durable operations where that journey needs them.
 4. Prove the exact same requests and logical results through CLI, Python and Node against a fixed fixture or declared data revision. Add a capability after the clients are built and use it from all three.
@@ -242,4 +242,4 @@ The initial scope is a complete narrow journey, not a fraction of every subsyste
 
 Keep the first successful agent journey early. Its measure is a correct, authorized result with understandable recovery and reasonable cost. Require deterministic route replay from the built artifact; do not require a nondeterministic exploratory agent to issue exactly the same tool sequence on every run.
 
-The first release does not require arbitrary remote provider hosting, a universal bidirectional lens language, multiple SQL backends, every transport, harness lifecycle tools or a design for `bt-research`. The public capability boundary leaves room for those when concrete needs justify them.
+The first release does not require arbitrary remote provider hosting, a universal bidirectional lens language, multiple SQL backends, every transport, harness lifecycle tools or a design for backtesting research. The public capability boundary leaves room for those when concrete needs justify them.

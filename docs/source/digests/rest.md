@@ -1,9 +1,11 @@
-# Digest: the rest of the spec (overview, vision, §2.2.2–§2.5, §8, §9.2, transcription)
+# Digest: the rest of the spec (overview, vision, §2.2.2–§2.5, §8, §9.2, specification)
+
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
 
 Reader: "rest of the spec". Date: 2026-10-31.
 
-Spec root: `~/Documents/ChatGPT/creation/atlas-spec/` (abbreviated `spec/` below; NOT the repo's `spec/` dir).
-Review root: `spec/review/`. Repo: `~/repos/atlas-skeleton`.
+Spec root: `docs/source/atlas-spec/` (abbreviated `spec/` below; NOT the repo's `spec/` dir).
+Review root: `spec/review/`. Repo: `the repository root`.
 Citations: `file:line` (line numbers as `cat -n` prints them) plus § where the file has one.
 
 Files read in full for this digest: `README.md`, `00-overview.md`, `00-vision.md`, `02-2-2-vendor-api-data.md`, `02-3-resources.md`, `02-4-actions.md`, `02-5-events.md`, `08-design-decisions.md`, `09-2-schemas.md`, `TRANSCRIPTION-NOTES.md`, `VALIDATION.md`, `VERIFICATION-LEDGER.md`. To find overrides I also read in full: repo `AGENTS.md`, repo `docs/pass-2/REVIEW.md`, `review/README.md`, `review/ATLAS-CORE.md`, `review/DESIGN-REVIEW.md`, `review/INTEGRATIONS.md`. I read parts of: the repo's `spec/protocol/references/QUESTIONS.md` (lines 1–53, 131–157), `sdk/go/protocol/schema/*.go` and `arrowschema/*.go` (exported API only), `07-the-catalogue.md` (grep hits only) and `review/CAPABILITY-HANDBOOK.md` (lines 225–245, 355–365, plus grep hits).
@@ -43,7 +45,7 @@ The journey (REVIEW.md:37–42): `portfolio.holdings@v1`; `portfolio.list@v1` an
 | Understand | `atlas.describe` returns "`portfolio.holdings@v1#bcaa5bbad97cc612`: its request and result schemas, its executions (`gateway`, `handoff`), the person's limits (§3.1)" | :61 | IN SCOPE. OVERRIDDEN BY REVIEW (R01): describe's caller state (governance, availability) is private and never cached (REVIEW.md:59). Execution `handoff` is DEFERRED |
 | Call | "The Python SDK validates `{"portfolios": ["147HYC"], "columns": [...]}` and sends it with `Atlas-Profile-Expect`, `Atlas-Deadline` and its features: it can take a handoff (§4)." | :62 | IN SCOPE: client-side validation, the `Atlas-Profile-Expect` and `Atlas-Deadline` headers, and the features header. The handoff feature is DEFERRED. The exact header grammar is in §9.6 (another reader's) |
 | Decide | "validates the token, resolves the address, finds a grant, checks the request, reserves the limit (§6.2)" | :63 | IN SCOPE. See D17 below for the order the review sets |
-| Plan and run | "plans the writer contract as SQL (every column aliased and cast), the guard passes it, and Snowflake runs it (§2.2.1)" | :64 | IN SCOPE, with DuckDB plus sqlglot-go standing in for Snowflake (REVIEW.md:21; D27; D28) |
+| Plan and run | "plans the writer contract as SQL (every column aliased and cast), the guard passes it, and Snowflake runs it (§2.2.1)" | :64 | IN SCOPE, with DuckDB plus sqlglot standing in for Snowflake (REVIEW.md:21; D27; D28) |
 | Hand off | "The answer is a handoff document: the result's chunk links and the writer profile." | :65 | DEFERRED. The journey streams (ATLAS-CORE.md:206, 241) |
 | Read | "decodes each chunk into the writer's Arrow schema, checks it, resolves it to the profile its notebook knows (§3.4), and returns a `pandas.DataFrame`" | :66 | IN SCOPE as "resolve to the reader profile". OVERRIDDEN BY REVIEW (R11): Core is JSON, and Arrow is an optimisation with the same meaning. Large tables are iterators or batch readers by default, and materialising a DataFrame is the caller's explicit choice (ATLAS-CORE.md:138) |
 | Settle | "settles the call from Snowflake's own record and audits it" | :67 | IN SCOPE as settlement facts (R09) |
@@ -83,7 +85,7 @@ The journey crosses these seams:
 - "One host...; clients optimised per language and role, with extras that never need the gateway."
 - "One normative, language-neutral protocol; no implementation is the reference."
 
-Repository layout the spec names (00-overview.md:7): "Built in `jhgonline/fi-app-atlas`: the Atlas Gateway in `gateway/`, the clients in `clients/python/`, `clients/node/` and `clients/cli/`, and the Go SDK in `sdk/go/`." The repo has `gateway/`, `clients/` and `sdk/go/`. The Go module paths are `github.com/jhgonline/fi-app-atlas/...` (sdk/go/protocol/schema/schema.go imports).
+Repository layout the spec names (00-overview.md:7): "Built in `atlas.local`: the Atlas Gateway in `gateway/`, the clients in `clients/python/`, `clients/node/` and `clients/cli/`, and the Go SDK in `sdk/go/`." The repo has `gateway/`, `clients/` and `sdk/go/`. The Go module paths are `atlas.local/...` (sdk/go/protocol/schema/schema.go imports).
 
 ### 1.6 The vision's promises (00-vision.md)
 
@@ -147,7 +149,7 @@ There are 52 rows, D1–D52. D21 is written last, at :75. The count matches "52 
 | D25 | "The contract is encoding-neutral: JSON, NDJSON, Arrow and Parquet are encodings derived from the profile's schemas; Atlas's types are its own" | :47 | IN SCOPE (§9.2.6) |
 | D26 | "Data results travel streamed by the gateway, **handed off** (...no session at the source), or brokered by a ticket (...); export next." | :48 | Handoff and ticket DEFERRED (ATLAS-CORE.md:241; R10) |
 | D27 | "The gateway writes the contract into the query it plans (every column aliased and cast), so the source itself produces the writer schema in every execution." | :49 | IN SCOPE: the planner's output contract (INTEGRATIONS.md:68) |
-| D28 | "Engines are reached through one `DataSource` port; nothing about an engine leaves its adapter; the Go SQL library (Atlas's own, replacing sqlglot) builds every plan as a typed tree, renders each dialect (Snowflake; DuckDB for tests) and guards every statement, with a read-only role underneath; ADBC where it serves." | :50 | IN SCOPE. The review settles which library: "**`sqlglot-go` is that Go SQL dependency**" (INTEGRATIONS.md:14), pinned at `3d81e5393850e249136284859f6203a34db29f16` (INTEGRATIONS.md:10). Ported in-repo (memory: in-repo modules; the repo has `sqlglot/`) |
+| D28 | "Engines are reached through one `DataSource` port; nothing about an engine leaves its adapter; the Go SQL library (Atlas's own, replacing sqlglot) builds every plan as a typed tree, renders each dialect (Snowflake; DuckDB for tests) and guards every statement, with a read-only role underneath; ADBC where it serves." | :50 | IN SCOPE. The review settles which library: "**`sqlglot` is that Go SQL dependency**" (INTEGRATIONS.md:14), pinned at the reviewed local module (INTEGRATIONS.md:10). Ported in-repo (memory: in-repo modules; the repo has `sqlglot/`) |
 | D29 | Spec writing style (layers; OKF bundle; Mermaid) | :51 | No build constraint |
 | D30 | "Azure and Astronomer are capabilities of the Atlas Gateway; Azure only through **Resource Graph** (`azure.resource-graph`)" | :52 | DEFERRED |
 | D31 | "A capability whose columns are chosen by the caller's own query has the trait `DynamicSchema`: each answer carries its schema, no resolution applies, always `upstream`." | :53 | DEFERRED (no dynamic schema in the journey). Leave room in the result framing (R12 "dynamic result metadata framing", DESIGN-REVIEW.md:132) |
@@ -162,7 +164,7 @@ There are 52 rows, D1–D52. D21 is written last, at :75. The count matches "52 
 | D40 | "A metered call whose estimate passes the caller's threshold is confirmed by the person first (`confirmation_required`, `Atlas-Confirm`)." | :62 | OVERRIDDEN BY REVIEW (R06): consent is a receipt "bound to the principal, address, normalised request, plan digest, scope, maximum and expiry. The header is the client's claim only" (REVIEW.md:18, 64). Built in step 3 against the fakes (REVIEW.md:31). AMBIGUOUS: whether any journey capability is metered; the profiles say |
 | D41 | "`atlas/1.0` has no subscription over HTTP: every event ... is reached by a connect handover to Service Bus at the Events level; a client that cannot reach Service Bus polls (the event's history capability, the catalogue's ETag, the operation)." | :63 | Events DEFERRED. IN SCOPE: operations are followed by polling. A client watches for a new capability by polling the catalogue's ETag (relevant to acceptance #4). OVERRIDDEN BY REVIEW (R16): polling is equivalent to events only with cursor-addressable retained history (REVIEW.md:74) |
 | D42 | "The `client` execution (the ticket, the Broker level) is deferred until its credential meets the credential rule (O54); no client declares Broker in `atlas/1.0`." | :64 | DEFERRED (R10: "Client SQL tickets stay deferred", REVIEW.md:68) |
-| D43 | "The Python SDK is a Python face over the Go client engine (`atlas-engine`, the Go SDK as a program) that its wheel ships: they speak the runner protocol (§9.8.3) over pipes, with Arrow results on a second pipe; one engine per process, never shared across a fork." | :65 | IN SCOPE. The engine and Python face come back from branch `pass-1` onto the new protocol (REVIEW.md:19, 92). R11: Arrow is an optimisation, and "A subprocess is an implementation choice behind Python's public contract" (ATLAS-CORE.md:140) |
+| D43 | "The Python SDK is a Python face over the Go client engine (`atlas-engine`, the Go SDK as a program) that its wheel ships: they speak the runner protocol (§9.8.3) over pipes, with Arrow results on a second pipe; one engine per process, never shared across a fork." | :65 | IN SCOPE. The engine and Python face come back from the first implementation onto the new protocol (REVIEW.md:19, 92). R11: Arrow is an optimisation, and "A subprocess is an implementation choice behind Python's public contract" (ATLAS-CORE.md:140) |
 | D44 | "Three ways to understand a capability, each its own call: `atlas.describe` (what it is: the contract, no parameters), the built-in `atlas.guide` (how to use it: written for an agent, in its client's syntax, within a token budget) and the data interaction `explain` with the request (what this call would do: the exact SQL, columns, estimate, execution)." | :66 | IN SCOPE: describe and guide (ATLAS-CORE.md:238). `explain` is IN SCOPE where a journey profile declares it. "Both `explain` and execution use this compiler path" (INTEGRATIONS.md:68). R01: a guide's identity includes the prose revision (REVIEW.md:59) |
 | D45 | "State has three owners: **Entra ID** for access; **Azure Monitor and immutable Blob storage** for telemetry; **Cosmos DB** for state the gateway decides with; every store behind a port." | :67 | IN SCOPE as ports with hermetic fakes. The real technology comes later (memory: prove-pattern-first) |
 | D46 | "Adding a capability changes nothing outside the gateway (ATLAS-CORE-009): clients hold no capability's code and never refuse one they have not seen; the MCP tool set is fixed; skills and harness prompts teach the generic loop and name no capability; registration refuses a capability a client at the minimum protocol could not call." | :68 | IN SCOPE (acceptance #4). Registration/startup must refuse a profile a minimum-protocol client could not call |
@@ -200,7 +202,7 @@ Points that still matter:
 - "Clients build routes; the spec has them follow served bindings from `/.well-known/atlas`." (:105). The journey's clients follow served bindings from bootstrap.
 - "The Snowflake ticket's credential is the gateway's own token, with every role of its identity (`SESSION:ROLE-ANY`; 92 roles in Development)..." (:107). This is why tickets are deferred (D42, O54).
 - "No implementation of §9 exists yet as such... Four vector files, three profile vectors, the conformance gateway and the runners are still to write." (:115). R12 says this is done for the journey's protocol (REVIEW.md:70).
-- "The CLI's Go module is still named `github.com/jhgonline/fi-app-atlas/cli`." (:112). O40 recommends `…/fi-app-atlas/clients/cli` (:151).
+- The CLI lives in `clients/cli`; its current module is [`atlas.local/clients/cli`](../../../clients/cli/go.mod). The module already matches its repository location. O40's separate proposal reserves `package catalog` for a future harness catalogue to avoid colliding with capability discovery through `atlas catalog`.
 
 ### 2.3 Open decisions (§8.4, :119–172) that touch the first build
 
@@ -225,7 +227,7 @@ There are 52 open rows. The numbers are not contiguous (no O4, O7, O9, O16, O18,
 | O36 | Snowflake spike "Run before building the handoff." | :147 | DEFERRED with the handoff |
 | O38 | "“surface” in prose, `family` on the wire" | :149 | IN SCOPE (wire member `family`) |
 | O39 | "The first set of traits; a new trait as a protocol minor version." "Yes." | :150 | |
-| O40 | Rename the CLI module to `…/fi-app-atlas/clients/cli`; rename the harness command `package catalog` | :151 | AMBIGUOUS whether the repo has already applied it; check `clients/cli/go.mod` |
+| O40 | Keep the CLI module aligned with `clients/cli`; use `package catalog` for any future harness catalogue | [Current module](../../../clients/cli/go.mod); §5.3 | Module identity is already `atlas.local/clients/cli`. The harness command naming remains a design proposal. |
 | O48 | Node takes handoffs "After Python's; streaming and `export` first." | :158 | Node streams |
 | O56 | "One journey per role first, run on every release against Development." | :166 | DEFERRED beyond the build's own journey |
 | O60 | Caching: "Per caller and in memory for `Licensed` capabilities; shared across callers only for unlicensed data, keyed by address, request, fingerprint and as-of date." | :171 | OVERRIDDEN BY REVIEW (R18): results are private to their caller; reuse is keyed by authorisation, environment and data revision, and reauthorised (REVIEW.md:76) |
@@ -581,98 +583,52 @@ What follows is what the running gateway, CLI, engine and Node client must still
 
 ---
 
-## 5. The transcription's reliability
+## 5. The specification's reliability
 
-### 5.1 Sources and method
+### 5.1 Local evidence and its limits
 
-- `IMG_2138.MOV` (00:16:46) covers "the overview through §6.1". `IMG_2139.MOV` (00:17:53) covers "§6.2 and ending after §9.8 and the specification's reference material" (TRANSCRIPTION-NOTES.md:5–6).
-- Frames were "sampled at one- or two-second intervals"; "The initial generated draft was used only as a navigation aid. Every target file was then reviewed against its complete full-resolution source interval and rebuilt where needed." (:10, :12)
-- "The source is a handheld recording rather than the original document." The risk is "small monospace punctuation and densely packed table cells" (:16).
-- Diagrams are reconstructions as Mermaid (VALIDATION.md:26–43; README.md:39–41). Arrows and labels in a diagram are a reading of the frames, not text from the source.
-- The review "does not revalidate the video transcription" (review/README.md:41). "The supplied specification directory contains Markdown, not the referenced protocol schemas and conformance vectors." (review/README.md:43). The schemas and vectors in `spec/protocol/references/` were written for the build (R12, Phase 1). They are not transcribed.
+The [specification index](../atlas-spec/README.md) identifies the maintained chapters. [Maintenance notes](../atlas-spec/TRANSCRIPTION-NOTES.md), [documentation validation lessons](../atlas-spec/VALIDATION.md) and the [document-review coverage ledger](../atlas-spec/VERIFICATION-LEDGER.md) explain how to preserve technical meaning when editing them. The [design review](../atlas-spec/review/README.md) records proposed corrections and their rationale; adopted changes belong in the local requirement and decision registers.
 
-### 5.2 Verification status (VERIFICATION-LEDGER.md:5–40)
+Documentation review is distinct from executable conformance and live-service evidence. The protocol schemas, vectors and scenarios live in [`spec/protocol/references/`](../../../spec/protocol/references/README.md); their generator lives in `tools/spec`. The [handoff progress](../../HANDOFF-PROGRESS.md) records implementation evidence and remaining work. Passing an editorial check does not prove that a capability, adapter or conformance scenario has been implemented.
 
-"Verified" means "the file was rebuilt or checked against the full-resolution laptop-screen frames for the complete source interval" (:3). **All 34 files listed are "Verified". None is "In progress" or "Pending".**
+### 5.2 Recorded chapter coverage
 
-| File | Interval | Evidence | Line |
-|---|---|---|---|
-| `00-overview.md` | 2138 00:00:00–00:00:54 | frames at 00:00–00:50 every 10 s | :7 |
-| `00-vision.md` | 2138 00:00:54–00:02:04 | every four seconds | :8 |
-| `01-terms-and-conventions.md` | 2138 02:04–02:22 | 5 frames | :9 |
-| `02-the-surface.md` | 2138 02:22–02:48 | | :10 |
-| `02-1-capabilities.md` | 2138 02:48–03:32 | | :11 |
-| `02-2-data-surface.md` | 2138 03:32–04:08 | every two seconds | :12 |
-| `02-2-1-snowflake-data.md` | 2138 04:08–04:42 | every two seconds | :13 |
-| `02-2-2-vendor-api-data.md` | 2138 04:42–05:08 | every two seconds | :14 |
-| `02-3-resources.md` | 2138 05:08–05:32 | every two seconds; "the exact record envelope" | :15 |
-| `02-4-actions.md` | 2138 05:32–05:54 | every two seconds | :16 |
-| `02-5-events.md` | 2138 05:54–06:20 | every two seconds; "the exact connect handover" | :17 |
-| `02-6-discovery.md` | 2138 06:20–07:06 | | :18 |
-| `03-contracts.md` | 2138 07:06–10:53 | random checks incl. `atlas.lock` fingerprints | :19 |
-| `04-plugging-in.md` | 2138 10:53–12:04 | | :20 |
-| `05-clients.md` | 2138 12:04–14:48 | | :21 |
-| `06-inside-the-gateway.md` | 2138 14:48–15:12 | | :22 |
-| `06-1-front-door-and-services.md` | 2138 15:12–16:47 | | :23 |
-| `06-2-access-limits-and-audit.md` | 2139 00:00–00:46 | | :24 |
-| `06-3-reaching-systems.md` | 2139 00:46–01:28 | | :25 |
-| `06-4-data-sources.md` | 2139 01:28–02:01 | frames 001–017 | :26 |
-| `06-5-packages.md` | 2139 02:01–03:38 | frames 001–049 | :27 |
-| `06-6-principles.md` | 2139 03:38–04:30 | frames 001–026 | :28 |
-| `06-7-implementation-patterns.md` | 2139 04:30–05:58 | frames 001–044; "24 requirements" | :29 |
-| `07-the-catalogue.md` | 2139 05:58–10:42 | frames 001–142; "27 domain headings, 138 rows and no duplicate capability ids" | :30 |
-| `08-design-decisions.md` | 2139 10:42–11:59 | frames 001–039; "52 decided rows, 15 rejected alternatives, known gaps, and 52 open rows; checked unique decision/open identifiers and sampled the beginning, middle, and end" | :31 |
-| `09-atlas-protocol.md` | 2139 11:59–12:23 | 24 frames | :32 |
-| `09-1-conventions-and-grammar.md` | 2139 12:23–12:44 | frames 001–021 | :33 |
-| `09-2-schemas.md` | 2139 12:44–13:20 | frames 001–036; "twelve Arrow mappings ... three AP-SCHEMA requirements" | :34 |
-| `09-3-documents.md` | 2139 13:20–14:05 | 001–045 at 1 s; "21 document rows, 16 built-in capability rows, 24 problem codes" | :35 |
-| `09-4-fingerprints.md` | 2139 14:05–14:19 | 001–015 at 1 s | :36 |
-| `09-5-resolution.md` | 2139 14:19–14:55 | 001–037 at 1 s; "the 15-step algorithm, six lens operations" | :37 |
-| `09-6-http-binding.md` | 2139 14:55–15:28 | 001–034 at 1 s; "21 header rows" | :38 |
-| `09-7-clients.md` | 2139 15:28–16:22 | 001–054 at 1 s; "12-step call algorithm" | :39 |
-| `09-8-conformance.md` | 2139 16:22–17:53 | "all 50 scenario rows" (no frame count given) | :40 |
+The historical editorial review covered all 34 substantive specification chapters. The [coverage ledger](../atlas-spec/VERIFICATION-LEDGER.md) retains the chapter-by-chapter inventory; its counts describe that review, not released functionality.
 
-Weaker evidence:
-- The §8 ledger entry says the content was "sampled the beginning, middle, and end against the screen" (:31). Treat individual D/O cell wording as slightly less certain than the 1-second-spaced §9 files.
-- The §9.8 ledger entry gives no frame numbers (:40).
-- The review files, `README.md`, `TRANSCRIPTION-NOTES.md`, `VALIDATION.md` and `VERIFICATION-LEDGER.md` are not transcriptions and have no ledger rows.
+| Area | Technical material retained in the coverage ledger |
+|---|---|
+| Overview and surface | Caller roles, four capability families, data-delivery routes, resource envelopes, action lifecycles, events and discovery. |
+| Contracts and clients | Profiles, compatibility, reader/writer resolution, locks, four client families and runtime boundaries. |
+| Gateway architecture | Lifecycle, identity, limits, audit, source integrations, eight DataSource operations, package layers, fifteen principles and 24 mechanism requirements. |
+| Catalogue and decisions | 27 domain sections with 138 unique capability rows; 52 decided rows, 15 rejected alternatives and 52 open rows in the reviewed inventory. |
+| Protocol | Grammar and JSON rules; twelve Arrow mappings; 21 document rows, 16 built-in capabilities and 24 problem codes; fingerprinting; the 15-step resolution algorithm and six lens operations; 21 HTTP headers; the 12-step client call algorithm; all 50 conformance scenarios. |
 
-### 5.3 Known transcription errors (all corrected, per VALIDATION.md)
+The README, maintenance notes, validation notes, coverage ledger and review documents explain or assess the specification. They are not independent wire contracts.
 
-The original draft "did **not** pass validation: 12 of 14 sampled frames contained substantive errors" (VALIDATION.md:7). The failure kinds were "missing table columns, duplicated OCR fragments, incorrect punctuation in identifiers, and diagrams flattened into unordered text".
+### 5.3 Documentation validation lessons
 
-| Frame | Material | Fix | Line |
-|---|---|---|---|
-| 2138 00:01:17 | Agent flow | rebuilt as Mermaid | :11 |
-| 2138 00:01:40 | SDK table | "Restored the missing **Built on** column" | :12 |
-| 2138 00:03:27 | "Names by family" | restored all four families | :13 |
-| 2138 00:03:30 | §2.2 summary | "Corrected `bytes`, `handed off`, `ticket`, `SQL`, and the paragraph order." | :14 |
-| 2138 00:04:39 | Snowflake type mapping and spike | "restored `TIMESTAMP_NTZ`, `gosnowflake`, ADBC and the missing fallback text" | :15 |
-| 2138 00:06:39 | `ATLAS-DISCOVERY-001`–`010` | "Corrected requirement identifiers and `/.well-known/atlas`." | :16 |
-| 2138 00:08:14 | `data.landed` event profile | reconstructed the JSON | :17 |
-| 2139 00:01:52 | §6.4 DataSource | "Rebuilt the eight-operation port table and both adapter rows." | :18 |
-| 2139 00:02:36 | Six-layer diagram | reconstructed L6 → L0 | :19 |
-| 2139 00:08:43 | `model-portfolio` table | "Restored both capability rows and all nine columns." | :20 |
-| 2139 00:09:22 | Research heading | **Pass** | :21 |
-| 2139 00:10:57 | D13–D22 | "Corrected the sampled `atlas.access` identifier" | :22 |
-| 2139 00:13:20 | §9.2 nullability, rules, AP-SCHEMA | **Pass** | :23 |
-| 2139 00:14:07 | AP-DOC-003, §9.4 opening | "Corrected `resource.schema.json`, `ETag`, the source path, section summary and purpose." | :24 |
+An earlier draft failed 12 of 14 sampled editorial checks. Missing columns, duplicated fragments, identifier punctuation and diagrams flattened into unordered text changed technical meaning. The full [validation record](../atlas-spec/VALIDATION.md) retains the findings and corrections. Future edits should preserve these details:
 
-### 5.4 Residual oddities in my files
+| Material | Required preservation |
+|---|---|
+| Agent flow and SDK comparison | Keep the flow's arrows and the SDK table's **Built on** column, including each row's relationships. |
+| Capability families and data delivery | Keep all four families and distinguish bytes, handoff tickets, SQL and delivery order. |
+| Snowflake mappings and execution choices | Preserve `TIMESTAMP_NTZ`, `gosnowflake`, ADBC and the documented fallback questions. |
+| Discovery and events | Keep `ATLAS-DISCOVERY-001`–`010`, `/.well-known/atlas` and the complete `data.landed` profile JSON. |
+| DataSource and package layers | Keep all eight port operations, both adapter rows and the dependency direction from L6 through L0. |
+| Catalogue tables | Preserve both `model-portfolio` rows and all nine columns; purpose and source mapping must remain attached to the correct capability. |
+| Decisions and schemas | Preserve `atlas.access`, nullability rules and AP-SCHEMA requirements; wording changes can alter client obligations. |
+| Documents and fingerprints | Preserve `resource.schema.json`, `ETag`, the fingerprint projection and the distinction between document purpose and canonical representation. |
 
-These may be transcription artifacts or source inconsistencies. None is marked as an error by the ledger.
+### 5.4 Technical ambiguities to retain explicitly
 
-- **09-2-schemas.md:18**: the `$vocabulary` value is printed inline as "`json { ... }`". The leading `json` is almost certainly a code-fence language tag that leaked into the inline code. The value is the JSON object only. Phase 1's meta-schema settles it.
-- **02-3-resources.md:84**: `"owner": "3f2b…"` is truncated, either on screen or in transcription. It is not a valid `Principal` (uuid).
-- **Doubled section references**: "§9.3 §9.3.4" (02-3:46, :114), "§6.1 §6.1.13" (02-3:47; 02-5:46), "§6.6 §6.6.2" (02-3:114). These are probably a link label followed by its section. Read them as §9.3.4, §6.1.13 and §6.6.2.
-- **08-design-decisions.md**: D21 printed after D52 (:75); open numbers not contiguous; O41 after O43 (:153–154); O61 before O60 (:170–171). The counts (52/52) match the text and the ledger, so this is the source's order, not lost rows.
-- **Source inconsistencies the review records (not transcription):**
-  - §2.4 "No action is catalogued yet" against §7's preview `astronomer.deployment` (R23).
-  - §2.5 "Every event type is a capability" against §7's derived events "not capabilities of their own" (07-the-catalogue.md:71; R25).
-  - "Six layers" against L0–L6 (R24).
-  - D9/§3.3 full transitivity against the change table (R03).
-- **00-vision.md:3** says "Diagram and visible prose/tables manually reconstructed from full-resolution frames". The vision's Mermaid diagram is a reconstruction.
-- **VERIFICATION-LEDGER.md:23** gives the `06-1` interval as ending at 00:16:47, one second after the stated video length 00:16:46 (TRANSCRIPTION-NOTES.md:5). Trivial.
+These examples require a precise reading or a recorded resolution; they must not be silently converted into implementation assumptions.
+
+- In [§9.2](../atlas-spec/09-2-schemas.md), the inline `$vocabulary` example begins with `json`. The value is a JSON object; the language label is not part of it. Use the local protocol meta-schema when constructing an executable document.
+- The [resource example in §2.3](../atlas-spec/02-3-resources.md) abbreviates the owner as `"3f2b…"`. It illustrates the field but is not a valid UUID-valued `Principal` for a test or request.
+- Repeated section labels such as “§9.3 §9.3.4” should be read as the specific subsection, §9.3.4. Resolve a reference by its heading and requirement identifier rather than an obsolete line offset.
+- Decision and open-question identifiers are not ordered or contiguous. Identify rows by D/O identifier; presentation order does not imply missing decisions.
+- The review records tensions that need explicit adoption or resolution: §2.4 says no action is catalogued while §7 previews `astronomer.deployment` (R23); §2.5 calls every event type a capability while §7 describes derived events that are not separate capabilities (R25); “six layers” is inconsistent with labels L0–L6 (R24); and D9/§3.3's full-transitivity claim conflicts with the compatibility change table (R03). These are design findings, not evidence that their implementations are complete.
 
 ---
 

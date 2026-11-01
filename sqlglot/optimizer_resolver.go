@@ -5,8 +5,8 @@ package sqlglot
 import (
 	"fmt"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
 )
 
 type sourceColumnsKey struct {

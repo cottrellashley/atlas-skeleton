@@ -15,7 +15,7 @@ import (
 // A DataSource never sees SQL from a caller. The read is declarative (Query),
 // and the source renders it as one statement in the writer contract, guards
 // it, and binds every value as a parameter (§6.4, INTEGRATIONS "four
-// important source-level details"). How it does that (sqlglot-go, a driver,
+// important source-level details"). How it does that (the in-repo SQL parser, a driver,
 // an engine-specific seam) is the adapter's own business; a second engine is
 // a second implementation of this interface, proved by porttest.DataSource.
 type DataSource interface {

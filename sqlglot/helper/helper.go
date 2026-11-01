@@ -2,8 +2,8 @@
 package helper
 
 import (
+	"atlas.local/sqlglot/internal/pydec"
 	"fmt"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/internal/pydec"
 	"math/big"
 	"regexp"
 	"sort"

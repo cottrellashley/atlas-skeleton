@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/tools/go/analysis/analysistest"
 
-	"github.com/jhgonline/fi-app-atlas/tools/vet"
+	"atlas.local/tools/vet"
 )
 
 // The testdata packages carry `// want` comments where a check must report.
@@ -16,7 +16,7 @@ func TestNoInit(t *testing.T) {
 
 func TestNoBareGo(t *testing.T) {
 	analysistest.Run(t, analysistest.TestData(), vet.NoBareGo,
-		"example.com/barego", "github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc")
+		"example.com/barego", "atlas.local/sdk/go/kit/conc")
 }
 
 func TestNoGetenv(t *testing.T) {

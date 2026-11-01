@@ -1,7 +1,5 @@
 # 4. Plugging in
 
-Source: `IMG_2138.MOV` 00:10:53–00:12:04.
-
 `spec/plugging-in.md` · proposed
 
 How any client, in any language, plugs into the Atlas Gateway's surfaces: find the gateway, read the profile, validate, call, travel over a binding, be decided, answer, read; what a client does for each surface; and the levels it declares.

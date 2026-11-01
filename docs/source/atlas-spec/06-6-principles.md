@@ -129,4 +129,4 @@ What every agent and person building in this repository holds in mind:
 
 - §6.7 Implementation patterns: how each mechanism is built, with its values
 - §6.1 Front door and services, §6.2 Access, §6.5 Packages
-- The principles' sources, with their evidence at pinned commits: `patterns/cloud-gateway-patterns-go/docs/00-principles/` in the repository
+- [Shared gateway kit](../../../sdk/go/kit/) and [gateway core](../../../gateway/core/): implementations of the common mechanisms; use the implementation ledger for coverage.

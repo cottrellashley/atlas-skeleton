@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
+	"atlas.local/gateway/fakes"
+	"atlas.local/sdk/go/protocol/grammar"
 )
 
 // tableOf is one of the fixture's tables, as rows of named values.

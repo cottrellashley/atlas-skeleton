@@ -1,7 +1,5 @@
 # §2.2.1 Snowflake data
 
-Source: `IMG_2138.MOV` 00:04:08–00:04:42. Diagrams and visible prose/tables manually reconstructed from full-resolution frames.
-
 Data capabilities served from Snowflake: what Snowflake gives natively, streaming and result handoff (the client downloads one result's chunks with no Snowflake session), the ticket (the broker) deferred until its credential meets the credential rule, export by COPY INTO next; the contract in the planned SQL; the type mapping; and what a spike must confirm.
 
 ### In short

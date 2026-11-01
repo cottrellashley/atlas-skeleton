@@ -11,8 +11,8 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/decimal128"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/arrowschema"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
+	"atlas.local/sdk/go/protocol/arrowschema"
+	"atlas.local/sdk/go/protocol/schema"
 )
 
 const holdingsRow = `"portfolio": {"type": "string", "x-atlas-logical": "PortfolioCode", "x-atlas-key": true},

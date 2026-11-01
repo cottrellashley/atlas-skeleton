@@ -953,7 +953,7 @@ class Converter:
             "import (",
             '\t"testing"',
             "",
-            '\t. "github.com/jhgonline/fi-app-atlas/sqlglot/internal/pyrt"',
+            '\t. "atlas.local/sqlglot/internal/pyrt"',
             ")",
             "",
             "var _ = testing.Short",

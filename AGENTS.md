@@ -4,9 +4,9 @@ This is the Go core of Atlas: the gateway, the Go SDK, the CLI, the Python SDK's
 
 ## Read first
 
-1. The spec, [`docs/source/atlas-spec/`](docs/source/atlas-spec): a copy of the transcription kept with the repository, beside the review that governs pass 2 (`docs/source/atlas-spec/review/`, adopted in `docs/pass-2/REVIEW.md`). The plan for the handoff is [`docs/HANDOFF.md`](docs/HANDOFF.md). §9 is normative for everything on the wire. §6.6 holds the 15 principles, and §6.7 the mechanisms with their values. Where the spec and anything else disagree, the spec wins. Where the spec is ambiguous, write the case down; don't guess.
+1. The spec, [`docs/source/atlas-spec/`](docs/source/atlas-spec), and its design review (`docs/source/atlas-spec/review/`, adopted in `docs/pass-2/REVIEW.md`). The plan for the handoff is [`docs/HANDOFF.md`](docs/HANDOFF.md); current evidence and remaining work are in [`docs/HANDOFF-PROGRESS.md`](docs/HANDOFF-PROGRESS.md). §9 is normative for everything on the wire. §6.6 holds the 15 principles, and §6.7 the mechanisms with their values. Where the spec and anything else disagree, the spec wins. Where the spec is ambiguous, write the case down; don't guess.
 2. `docs/pass-2/PLAN.md` (what we are building, in which order) and `docs/pass-2/CRITIQUE.md` (what pass 1 got wrong).
-3. `cloud-gateway-patterns-go` is the source of the mechanisms. It loses to the spec in six places:
+3. The shared serving mechanisms live in [`sdk/go/kit`](sdk/go/kit). Their integration rules are:
    - every interaction is a POST to its binding
    - desired fields sit at the top of a record, not under `spec`
    - states are lowercase, with `UNKNOWN`
@@ -14,13 +14,17 @@ This is the Go core of Atlas: the gateway, the Go SDK, the CLI, the Python SDK's
    - authentication, limits and idempotency are pipeline steps, not middleware
    - the codes are `idempotency_conflict` 409 and `precondition_failed` 412
 
-## Never reach github.com/jhgonline
+## Project modules resolve locally
 
-jhgonline is a private organisation. Atlas's module paths (`github.com/jhgonline/fi-app-atlas/...`) are names only:
-- No remote, push, pull, fetch or clone for it, and no `gh` against it.
-- Never `go get`, or `go install <path>@<version>`, a jhgonline path. Build from the checkout: `go -C <module> install ./cmd/...`.
+Atlas's module paths (`atlas.local/...`) identify directories in this repository. They are not network locations:
+- Never fetch or install a project module from a remote source. Build from the workspace: `go -C <module> install ./cmd/...`, with the Makefile's environment.
 - A module that needs another in-repo module requires it at `v0.0.0`, with a `replace` to its relative directory, and every module is in `go.work`. `tools/modcheck` proves both.
-- The Makefile exports `GOPRIVATE` and `GOVCS=github.com/jhgonline:off`, so a missing replace fails at once on this machine. Run Go through `make`, or export the same two variables.
+- The separate example company module is also local, through `go.work` and relative replacements.
+- The Makefile exports `GOPRIVATE=atlas.local` and `GOVCS=atlas.local:off`, so a missing replacement fails locally. Public third-party dependencies keep their published module paths and checksums.
+
+## Keep changes bounded
+
+Follow [the lessons and pattern table](docs/LESSONS.md). Extend existing providers and ports for a selected integration; do not interpret the vision or this handoff as permission to refactor working code or implement every planned feature. Preserve the shared client contract, record unsupported mechanisms in the handoff ledger, and prove each targeted change. All necessary project context is in this repository.
 
 ## The constitution (§6.6.4)
 
@@ -69,7 +73,7 @@ jhgonline is a private organisation. Atlas's module paths (`github.com/jhgonline
 
 Write its profile first, under `profiles/<id>@v<N>.json` in its service's package. Lint it and classify it against the previous profile. Then:
 
-1. Generate the service: `go run ./gateway/cmd/atlas-new capability --pattern <P> <id>`.
+1. Follow the existing [company extension](extensions/support) or [warehouse service](gateway/svc/portfolio) pattern. The planned `atlas-new` generator is not implemented; do not assume it is available.
 2. Fill in what only a person can write: the statement, the mapping, the meaning.
 3. Pass the family's battery, in process and over loopback.
 4. Add its row to the blast-radius table, and its switch.
@@ -77,4 +81,4 @@ Write its profile first, under `profiles/<id>@v<N>.json` in its service's packag
 
 ## Before you commit
 
-Run `make check`. It must pass: gofmt, vet, `atlasvet`, staticcheck, every test under `-race`, the layer check and a tidy check. Commit only when asked. Pass 1 is kept on the `pass-1` branch; pass 2 is built on `pass-2`.
+Run `make check` and `make e2e`. They must pass: gofmt, vet, `atlasvet`, staticcheck, every Go test under `-race`, the layer and module checks, tidy, and the client acceptance journey. Commit only when asked. The historical implementation phases and their lessons are documented locally; no branch or external checkout is needed to understand the current code.

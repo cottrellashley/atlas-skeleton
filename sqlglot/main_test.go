@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/exp"
 )
 
 func TestMain(m *testing.M) {

@@ -13,18 +13,18 @@ import (
 
 	"github.com/apache/arrow-go/v18/arrow"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/gateway/fixtures"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/gateway/svc/datastatus"
-	"github.com/jhgonline/fi-app-atlas/gateway/svc/portfolio"
-	"github.com/jhgonline/fi-app-atlas/gateway/views"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/arrowschema"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/documents"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/gateway/fixtures"
+	"atlas.local/gateway/ports"
+	"atlas.local/gateway/svc/datastatus"
+	"atlas.local/gateway/svc/portfolio"
+	"atlas.local/gateway/views"
+	"atlas.local/sdk/go/kit/clock"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/arrowschema"
+	"atlas.local/sdk/go/protocol/documents"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/profile"
 )
 
 // The fixture's scopes: Alice reads four portfolios, Bob one, the batch

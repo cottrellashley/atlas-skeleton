@@ -3,4 +3,4 @@ package dialects_test
 // The converted dialect test suites run against every registered dialect; validate_all cases
 // for dialects that are not ported yet are skipped.
 
-import _ "github.com/jhgonline/fi-app-atlas/sqlglot/dialects"
+import _ "atlas.local/sqlglot/dialects"

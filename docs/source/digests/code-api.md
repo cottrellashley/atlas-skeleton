@@ -1,6 +1,8 @@
-# Digest: the code already in atlas-skeleton (working tree, 2026-10-31)
+# Digest: the code already in Atlas (working tree, 2026-10-31)
 
-Reader: code-api. Source: `/Users/ashleycottrell/repos/atlas-skeleton`, branch `pass-2`, HEAD `0634137` plus uncommitted edits (git status: `M` in Makefile, go.work, frame, gate, resolve, schema, arrowschema tests; untracked `gateway/`, `sqlglot/`, `sdk/go/kit/clock`, `sdk/go/kit/conc`, `sdk/go/kit/PROVENANCE.md`, `docs/pass-2/REVIEW.md`).
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
+
+Review scope: the protocol, gateway, shared kit and SQL modules during the second implementation. The API inventory below is historical; current source symbols and the handoff progress ledger take precedence.
 Governing: `AGENTS.md`, `docs/pass-2/REVIEW.md`.
 
 Paths below are relative to the repo root. `file:L` is a line in the file as it stands. Markers:
@@ -13,11 +15,11 @@ Module layout (`go.work` L3-9): `./gateway`, `./gateway/local`, `./sdk/go`, `./s
 
 | Module | Path | go | Requires |
 |---|---|---|---|
-| `github.com/jhgonline/fi-app-atlas/sdk/go` | `sdk/go/go.mod` | 1.25.0 | `github.com/apache/arrow-go/v18 v18.8.0` (and indirects) |
-| `github.com/jhgonline/fi-app-atlas/gateway` | `gateway/go.mod` | 1.25.0 | `sdk/go v0.0.0`, `sqlglot v0.0.0-00010101000000-000000000000`; `replace` to `../sdk/go`, `../sqlglot` |
-| `github.com/jhgonline/fi-app-atlas/gateway/local` | `gateway/local/go.mod` | 1.25.0 | `github.com/duckdb/duckdb-go/v2 v2.10506.0`, `gateway v0.0.0`; `replace` gateway `=> ..`, sdk, sqlglot |
-| `github.com/jhgonline/fi-app-atlas/sqlglot` | `sqlglot/go.mod` | 1.23 | none (stdlib only) |
-| `github.com/jhgonline/fi-app-atlas/tools` | `tools/go.mod` | 1.25.0 | `github.com/BurntSushi/toml v1.6.0`, `golang.org/x/tools v0.49.0`; `tool` directives for `govulncheck`, `staticcheck` (`honnef.co/go/tools v0.7.0`) |
+| `atlas.local/sdk/go` | `sdk/go/go.mod` | 1.25.0 | `github.com/apache/arrow-go/v18 v18.8.0` (and indirects) |
+| `atlas.local/gateway` | `gateway/go.mod` | 1.25.0 | `sdk/go v0.0.0`, `sqlglot v0.0.0-00010101000000-000000000000`; `replace` to `../sdk/go`, `../sqlglot` |
+| `atlas.local/gateway/local` | `gateway/local/go.mod` | 1.25.0 | `github.com/duckdb/duckdb-go/v2 v2.10506.0`, `gateway v0.0.0`; `replace` gateway `=> ..`, sdk, sqlglot |
+| `atlas.local/sqlglot` | `sqlglot/go.mod` | 1.23 | none (stdlib only) |
+| `atlas.local/tools` | `tools/go.mod` | 1.25.0 | `github.com/BurntSushi/toml v1.6.0`, `golang.org/x/tools v0.49.0`; `tool` directives for `govulncheck`, `staticcheck` (`honnef.co/go/tools v0.7.0`) |
 
 Baseline run by this reader (no file in the repo changed): `go -C gateway vet ./...` clean; `go -C gateway vet -vettool=.bin/atlasvet ./...` clean; `staticcheck ./...` in `gateway` clean; `go -C gateway test -count=1 ./...` ok (adapter/snowflake, core/registry, fakes); `go -C gateway/local test -count=1 ./...` ok (duckwh). `make check` exits 0 (section 3.4, BASELINE).
 
@@ -352,9 +354,9 @@ AMBIGUOUS (R03 vs enum removal): R03 says "a removal ... is a new major version"
 
 Tests: ATLAS-VERSION-007 (gate_test.go L129), ATLAS-VERSION-001 (L140), ATLAS-PROFILE-005 and ATLAS-CLIENTS-006 (L203), ATLAS-VISION-002 (L230), the review's R03 counterexamples (L249-296); vector profiles of all four families lint and are ready (vectors_test.go L17).
 
-### 1.12 `sdk/go/kit` (adapted from cloud-gateway-patterns-go `44ba81a`, MIT; `kit/PROVENANCE.md`)  IN SCOPE
+### 1.12 `sdk/go/kit` — shared gateway mechanisms (MIT notices retained)
 
-PROVENANCE: commit `44ba81aa92ee901c131c0b80dcadafa25de440a2` (2026-10-30), copied, edits marked `ATLAS` (L10-13). Known defect carried (L29): `middleware.Deadline` turns a past client deadline into the route's maximum and reads the wall clock; to be fixed in step 3 with R17. Still to import (L35-44): auth middleware, idempotency, lro, ratelimit, resilience (retry), reconcile, registry, resource. AGENTS.md L46 names `kit/retry`, which does not exist yet.
+Historical integration finding: `middleware.Deadline` turns a past client deadline into the route's maximum and reads the wall clock; to be fixed in step 3 with R17. Still to import (L35-44): auth middleware, idempotency, lro, ratelimit, resilience (retry), reconcile, registry, resource. AGENTS.md L46 names `kit/retry`, which does not exist yet.
 
 | Package | API (file:line) | Semantics |
 |---|---|---|
@@ -379,14 +381,14 @@ PROVENANCE: commit `44ba81aa92ee901c131c0b80dcadafa25de440a2` (2026-10-30), copi
 
 ---
 
-## 2. sqlglot (`sqlglot/`, module `github.com/jhgonline/fi-app-atlas/sqlglot`)  IN SCOPE (REVIEW.md step 4; acceptance result 1)
+## 2. sqlglot (`sqlglot/`, module `atlas.local/sqlglot`)  IN SCOPE (REVIEW.md step 4; acceptance result 1)
 
-Provenance (`sqlglot/PROVENANCE.md`): Ashley's line-by-line Go port of SQLGlot v30.27.0; upstream `https://github.com/cottrellashley/sqlglot-go` commit `3d81e5393850e249136284859f6203a34db29f16` (2026-10-30); ported 2026-10-31; MIT. Local changes: module path in 178 files; 12 unused declarations removed; staticcheck fixes (SA4004, SA6005, S1011, SA4006); `staticcheck.conf` turns off ST1005. Size: 207 Go files, 77,377 non-test lines. Dialects ported: Snowflake, DuckDB, base (README L14). Stdlib only, Go ≥1.23 (README L27).
+The in-repository Go SQL library implements SQLGlot v30.27.0 concepts, with MIT notices retained in its module. The reviewed implementation contained 207 Go files and 77,377 non-test lines; supported dialects were Snowflake, DuckDB and the base dialect. It used only the standard library and required Go ≥1.23. Consult `sqlglot/PROVENANCE.md` and the current module for integration details.
 Integration rules (`kit/PROVENANCE.md` L52-53, from INTEGRATIONS): full-statement parsing (never `ParseOne` on text then executed); exactly one executable statement; refuse `exp.Command` and unknown nodes; unsupported transformations fail before any driver call; qualification is not authorisation; bounded input size, AST depth and compilation concurrency (parsing takes no context). The optimiser and executor stay out of production.
 
 Packages: root `sqlglot` (parser, generator, dialect machinery, optimizer, schema, lineage, diff, transforms), `exp` (AST, kinds, builders), `tokens`, `dialects` (+ `dialects/snowflake`, `dialects/duckdb`), `errs`, `helper`, `trie`, `executor`, `cmd/sqlglot`, `internal/*`.
 
-Dialects register in `init` (`dialects/snowflake/snowflake.go` L14, `dialects/duckdb/duckdb.go` L14). Import `_ "github.com/jhgonline/fi-app-atlas/sqlglot/dialects"` (dialects.go). Without it only the base dialect `""` exists. The root package installs the AST backend in its own `init` (api.go L15).
+Dialects register in `init` (`dialects/snowflake/snowflake.go` L14, `dialects/duckdb/duckdb.go` L14). Import `_ "atlas.local/sqlglot/dialects"` (dialects.go). Without it only the base dialect `""` exists. The root package installs the AST backend in its own `init` (api.go L15).
 
 ### 2.1 Parsing
 
@@ -403,9 +405,9 @@ Dialects register in `init` (`dialects/snowflake/snowflake.go` L14, `dialects/du
 
 ```go
 import (
-    sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-    _ "github.com/jhgonline/fi-app-atlas/sqlglot/dialects"
-    "github.com/jhgonline/fi-app-atlas/sqlglot/errs"
+    sqlglot "atlas.local/sqlglot"
+    _ "atlas.local/sqlglot/dialects"
+    "atlas.local/sqlglot/errs"
 )
 trees, err := sqlglot.ParseOpts(text, "snowflake", sqlglot.ParserOptions{ErrorLevel: errs.Immediate, MaxNodes: 10000})
 if err != nil || len(trees) != 1 || trees[0] == nil { /* refuse */ }
@@ -461,7 +463,7 @@ Others exported (not for production): `Optimize(expr, OptimizeOptions)` (optimiz
 
 ### 3.1 `Makefile`
 
-`SHELL := /bin/bash`; `GOTOOLCHAIN := local`; `PRODUCT := sdk/go`; `LIBS := sqlglot tools`; `MODULES := $(PRODUCT) $(LIBS)`; `BIN := $(CURDIR)/.bin`; `ATLAS_SPEC ?= $(HOME)/Documents/ChatGPT/creation/atlas-spec` (L4-14).
+`SHELL := /bin/bash`; `GOTOOLCHAIN := local`; `PRODUCT := sdk/go`; `LIBS := sqlglot tools`; `MODULES := $(PRODUCT) $(LIBS)`; `BIN := $(CURDIR)/.bin`. The current specification path is repository-local: `ATLAS_SPEC ?= $(CURDIR)/docs/source/atlas-spec`. The module lists and targets below describe this historical review snapshot; consult the current `Makefile` for the complete module inventory.
 
 | Target | Runs |
 |---|---|
@@ -490,7 +492,7 @@ Others exported (not for production): `Optimize(expr, OptimizeOptions)` (optimiz
 
 ### 3.3 `tools/layercheck`
 
-Reads `layers.toml` (`Load`, L63; unknown keys are an error). Keys (Rules, L31-38): `[layers]` (`"<int>" = [paths]`), `independent` (`["gateway/adapter/*", ...]`), `adapters` (a path pattern), `adapter_importers` (patterns), `[[forbid]]` (`from`, `imports`, `why`), `[[external]]` (`from`, `allow`, `why`). Paths are relative to `Repo = "github.com/jhgonline/fi-app-atlas/"` (L28); a path ending `/...` covers everything under it (L216-221); the most specific (longest) matching pattern decides a package's layer (L175-190). `List(dir)` runs `go list -json=ImportPath,GoFiles,Imports ./...` and skips test-only packages (L120). `Check` (L76-117) reports: a package with no layer; an import with no layer; `to > from` ("an import never points up"; same layer allowed, R24); members of one independent group importing each other; an adapter imported by a package not in `adapter_importers` (other than its own member); a forbidden import; a third-party import outside `external.allow` (stdlib always allowed). Run by `TestEveryModuleKeepsItsLayers` (ATLAS-PACKAGES-001) for every `*/layers.toml` and `*/*/layers.toml`: today only `sdk/go/layers.toml`.
+Reads `layers.toml` (`Load`, L63; unknown keys are an error). Keys (Rules, L31-38): `[layers]` (`"<int>" = [paths]`), `independent` (`["gateway/adapter/*", ...]`), `adapters` (a path pattern), `adapter_importers` (patterns), `[[forbid]]` (`from`, `imports`, `why`), `[[external]]` (`from`, `allow`, `why`). Paths are relative to `Repo = "atlas.local/"` (L28); a path ending `/...` covers everything under it (L216-221); the most specific (longest) matching pattern decides a package's layer (L175-190). `List(dir)` runs `go list -json=ImportPath,GoFiles,Imports ./...` and skips test-only packages (L120). `Check` (L76-117) reports: a package with no layer; an import with no layer; `to > from` ("an import never points up"; same layer allowed, R24); members of one independent group importing each other; an adapter imported by a package not in `adapter_importers` (other than its own member); a forbidden import; a third-party import outside `external.allow` (stdlib always allowed). Run by `TestEveryModuleKeepsItsLayers` (ATLAS-PACKAGES-001) for every `*/layers.toml` and `*/*/layers.toml`: today only `sdk/go/layers.toml`.
 
 `sdk/go/layers.toml`: layer 0 = `sdk/go/protocol/...`, `sdk/go/snowarrow/...`, `sdk/go/kit/...`, `sdk/go/internal/...`; 1 = `sdk/go` (package atlas, §5.4); 2 = `sdk/go/engine/...`, `sdk/go/conformance/...`; 3 = `sdk/go/cmd/...`. Forbid: protocol importing kit or snowarrow; kit importing snowarrow. External: protocol and snowarrow may import `github.com/apache/arrow-go/v18/...` only; kit and internal nothing.
 There is no `gateway/layers.toml` (section 5, D3). The unit test (`TestTheCheckRefusesWhatItShould`, L45) shows the intended gateway shape: `independent = ["gateway/adapter/*", "gateway/svc/*"]`, `adapters = "gateway/adapter/..."`, `adapter_importers = ["gateway/cmd/..."]`, layers 1 `gateway/ports`, 2 `gateway/core/...`, 3 `gateway/adapter/...`, 4 `gateway/svc/...`, 6 `gateway/cmd/...`; forbid `gateway/svc/...` importing `gateway/core/...` and `sdk/go/kit/jwt`.
@@ -536,7 +538,7 @@ Missing ports for the journey and its R-steps: idempotency store (R08), operatio
 
 Only one suite: `Warehouse(t, newWarehouse func(t, tables []fakes.Table) ports.Warehouse)` (warehouse.go L68). Data: `Holdings = "TESTDB.PUBLIC.HOLDINGS"` (L17); `WarehouseTables()` (L33): columns `PORTFOLIO` string, `SECURITY` string, `ISIN` string, `AS_OF` date, `MV` decimal, `CCY` string, `WEIGHT` float, `LOTS` integer, `OPEN` boolean, `LOADED_AT` timestamp; six rows including nulls, `2^53+1`, and `12345678901234567890.123456`. Subtests (L118-184): "columns in order, nulls last"; "in, eq and bounds"; "a decimal compares by value, past a float's precision"; "a null meets no condition"; "the latest of each group"; "the latest is chosen before the query's conditions"; "every type, exactly"; "a limit"; "an object it does not serve" (ErrUnknownObject); "a call whose context has ended". Run by the fake (fakes_test.go) and by the Snowflake adapter over DuckDB (`gateway/local/duckwh/duckwh_test.go`). Missing: suites for Authenticator, PolicySource, AuditSink, Provider (AGENTS.md L55: every port has a suite).
 
-### 4.4 `gateway/adapter/snowflake`  IN SCOPE (sqlglot-go behind the compiler and guard, REVIEW.md step 4)
+### 4.4 `gateway/adapter/snowflake`  IN SCOPE (sqlglot behind the compiler and guard, REVIEW.md step 4)
 
 compile.go: `MaxStatement = 256 << 10` bytes, `MaxDepth = 64` AST levels, `MaxValues = 1000` per IN (L20-22); `type Statement struct{ SQL string; Args []any; Objects [][]string }` (L27); identifiers must match `^[A-Za-z_][A-Za-z0-9_$]{0,254}$` and are upper-cased (L35, L51); objects are exactly `database.schema.object` (L58); aliases `atlas_t`, `atlas_l`, `atlas_latest` (L38-42). `Compile(q ports.Query, registered [][]string, dialect string) (*Statement, error)` (L155): builds Snowflake text (decimals selected as `CAST(x AS VARCHAR)`; values `?`, dates `CAST(? AS DATE)`, timestamps `CAST(? AS TIMESTAMP)`, decimals `CAST(? AS NUMBER(p, s))`; `IN ()` empty → `1 = 0`; `Latest` = `JOIN (SELECT per..., MAX(date) ... GROUP BY per) ON ...`; `ORDER BY ... ASC NULLS LAST`; `LIMIT n`), runs `Guard`, then parses with sqlglot, checks depth and generates in `dialect` with `exp.UnsupportedLevel(errs.Raise)` (L263-277). An unregistered object returns `ports.ErrUnknownObject`.
 guard.go: `Guard(sql string, registered [][]string) Verdict` (L65); `type Verdict struct{ Accepted bool; Reason string; Objects [][]string }` (L54). Reasons, in check order (L29-49): `parse_error`, `empty`, `multiple_statements`, `dml`, `ddl`, `copy`, `file_transfer`, `call`, `not_a_query`, `select_into`, `stage`, `table_function`, `system_function`, `dynamic_identifier`, `unqualified_object`, `unregistered_object`. Accepts only SELECT/UNION/INTERSECT/EXCEPT (or a Subquery of one) over `[db, schema]` or `[db, schema, object]` registered entries; unquoted identifiers upper-cased; CTE names in scope are not objects; a panic fails closed. Proved by every case of `references/vectors/guard.json` (guard_test.go L11-13, ATLAS-DATA-006).
@@ -631,6 +633,6 @@ Severity: H blocks the journey or a guarantee; M wrong behaviour in a case the j
 
 ### 6.3 Must be built (not in the code)
 
-Gateway deployable and pipeline; journey profiles and fixtures (two identities, different portfolio scope); bootstrap, catalogue, describe (R01 private caller state), search; providers for the four capabilities; idempotency (R08), receipts (R06), budget authority (R07), operation store and worker (R08, R17); freshness source for `data.status`; port suites for Authenticator, PolicySource, AuditSink, Provider; `gateway/layers.toml`; gateway in `make check`; a loadable form of the built-in profiles; CLI, Python face (from branch `pass-1`), Node client.
+Gateway deployable and pipeline; journey profiles and fixtures (two identities, different portfolio scope); bootstrap, catalogue, describe (R01 private caller state), search; providers for the four capabilities; idempotency (R08), receipts (R06), budget authority (R07), operation store and worker (R08, R17); freshness source for `data.status`; port suites for Authenticator, PolicySource, AuditSink, Provider; `gateway/layers.toml`; gateway in `make check`; a loadable form of the built-in profiles; CLI, Python face (from the first implementation), Node client.
 
 <!-- END -->

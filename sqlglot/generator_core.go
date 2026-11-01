@@ -7,9 +7,9 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
 )
 
 // SentinelLineBreak mirrors Generator.SENTINEL_LINE_BREAK.

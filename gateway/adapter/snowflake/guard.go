@@ -18,10 +18,10 @@ import (
 	"slices"
 	"strings"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	_ "github.com/jhgonline/fi-app-atlas/sqlglot/dialects" // snowflake and duckdb
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
+	sqlglot "atlas.local/sqlglot"
+	_ "atlas.local/sqlglot/dialects" // snowflake and duckdb
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/tokens"
 )
 
 // The guard's reasons, in the order it checks them: the first that refuses

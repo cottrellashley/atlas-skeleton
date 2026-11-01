@@ -14,15 +14,15 @@ import (
 	"slices"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/builtins"
-	"github.com/jhgonline/fi-app-atlas/gateway/core/pipeline"
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/gateway/edge"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/gateway/views"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
+	"atlas.local/gateway/core/builtins"
+	"atlas.local/gateway/core/pipeline"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/gateway/edge"
+	"atlas.local/gateway/ports"
+	"atlas.local/gateway/views"
+	"atlas.local/sdk/go/kit/clock"
+	"atlas.local/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/profile"
 )
 
 // Domain gives a domain's capabilities, as their owners wrote them.

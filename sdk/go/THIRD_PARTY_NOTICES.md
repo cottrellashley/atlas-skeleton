@@ -1,33 +1,26 @@
 # Third-party notices
 
-Code in this module adapted from other projects keeps its licence here (spec §6.5.9 rule 6, §6.7 rule 3).
+The shared gateway utilities below include MIT-licensed code. Their copyright and
+permission notice is reproduced unchanged here. All listed files are maintained
+inside this repository; their design and integration guidance is in
+[kit/PROVENANCE.md](kit/PROVENANCE.md).
 
-## cloud-gateway-patterns-go
+## Shared gateway utilities
 
-Source: https://github.com/cottrellashley/cloud-gateway-patterns-go, commit `44ba81a`. Each adapted file says so in its header and marks Atlas's later edits `ATLAS`.
-
-| File here | Adapted from |
+| Package | Files covered by the notice |
 |---|---|
-| `kit/health/health.go` | `patterns/health/health.go` at `44ba81a` |
-| `kit/health/health_test.go` | `patterns/health/health_test.go` at `44ba81a` |
-| `kit/hot/config.go` | `patterns/config/config.go` at `44ba81a` |
-| `kit/hot/config_test.go` | `patterns/config/config_test.go` at `44ba81a` |
-| `kit/httpserver/httpserver.go` | `patterns/httpserver/httpserver.go` at `44ba81a` |
-| `kit/httpserver/httpserver_test.go` | `patterns/httpserver/httpserver_test.go` at `44ba81a` |
-| `kit/jwt/jwks.go` | `patterns/auth/jwks.go` at `44ba81a` |
-| `kit/jwt/jws.go` | `patterns/auth/jws.go` at `44ba81a` |
-| `kit/jwt/jwt_test.go` | `patterns/auth/auth_test.go` at `44ba81a` |
-| `kit/jwt/verifier.go` | `patterns/auth/verifier.go` at `44ba81a` |
-| `kit/lifecycle/lifecycle.go` | `patterns/lifecycle/lifecycle.go` at `44ba81a` |
-| `kit/lifecycle/lifecycle_test.go` | `patterns/lifecycle/lifecycle_test.go` at `44ba81a` |
-| `kit/middleware/middleware.go` | `patterns/middleware/middleware.go` at `44ba81a` |
-| `kit/middleware/middleware_test.go` | `patterns/middleware/middleware_test.go` at `44ba81a` |
-| `kit/telemetry/accesslog.go` | `patterns/telemetry/accesslog.go` at `44ba81a` |
-| `kit/telemetry/logging.go` | `patterns/telemetry/logging.go` at `44ba81a` |
-| `kit/telemetry/route.go` | `patterns/telemetry/route.go` at `44ba81a` |
-| `kit/telemetry/telemetry_test.go` | `patterns/telemetry/telemetry_test.go` at `44ba81a` |
-| `kit/telemetry/traceparent.go` | `patterns/telemetry/traceparent.go` at `44ba81a` |
-| `kit/telemetry/writer.go` | `patterns/telemetry/writer.go` at `44ba81a` |
+| `kit/health` | `health.go`, `health_test.go` |
+| `kit/hot` | `config.go`, `config_test.go` |
+| `kit/httpserver` | `httpserver.go`, `httpserver_test.go` |
+| `kit/jwt` | `jwks.go`, `jws.go`, `verifier.go`, `jwt_test.go` |
+| `kit/lifecycle` | `lifecycle.go`, `lifecycle_test.go` |
+| `kit/middleware` | `middleware.go`, `middleware_test.go` |
+| `kit/telemetry` | `accesslog.go`, `logging.go`, `route.go`, `traceparent.go`, `writer.go`, `telemetry_test.go` |
+
+Keep this notice with redistributed copies of these files. Public module
+dependencies keep their own licenses. The local SQL library's notices are in
+[sqlglot/LICENSE](../../sqlglot/LICENSE), with an additional fixture notice in
+[sqlglot/testdata/fixtures/jsonpath/LICENSE](../../sqlglot/testdata/fixtures/jsonpath/LICENSE).
 
 ### Licence
 

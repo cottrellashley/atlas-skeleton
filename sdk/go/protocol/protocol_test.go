@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/grammar"
 )
 
 // ATLAS-PROTOCOL-001, ATLAS-PROTOCOL-005: every problem has a registered code, its type

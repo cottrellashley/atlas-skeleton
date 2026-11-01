@@ -15,12 +15,12 @@ import (
 
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	atlas "github.com/jhgonline/fi-app-atlas/sdk/go"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/frame"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	atlas "atlas.local/sdk/go"
+	"atlas.local/sdk/go/engine/fakegw"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/frame"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // Every test here runs in a testing/synctest bubble, which fails when a

@@ -28,12 +28,12 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/adapter/auditlog"
-	"github.com/jhgonline/fi-app-atlas/gateway/fixtures"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/lifecycle"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/adapter/auditlog"
+	"atlas.local/gateway/fixtures"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/conc"
+	"atlas.local/sdk/go/kit/lifecycle"
+	"atlas.local/sdk/go/protocol"
 )
 
 // testDriver is the warehouse engine the settings name; the tests open its

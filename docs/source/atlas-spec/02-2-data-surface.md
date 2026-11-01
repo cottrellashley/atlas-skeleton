@@ -1,7 +1,5 @@
 # §2.2 The data surface
 
-Source: `IMG_2138.MOV` 00:03:32–00:04:08. Diagram and visible prose/tables manually reconstructed from full-resolution frames.
-
 Reading data with one contract whoever runs the work and however the bytes travel: fetch, explain and export; a result streamed by the gateway, handed off to the client, or brokered by a ticket; export next; the contract written into the planned query; and the sub-profiles by source.
 
 ### In short

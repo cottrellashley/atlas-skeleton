@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/ports"
 )
 
 // bulkhead bounds the work an engine is given (§6.7: each upstream its own

@@ -1,10 +1,12 @@
 # Digest: the wire protocol (gateway HTTP edge and every client)
 
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
+
 Reader: wire. Written 2026-10-31. Governing order: `docs/pass-2/REVIEW.md` (REVIEW) > the review (`atlas-spec/review/`) > §9 > the references. §9 is normative for the wire (09-atlas-protocol.md:81, AGENTS.md:7).
 
 Citation keys:
 - `§9` = `atlas-spec/09-atlas-protocol.md`; `§9.1` = `09-1-conventions-and-grammar.md`; `§9.3` = `09-3-documents.md`; `§9.4` = `09-4-fingerprints.md`; `§9.6` = `09-6-http-binding.md`; `§9.7` = `09-7-clients.md` (read in full for the walk); `§9.2` = `09-2-schemas.md` (only lines 93-152 read).
-- `S:<name>` = `atlas-skeleton/spec/protocol/references/schemas/<name>.schema.json`, with line numbers.
+- `S:<name>` = `spec/protocol/references/schemas/<name>.schema.json`, with line numbers.
 - `V:headers`, `V:problems` = `references/vectors/headers.json`, `problems.json`.
 - `Q-…` = `references/QUESTIONS.md` (the references' recorded readings; not spec text).
 - `R01`…`R26` = REVIEW.md:57-84 table; `DR` = `review/DESIGN-REVIEW.md`; `AC` = `review/ATLAS-CORE.md`.

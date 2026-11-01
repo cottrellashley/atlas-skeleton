@@ -1,4 +1,4 @@
-module github.com/jhgonline/fi-app-atlas/sdk/go
+module atlas.local/sdk/go
 
 go 1.25.0
 

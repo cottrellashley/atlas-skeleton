@@ -164,7 +164,7 @@ Discovery, access, operations and settings: the only capabilities a client knows
 | Property | Value |
 |---|---|
 | Kind of domain | Built-in |
-| Owner | Atlas (Ashley Cottrell) |
+| Owner | Atlas maintainers |
 
 | Capability | Surface | Description | Returns | Interactions | Result · delivery | Execution | Stability | Today |
 |---|---|---|---|---|---|---|---|---|
@@ -413,7 +413,7 @@ The entities events travel through: topics, queues and subscriptions, created by
 | Property | Value |
 |---|---|
 | Kind of domain | Subject |
-| Owner | Atlas (Ashley Cottrell) |
+| Owner | Atlas maintainers |
 
 | Capability | Surface | Description | Returns | Interactions | Result · delivery | Execution | Stability | Today |
 |---|---|---|---|---|---|---|---|---|
@@ -596,7 +596,7 @@ The resources Nautilus keeps for a person: dashboards, scheduled jobs, skills an
 | Property | Value |
 |---|---|
 | Kind of domain | Subject |
-| Owner | Ian Draves |
+| Owner | Nautilus maintainers |
 
 | Capability | Surface | Description | Returns | Interactions | Result · delivery | Execution | Stability | Today |
 |---|---|---|---|---|---|---|---|---|

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol"
 )
 
 // Fact is one immutable fact of an invocation's history (R09): its

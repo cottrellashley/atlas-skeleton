@@ -7,8 +7,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/porttest"
-	"github.com/jhgonline/fi-app-atlas/gateway/views"
+	"atlas.local/gateway/porttest"
+	"atlas.local/gateway/views"
 )
 
 // R20: the provider runs the port's suite in process, answering batches

@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/gateway/porttest"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/ports"
+	"atlas.local/gateway/porttest"
+	"atlas.local/sdk/go/kit/clock"
 )
 
 type tokenIssuer struct{ tokens *fakes.Tokens }

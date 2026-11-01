@@ -4,12 +4,12 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/ijson"
 	"testing"
 	"testing/synctest"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/engine/fakegw"
+	"atlas.local/sdk/go/engine/fakegw"
 )
 
 // R029, R087, §9.7.7, CORE-PROB-001: retries follow the problem's

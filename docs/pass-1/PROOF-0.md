@@ -1,11 +1,11 @@
 # Proof 0, hermetic: result
 
-Run on 2026-10-31, on a laptop, with no outside systems. `./check.sh` passes:
+Historical proof run on 2026-10-31 with no outside systems. The first implementation’s verification script passed:
 
 - every Go suite under the race detector
 - the 16 Python tests, which passed in five consecutive runs
 
-This is Proof 0 of `atlas-proof-plan.md`, done hermetically. It also goes ahead of parts of Proofs 1 and 3, and of the Python SDK, by putting fakes where the real systems will be.
+This is Proof 0 of the [proof plan](../source/atlas-proof-plan.md), done hermetically. The findings describe the first implementation; see [current progress](../HANDOFF-PROGRESS.md) before treating any feature as available. It also goes ahead of parts of Proofs 1 and 3, and of the Python SDK, by putting fakes where the real systems will be.
 
 ## What was tried
 
@@ -47,7 +47,7 @@ Contracts change from the back with `-pin`: the gateway serves an earlier profil
 
 ## Numbers
 
-These are best of five, on this laptop, with every portfolio on the latest date.
+These are the best of five measurements from that local proof run, with every portfolio on the latest date. They are not current performance guarantees.
 
 | Data | Gateway alone (NDJSON over HTTP) | Python face → engine → gateway, to a `pa.Table` |
 |---|---|---|

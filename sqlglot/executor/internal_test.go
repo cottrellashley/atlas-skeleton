@@ -7,7 +7,7 @@ import (
 	"sort"
 	"testing"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
+	sqlglot "atlas.local/sqlglot"
 )
 
 func mustPlan(t *testing.T, sql string, schema any) *sqlglot.Plan {

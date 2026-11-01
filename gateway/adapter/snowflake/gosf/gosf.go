@@ -35,8 +35,8 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/memory"
 	sf "github.com/snowflakedb/gosnowflake"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/adapter/snowflake"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/adapter/snowflake"
+	"atlas.local/gateway/ports"
 )
 
 // The pool's defaults (R054): as many sessions as a Source runs statements

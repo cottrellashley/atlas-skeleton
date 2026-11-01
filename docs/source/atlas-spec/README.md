@@ -1,13 +1,11 @@
 # Atlas specification knowledge base
 
-- [Design review, proposed core and complete capability handbook](review/README.md) — analysis and proposals dated 2026-10-31, separate from the transcription below.
-- [Frame-by-frame verification ledger](VERIFICATION-LEDGER.md)
-- [Original random-sample audit](VALIDATION.md)
+The specification describes Atlas's product vision, domain catalogue, architecture and wire protocol. Section 9 is normative for the wire. Design proposals and historical findings remain separate from implementation status; use the [handoff progress](../../HANDOFF-PROGRESS.md) to determine what has been built and tested.
 
-This knowledge base was rebuilt by comparing every section directly with
-full-resolution frames from `IMG_2138.MOV` and `IMG_2139.MOV`. The
-[verification ledger](VERIFICATION-LEDGER.md) records the source interval and
-manual evidence for every completed file.
+- [Design review, proposed core and complete capability handbook](review/README.md)
+- [Document-review coverage](VERIFICATION-LEDGER.md)
+- [Documentation validation lessons](VALIDATION.md)
+- [Specification maintenance notes](TRANSCRIPTION-NOTES.md)
 
 ## Contents
 
@@ -36,8 +34,4 @@ The two largest chapters are split into linked subsection files:
 - §6 has one file for each of §§6.1–6.7.
 - §9 has one file for each of §§9.1–9.8.
 
-The diagrams are reconstructed as Mermaid so their arrows, branches, feedback
-paths and grouping remain visible. Tables use native Markdown. The verification
-ledger names the source video interval used for every file.
-
-See [Transcription notes](TRANSCRIPTION-NOTES.md) for scope and recovery details.
+Diagrams use Mermaid to preserve arrows, branches, feedback paths and grouping. Tables use native Markdown. Requirements, examples, decisions and unresolved questions should remain readable without any external project files.

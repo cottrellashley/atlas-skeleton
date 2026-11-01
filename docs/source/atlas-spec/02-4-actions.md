@@ -1,6 +1,5 @@
 # §2.4 Actions
 
-> Source: `IMG_2138.MOV` 00:05:32–00:05:54.  
 > `spec/surface/actions.md` · proposed
 
 Changes to systems outside Atlas, made understandable before they happen: plan, approve where the policy needs it, then run as an operation with a receipt; effects declared and never changed within a version.

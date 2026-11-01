@@ -2,7 +2,7 @@
 
 These were written by agents reading the sources in full, each fact cited to its source, while pass 2's build was planned. They are an index, not an authority. Where a digest and its source disagree, the source wins: the spec (`../atlas-spec/`), the review, the references (`spec/protocol/references/`) and the code.
 
-**Paths.** The digests name four roots, written as absolute paths on the maintainer's machine:
+**Paths.** Citation keys refer to portable paths within this repository:
 
 | Name | Path in this repository |
 |---|---|
@@ -11,9 +11,9 @@ These were written by agents reading the sources in full, each fact cited to its
 | REF | `spec/protocol/references` |
 | DIG | `docs/source/digests` |
 
-**Staleness.** Most digests describe the spec, the review and the references, which are unchanged. Three describe something that has since changed:
+**Staleness.** Most digests describe the spec, the review and the references, which remain design references; consult the current files when a citation has moved. Three describe something that has since changed:
 - `code-api.md` describes the code before the build. The working tree has changed a great deal since; read the code.
-- `pass1.md` describes branch `pass-1`.
+- `pass1.md` describes the historical first implementation and the behavior worth preserving.
 - `CRITIC.md` and `gaps/1.md` describe a working tree that was changing as they were written.
 
 **What is still useful for the handoff work in `docs/HANDOFF.md`:**

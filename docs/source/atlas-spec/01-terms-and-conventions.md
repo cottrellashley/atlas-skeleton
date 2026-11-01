@@ -1,7 +1,5 @@
 # §1 Terms and conventions
 
-Source: `IMG_2138.MOV` 00:02:04–00:02:22. Manually verified from overlapping full-resolution frames at 02:06, 02:10, 02:14, 02:18 and 02:22.
-
 The words the Atlas spec uses with one meaning each, how the spec is written (requirement words, numbering, algorithms, one home per fact, normative text in §9), and the specifications Atlas takes its patterns from.
 
 ### In short

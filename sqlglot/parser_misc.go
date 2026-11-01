@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/trie"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/tokens"
+	"atlas.local/sqlglot/trie"
 )
 
 func (p *Parser) parseAnalyzeStatistics() *exp.Expr {

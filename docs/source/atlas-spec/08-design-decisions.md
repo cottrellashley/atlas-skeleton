@@ -96,7 +96,9 @@ Each was considered for a central role and rejected for it; several keep a narro
 | **A host on the person's machine** (a daemon every client reaches over a socket, serving local capabilities and forwarding the rest) | Where clients call Atlas, and where local work runs | Two hosts mean two catalogues, two enforcement points, a second wire protocol and a daemon to install and keep running; every client can reach the gateway over HTTPS, and local work needs no host. | Client extras, in each client's own process. |
 | **A separate events repository** (`fi-spec-events`) or an event catalogue site now | Where events are defined | Events are profiles in this spec; the gateway serves them. | EventCatalog or a schema registry later, reading the generated AsyncAPI. |
 
-### 8.3 Known gaps between this spec and the code (2026-10-28)
+### 8.3 Historical gaps between the specification and implementation (2026-10-28)
+
+These findings describe the implementation reviewed on that date. They retain migration lessons and unresolved design concerns; use the [handoff progress](../../HANDOFF-PROGRESS.md) for current completion and evidence.
 
 - Capabilities have one mode each (serve, broker, publish, operate) and some ids end in a verb; the spec has surfaces and interactions.
 - No profiles with fingerprints, no `Atlas-Profile` headers, no resolution or lenses, no locks, no client features; `describe` and its JSON Schema are the nearest.
@@ -109,7 +111,6 @@ Each was considered for a central role and rejected for it; several keep a narro
 - The code has a gateway on the person's machine that this spec does not include (`sdk/go/localgateway`, the CLI's `atlas serve` and `internal/localgw`, `qfi`'s server), with its protobuf frames (`clients/proto/`) and the old Desktop's `nautilus.gateway.v1` contract. It is removed once the Node SDK's extras serve Nautilus Desktop.
 - `azure.resource-graph` and the `astronomer.*` capabilities are not in the gateway yet.
 - SharePoint is reached as a desk service account, by a password grant, with a broad token (`AllSites.Manage MyFiles.Read MyFiles.Write`, measured 2026-10-07); read-only is a property of the service's code. The register (§6.3.3) has the person, by OBO.
-- The CLI's Go module is still named `github.com/jhgonline/fi-app-atlas/cli`.
 - The catalogue uses today's names until the renames are applied by aliases.
 - The gateway streams Snowflake results through Python rows (`fetchmany` in `atlas_snowflake/stream.py`), and Atlas Python reads whole results into memory (`fetch_arrow_all`); neither uses Snowflake's Arrow batches. There is no handoff yet. On-Behalf-Of to Snowflake exists (`atlas_snowflake/obo.py`, verified against the tenant on 2026-09-08).
 - No implementation of §9 exists yet as such: the gateway, the CLI, Atlas Python and the Node SDK each implement parts of today's protocol their own way. Four vector files, three profile vectors, the conformance gateway and the runners are still to write.
@@ -148,7 +149,7 @@ Each was considered for a central role and rejected for it; several keep a narro
 | O37 | An Azure storage integration and external stage for `COPY INTO` exports. | Yes, in `fi-infra`, after the first two paths. | §2.2.1 |
 | O38 | Calling the four kinds of capability “surfaces” in the protocol too (renaming `family`). | Not now: “surface” in prose, `family` on the wire. | §2 |
 | O39 | The first set of traits; a new trait as a protocol minor version. | Yes. | §2.1 |
-| O40 | The CLI's Go module name, and its harness command `catalog` colliding with `atlas catalog`. | Rename the module to `…/fi-app-atlas/clients/cli`; rename the harness command `package catalog`. | §5.3 |
+| O40 | The CLI's Go module name, and a future harness command `catalog` colliding with `atlas catalog`. | The module is already `atlas.local/clients/cli` in `clients/cli`. Reserve `package catalog` for a future harness catalogue; `atlas catalog` discovers capabilities. | §5.3 |
 | O42 | One admin request for every delegated permission and consent: Azure Resource Manager (Resource Graph), Service Bus and Storage for the clients' and the gateway's apps, Microsoft Graph for SharePoint. | One request, sent once, explaining each is delegated and narrowed by the person's own roles. | §6.3.5 |
 | O43 | Astronomer's credential per environment (a Workspace or Organization API token in Key Vault). | Yes, read-only scope. | §2.2.2 |
 | O41 | Replacing the Node SDK's part generated from the old Desktop's `ui.json`. | Yes, with the profile-driven core. | §5.2 |

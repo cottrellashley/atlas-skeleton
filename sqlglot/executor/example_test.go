@@ -3,7 +3,7 @@ package executor_test
 import (
 	"fmt"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/executor"
+	"atlas.local/sqlglot/executor"
 )
 
 func ExampleExecute() {

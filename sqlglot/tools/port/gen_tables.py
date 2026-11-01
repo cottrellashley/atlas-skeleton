@@ -1,6 +1,6 @@
 """Generates the Go tables (expression kinds, data types, token types) from a sqlglot checkout.
 
-Usage: python3 -I tools/port/gen_tables.py <path-to-sqlglot-checkout> <path-to-sqlglot-go>
+Usage: python3 -I tools/port/gen_tables.py <path-to-sqlglot-checkout> <path-to-this-module>
 
 This is a porting aid: the generated Go files are committed, so building the Go module never
 requires Python. Re-run it when syncing with a newer upstream sqlglot release.

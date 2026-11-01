@@ -1,7 +1,5 @@
 # §2.1 Capabilities
 
-Source: `IMG_2138.MOV` 00:02:48–00:03:32. Diagram and visible prose/tables manually reconstructed from full-resolution frames.
-
 What a capability is: a named concept, the interactions its surface allows, and the bindings each is served at; the properties every capability and interaction declares; traits, effect classes and how capabilities and domains are named.
 
 ### In short

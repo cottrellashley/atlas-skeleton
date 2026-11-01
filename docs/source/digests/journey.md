@@ -1,9 +1,11 @@
 # Digest: the journey's capabilities (data surface, discovery, catalogue, handbook)
 
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
+
 Reader: journey. Written 2026-10-31. Governing order: `docs/pass-2/REVIEW.md` > spec (§9 normative for the wire) > `PLAN.md`.
 
 Abbreviations for citations:
-- `DS` = `atlas-spec/02-2-data-surface.md`; `SF` = `atlas-spec/02-2-1-snowflake-data.md`; `DISC` = `atlas-spec/02-6-discovery.md`; `PLUG` = `atlas-spec/04-plugging-in.md`; `CAT` = `atlas-spec/07-the-catalogue.md`; `HB` = `atlas-spec/review/CAPABILITY-HANDBOOK.md`; `REV` = `atlas-skeleton/docs/pass-2/REVIEW.md`; `AG` = `atlas-skeleton/AGENTS.md`.
+- `DS` = `atlas-spec/02-2-data-surface.md`; `SF` = `atlas-spec/02-2-1-snowflake-data.md`; `DISC` = `atlas-spec/02-6-discovery.md`; `PLUG` = `atlas-spec/04-plugging-in.md`; `CAT` = `atlas-spec/07-the-catalogue.md`; `HB` = `atlas-spec/review/CAPABILITY-HANDBOOK.md`; `REV` = `docs/pass-2/REVIEW.md`; `AG` = `AGENTS.md`.
 - `:N` is the line number in that file.
 - Facts marked **[outside assignment, verified]** come from files other readers own (`02-1-capabilities.md`, `03-contracts.md`, `09-2`, `09-3`, `09-5`, `09-6`, `06-1`, `06-4`, `06-7`, `review/ATLAS-CORE.md`, `review/DESIGN-REVIEW.md`, `spec/protocol/references/**`). I read the cited lines; I did not read those files in full.
 
@@ -24,9 +26,9 @@ Markers: **IN SCOPE**, **DEFERRED**, **AMBIGUOUS:**, **OVERRIDDEN BY REVIEW:**, 
 | One Go deployable, plus a worker where durable work needs one; provider boundary stays in process and serialisable (R20) | REV:13 |
 | Conservative evolution: aliases, defaults, additive optional fields; unit or type change, or removal, is a new major (R03, R04) | REV:14 |
 | Handoff, events, Service Bus: DEFERRED (R10, R16) | REV:15 |
-| Building without Docker; DuckDB and sqlglot-go fake Snowflake; fakes behind real adapters; references are the independent check (D22) | REV:21 |
+| Building without Docker; DuckDB and sqlglot fake Snowflake; fakes behind real adapters; references are the independent check (D22) | REV:21 |
 | Step 5 (out of reach from this machine): "the Development source, direct downloads, events, delegated identity" | REV:33 |
-| Acceptance result, 6 items (both repos in running path with provenance; same person discovers and calls from CLI/Python/Node with identical request records; narrower scope -> narrower result or clear refusal; capability added after clients works without releasing any; invalid requests, permission changes, exact decimals, incomplete streams, idempotent retries, source failures behave the same in every client; the guide's example succeeds and its result can be checked independently against the source fixture) | REV:46-51 |
+| Acceptance result, 6 items (the local shared kit and SQL library in the running path with integration tests and applicable notices; same person discovers and calls from CLI/Python/Node with identical request records; narrower scope -> narrower result or clear refusal; capability added after clients works without releasing any; invalid requests, permission changes, exact decimals, incomplete streams, idempotent retries, source failures behave the same in every client; the guide's example succeeds and its result can be checked independently against the source fixture) | REV:46-51 |
 | Left to owners (fixtures state the choice): the holdings questions (null `as_of`, cash and instruments without an ISIN, aggregation, currency and signs, whether weights include cash, partial authorisation); org/tenant switching; minimum sunset and lock format; catalogue overlaps | REV:94-100 |
 
 ---
@@ -197,7 +199,7 @@ Requirements (SF:54-57):
 
 ### 2.4 Contract in the SQL (SF:135)
 
-"every column aliased to its contract name and cast to its contract type, every timestamp converted to UTC. So in every execution Snowflake itself produces the writer schema; the gateway's own cast (A) and the client's check (B, D) only confirm it." Rendered by "the Go SQL library (§6.4)". **IN SCOPE**: sqlglot-go renders for Snowflake and for DuckDB (the fake) (REV:21, REV:32; 06-4:11 **[outside assignment, verified]**).
+"every column aliased to its contract name and cast to its contract type, every timestamp converted to UTC. So in every execution Snowflake itself produces the writer schema; the gateway's own cast (A) and the client's check (B, D) only confirm it." Rendered by "the Go SQL library (§6.4)". **IN SCOPE**: sqlglot renders for Snowflake and for DuckDB (the fake) (REV:21, REV:32; 06-4:11 **[outside assignment, verified]**).
 
 ### 2.5 Types (SF:139-150), copy exact
 

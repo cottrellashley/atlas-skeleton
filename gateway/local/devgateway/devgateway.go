@@ -13,17 +13,17 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/adapter/auditlog"
-	"github.com/jhgonline/fi-app-atlas/gateway/adapter/snowflake"
-	"github.com/jhgonline/fi-app-atlas/gateway/assemble"
-	"github.com/jhgonline/fi-app-atlas/gateway/edge"
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/fixtures"
-	"github.com/jhgonline/fi-app-atlas/gateway/local/duckwh"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/gateway/svc/datastatus"
-	"github.com/jhgonline/fi-app-atlas/gateway/svc/portfolio"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
+	"atlas.local/gateway/adapter/auditlog"
+	"atlas.local/gateway/adapter/snowflake"
+	"atlas.local/gateway/assemble"
+	"atlas.local/gateway/edge"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/fixtures"
+	"atlas.local/gateway/local/duckwh"
+	"atlas.local/gateway/ports"
+	"atlas.local/gateway/svc/datastatus"
+	"atlas.local/gateway/svc/portfolio"
+	"atlas.local/sdk/go/kit/clock"
 )
 
 // Options configure the development gateway.

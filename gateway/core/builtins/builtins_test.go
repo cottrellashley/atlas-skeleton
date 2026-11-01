@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/gateway/internal/refs"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/gateway/internal/refs"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // AP-DOC-002: the built-ins' profiles are atlas/1.0's: the exact ids the

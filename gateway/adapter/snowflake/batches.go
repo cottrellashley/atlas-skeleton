@@ -13,7 +13,7 @@ import (
 	"github.com/apache/arrow-go/v18/arrow/bitutil"
 	"github.com/apache/arrow-go/v18/arrow/memory"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/ports"
 )
 
 // contractName is a writer field's name, which a statement writes as a

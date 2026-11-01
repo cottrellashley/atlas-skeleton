@@ -1,9 +1,9 @@
 // Package modcheck proves that nothing in this repository can fetch one of
-// its own modules. Their paths are under github.com/jhgonline, a private
-// organisation, and are names only: every in-repo module that requires
+// its own modules. Their paths under atlas.local are local names only:
+// every in-repo module that requires
 // another requires it through a replace to that module's directory, and every
 // module is in go.work, so the go command never asks the public proxy, the
-// checksum database or GitHub for them.
+// checksum database or a remote source host for them.
 package modcheck
 
 import (
@@ -17,8 +17,8 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
-// Private is the organisation no command may reach.
-const Private = "github.com/jhgonline/"
+// LocalPrefix is the namespace that resolves only inside this repository.
+const LocalPrefix = "atlas.local/"
 
 // Module is one go.mod of the repository.
 type Module struct {
@@ -65,15 +65,15 @@ func Modules(root string) ([]Module, error) {
 	return out, err
 }
 
-// Check lists every way the repository's modules could reach the private
-// organisation, or ask anyone for an in-repo module: a requirement of an
-// in-repo module, or of a private path, without a replace to the directory
+// Check lists every way the repository's modules could ask a remote source
+// for an in-repo module: a requirement of an in-repo module, or of a local
+// namespace path, without a replace to the directory
 // that holds it, a replace that points anywhere else, and a module that
 // go.work leaves out.
 func Check(root string, mods []Module, work *modfile.WorkFile) []string {
 	var out []string
-	// A module may be outside the organisation (a company's own, HANDOFF.md
-	// C1). Every in-repo module, inside it or not, is reached only through a
+	// A module may use another namespace (a company's own, HANDOFF.md C1).
+	// Every in-repo module, whatever its namespace, is reached only through a
 	// replace to its directory, so the go command asks no one for any of
 	// them.
 	byPath := map[string]Module{}
@@ -82,7 +82,7 @@ func Check(root string, mods []Module, work *modfile.WorkFile) []string {
 	}
 	inRepo := func(path string) bool {
 		_, ok := byPath[path]
-		return ok || strings.HasPrefix(path, Private)
+		return ok || strings.HasPrefix(path, LocalPrefix)
 	}
 	for _, m := range mods {
 		replaced := map[string]string{}
@@ -126,7 +126,7 @@ func Check(root string, mods []Module, work *modfile.WorkFile) []string {
 		}
 	}
 	for _, r := range work.Replace {
-		if strings.HasPrefix(r.Old.Path, Private) && r.New.Version != "" {
+		if strings.HasPrefix(r.Old.Path, LocalPrefix) && r.New.Version != "" {
 			out = append(out, fmt.Sprintf("go.work: replace %s => %s %s: never a module version", r.Old.Path, r.New.Path, r.New.Version))
 		}
 	}

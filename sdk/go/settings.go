@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol"
 )
 
 // The environment a client reads (§9.7.2). Settings are read here, once,

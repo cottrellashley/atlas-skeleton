@@ -14,12 +14,12 @@ import (
 	"example.com/acme/atlas-extensions/support"
 	"example.com/acme/atlas-extensions/support/fakedesk"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/assemble"
-	"github.com/jhgonline/fi-app-atlas/gateway/edge"
-	"github.com/jhgonline/fi-app-atlas/gateway/fakes"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/assemble"
+	"atlas.local/gateway/edge"
+	"atlas.local/gateway/fakes"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/clock"
+	"atlas.local/sdk/go/protocol"
 )
 
 // acme is Acme's policy: two teams of support agents, each scoped to its

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/errs"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/errs"
+	"atlas.local/sqlglot/exp"
 )
 
 // Normalize mirrors normalize.normalize(expression, dnf=False, max_distance=128): it rewrites

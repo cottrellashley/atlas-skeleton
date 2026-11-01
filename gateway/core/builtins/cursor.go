@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 // A cursor is a position in one listing (§6.7.9, page.schema.json):

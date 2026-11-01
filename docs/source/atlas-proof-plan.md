@@ -1,14 +1,14 @@
 # Proving the Atlas pattern in Development
 
-A plan to prove, on the firm's real Development systems, the decisions the Atlas architecture rests on, before any wire format is written down exactly. Drafted on 2026-10-31 from the transcribed spec (`atlas-spec/`) and the `cloud-gateway-patterns-go` repository; not part of the transcription.
+A historical plan for proving the decisions the Atlas architecture rests on. It records the hypotheses and staged evidence requirements that preceded the exact wire contract. The current specification is in [`atlas-spec/`](atlas-spec), and current implementation status is in [`../HANDOFF-PROGRESS.md`](../HANDOFF-PROGRESS.md).
 
 ## In short
 
-- **Hermetic first (2026-10-31).** Proof 0 has been run on a laptop with no outside systems, in `~/repos/atlas-skeleton`. Its result is `PROOF-0.md` there. The gateway, the Go client and the Python face ran against a fake Snowflake, which sits behind the real Snowflake adapter. Each proof below now starts from that: it first checks the fakes' assumptions against the real system, and the hermetic suites become its acceptance tests.
+- **Hermetic first (2026-10-31).** Proof 0 ran locally with no outside systems; its result is [PROOF-0.md](../pass-1/PROOF-0.md). The gateway, Go client and Python face ran against a fake Snowflake behind the real adapter. Each proof below starts with a hermetic acceptance test and then calls for separate live-service evidence.
 - Seven proofs, riskiest first. The spine runs on fakes. Then come Snowflake handoff and Service Bus brokering, the two most likely to change the design. Then streaming as the person, file handoff and shared state. Last, an agent completes the PM's journey.
 - Each proof tests one or more load-bearing decisions on the real technology, and ends with a written result that updates the spec.
 - Wire formats stay provisional until the proofs are done. The exact formats are then designed from what each proof turned out to need.
-- The skeleton is Go in `fi-app-atlas`, in the spec's six layers from day one. It runs beside today's Python gateway in Development and is reached by setting `ATLAS_URL`, so no existing client breaks.
+- The Go gateway lives in `gateway/`, with the shared Go SDK in `sdk/go`, following the specification's package layers. The proof plan selects a Development deployment through `ATLAS_URL` while existing clients continue using their configured gateway.
 - Before starting, a few requests go out at work: one Entra consent request, plus Snowflake, Azure and hosting set-up. They're listed at the end, by owner.
 
 ## What the proofs settle, and what waits
@@ -37,9 +37,9 @@ These details wait until after the proofs, and are then designed from them:
 
 ## Ground rules for the skeleton
 
-1. **Where.** In `fi-app-atlas`, as the start of the Go gateway the spec describes (D19), not as a separate project.
+1. **Where.** In this repository's `gateway/`, using the shared `sdk/go` implementation and the Go architecture described by D19.
 2. **Layers from day one.** L0–L6 with `gateway/layers.toml` and the layer check (§6.5.9). This is cheap now and expensive to add later.
-3. **The kit.** Copy the packages the skeleton needs from `cloud-gateway-patterns-go` into `sdk/go/kit`, with their MIT notices and tests (§6.7, rule 3). Don't make the firm's repository depend on a personal one. Where the kit's docs and the spec disagree, the spec wins:
+3. **The kit.** Reuse the shared mechanisms in `sdk/go/kit`, preserving applicable notices and tests (§6.7, rule 3). The specification governs their use. Historical reference patterns differ from Atlas in these ways:
    - **Handoff:** the kit's `handoff` gives the client SQL and a ticket. The spec calls that the broker and defers it (O54).
    - **Slow queries:** the kit runs them as background operations that write result files. The spec streams by default.
    - **Streaming:** the kit uses SSE or Arrow Flight. `atlas/1.0` uses neither.
@@ -63,7 +63,7 @@ These details wait until after the proofs, and are then designed from them:
 
 **Hypothesis.** One pipeline in front of one service interface, with a generic CLI, can serve a capability that was added after the CLI was built.
 
-**Setup.** A laptop, then Development. In-memory fakes for state, limits and audit. DuckDB as the data source (§6.4.3). The hermetic token issuer locally (§6.7.4), and Entra in Development.
+**Setup.** A local test environment, then Development. In-memory fakes for state, limits and audit. DuckDB as the data source (§6.4.3). The hermetic token issuer locally (§6.7.4), and Entra in Development.
 
 **Build.**
 - `edge/http` with the middleware chain of §6.7.2.

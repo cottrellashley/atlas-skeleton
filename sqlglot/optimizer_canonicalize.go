@@ -3,8 +3,8 @@ package sqlglot
 // Port of sqlglot/optimizer/canonicalize.py.
 
 import (
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/helper"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/helper"
 )
 
 // Canonicalize mirrors optimizer.canonicalize.canonicalize: it converts SQL into a standard

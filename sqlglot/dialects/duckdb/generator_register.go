@@ -1,8 +1,8 @@
 package duckdb
 
 import (
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
 )
 
 // methods registers the DuckDBGenerator methods. Python's super() calls resolve to the

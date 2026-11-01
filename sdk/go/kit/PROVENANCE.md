@@ -1,54 +1,84 @@
-# Provenance of the kit and the SQL library
+# Gateway utilities: implementation and maintenance
 
-The review's INTEGRATIONS asks that both required repositories enter the first implementation with a provenance manifest. The manifest records the upstream repository, the exact commit, the imported packages, the notices, the local changes and the tests carried. A release never tracks an unreviewed branch head. Licences are in [`../THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md).
+These utilities live in the local `atlas.local/sdk/go` module. They provide reusable
+mechanics for gateway code; the gateway pipeline decides policy and middleware order.
+Keep their responsibilities narrow and use the existing packages when extending the
+gateway. The copyright and permission notice is in
+[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 
-## cloud-gateway-patterns-go
+## Package responsibilities
 
-| | |
+| Package | Responsibility and maintenance constraint |
 |---|---|
-| Repository | https://github.com/cottrellashley/cloud-gateway-patterns-go |
-| Commit | `44ba81aa92ee901c131c0b80dcadafa25de440a2` (2026-10-30), the commit the review inspected |
-| Module | `github.com/cottrellashley/cloud-gateway-patterns-go`, Go 1.25 |
-| Route | Copied into `sdk/go/kit`, each file with a header naming its source. A firm's production build then depends on no mutable personal repository; the proof plan chose this route, and INTEGRATIONS keeps it unless the team picks a pinned module |
-| Atlas's edits | Marked `ATLAS` in the code |
+| [clock](clock) | Injectable time for request budgets and deterministic tests. Do not introduce direct wall-clock reads into lifecycle decisions. |
+| [conc](conc) | Shared goroutine helpers. Preserve explicit ownership, cancellation and bounded work. |
+| [health](health) | Bounded health probes. Readiness should reflect the dependencies needed to serve the configured routes. |
+| [hot](hot) | Immutable configuration snapshots. Publish a complete valid generation; discard a failed generation whole. |
+| [httpserver](httpserver) | Explicit HTTP serving and shutdown ownership. |
+| [jwt](jwt) | JWT verification against configured trust. Distinguish invalid credentials from verifier infrastructure failures. |
+| [lifecycle](lifecycle) | Owned startup and cleanup. Drain existing users before cleaning up their resources. |
+| [middleware](middleware) | Reusable HTTP mechanics. The gateway owns the ordering of authentication, authorization, deadlines, limits and idempotency. |
+| [problem](problem) | Shared RFC 9457 problem responses. Avoid ad hoc error bodies at integration boundaries. |
+| [telemetry](telemetry) | Bounded access logs and trace propagation. Keep credentials, request bodies and query text out of logs. |
 
-### Imported
+The repository's `make check` includes these packages and their tests, along with
+formatting, static analysis and module checks.
 
-| `kit` package | From `patterns/` | Files | Tests carried | Local changes |
-|---|---|---|---|---|
-| `health` | `health` | `health.go` | `health_test.go` | Header. `http.Error` replaced with a status and body write (atlasvet) |
-| `hot` | `config` | `config.go` | `config_test.go` | Header and package name |
-| `httpserver` | `httpserver` | `httpserver.go` | `httpserver_test.go` | Header |
-| `jwt` | `auth` | `jwks.go`, `jws.go`, `verifier.go` | `jwt_test.go` (from `auth_test.go`) | Header and package name. The EC on-curve check goes through `crypto/ecdh` instead of the deprecated `IsOnCurve` (staticcheck SA1019). `ErrMalformedToken` wraps `ErrInvalidToken`, so a malformed token is unauthenticated rather than a verifier failure. `TestMiddleware` is not carried, because the auth middleware is not imported yet (below) |
-| `lifecycle` | `lifecycle` | `lifecycle.go` | `lifecycle_test.go` | Header |
-| `middleware` | `middleware` | `middleware.go` | `middleware_test.go` | Header. Failures are RFC 9457 problems through `kit/problem`, not `apierror`. The deadline header is an RFC 9651 Date (`Atlas-Deadline`), not RFC 3339, and `X-Request-Deadline` is no longer sent |
-| `telemetry` | `telemetry` | `accesslog.go`, `logging.go`, `route.go`, `traceparent.go`, `writer.go` | `telemetry_test.go` | Header. The access log no longer names the principal or the upstream, since `auth` middleware and `proxy` are not imported |
+## Implementation lessons
 
-`kit/problem` is Atlas's own: the RFC 9457 writer that replaces `apierror`.
+- JWT elliptic-curve validation uses `crypto/ecdh` instead of the deprecated
+  `IsOnCurve`. `ErrMalformedToken` wraps `ErrInvalidToken` so malformed credentials
+  are treated as unauthenticated requests rather than verifier failures.
+- The deadline header is `Atlas-Deadline`, encoded as an RFC 9651 Date. Use the
+  protocol's deadline semantics consistently across clients, gateway and adapters.
+- Response wrappers must preserve streaming and response-control interfaces and
+  record the actual delivery outcome.
+- Access logs and durable audit evidence have different responsibilities. A log
+  entry is not proof that an upstream effect did or did not happen.
 
-**Known defect, carried from upstream.** `middleware.Deadline` turns a client deadline already in the past into the route's maximum, instead of refusing the call. It also reads the wall clock rather than an injected one. Fixed in step 3, with R17.
+**Known utility caveat:** `middleware.Deadline` currently replaces an already-expired
+client deadline with the route maximum and reads the wall clock directly. Do not
+assume that helper provides the full gateway deadline policy. Follow the lifecycle
+implementation and its current evidence in [HANDOFF-PROGRESS.md](../../../docs/HANDOFF-PROGRESS.md)
+when changing deadline behavior, and cover the expired-deadline case explicitly.
 
-### To import, and what Atlas adds
+## Responsibilities to implement at the owning boundary
 
-These follow the table in INTEGRATIONS, "Cloud patterns: reuse and adapt". Each enters with the step that needs it, and is recorded here when it does.
+These are implementation constraints, not a request to add a new framework or to
+replace working adapters. The current status and order of work are in
+[HANDOFF.md](../../../docs/HANDOFF.md) and [LESSONS.md](../../../docs/LESSONS.md).
 
-| From `patterns/` | Atlas's responsibility |
+| Responsibility | Required behavior |
 |---|---|
-| `auth` (middleware) | A configured issuer, audience and tenant; stable identity and delegation context; Entra and OBO |
-| `idempotency` | Caller-scoped canonical business requests instead of method, path and raw body. Uncertain effects are kept, never dropped on a 5xx (R08) |
-| `lro` | Persisted key-to-operation ownership, bounded durable workers, leases and fencing, reconciliation on restart |
-| `ratelimit` | The budget authority model, reservations, settlement and shared concurrency (R07) |
-| `resilience` (retry) | Replay safety, deadlines and operation recovery. Its token budget is not claimed to be the spec's one-in-ten rule |
-| `reconcile` | Durable ownership, distributed leases, outbox handling |
-| `registry` | Explicit registration; a failed generation is discarded whole; old users drain before cleanup |
-| `resource` (store) | Masks and mandatory preconditions; a full-representation ETag apart from `generation` (R14) |
+| Upstream identity | Configured issuer, audience and tenant; stable caller and delegation context; explicit Entra and on-behalf-of handling where needed. |
+| Idempotency | Caller-scoped canonical business requests. Preserve uncertain effects instead of dropping ownership after an upstream failure. |
+| Durable operations | Persisted key-to-operation ownership, bounded workers, leases and fencing, and recovery after restart. |
+| Budgets | Shared authority for reservations, settlement and concurrency. |
+| Retries | Replay safety, remaining deadlines and operation recovery. A generic retry token budget does not establish the protocol's retry allowance. |
+| Reconciliation | Durable ownership, leases and outbox handling for Atlas-owned state. Do not duplicate upstream control planes. |
+| Registration | Explicit registration and atomic configuration generations; drain old users before cleanup. |
+| Owned resources | Field masks, mandatory preconditions and a full-representation ETag distinct from generation. |
 
-## sqlglot-go
+## Local SQL library
 
-It is ported into this repository as its own module, [`sqlglot/`](../../../sqlglot) (`github.com/jhgonline/fi-app-atlas/sqlglot`), at commit `3d81e5393850e249136284859f6203a34db29f16`, with every test. It is not taken as a dependency. Its provenance, and the changes the port made, are in [`sqlglot/PROVENANCE.md`](../../../sqlglot/PROVENANCE.md).
+The SQL foundation is the local [sqlglot](../../../sqlglot) module,
+`atlas.local/sqlglot`. Its packages, generated code, tests and fixtures are included
+in this repository. See its [maintenance notes](../../../sqlglot/PROVENANCE.md).
 
-| | |
-|---|---|
-| What is used | Full-statement parsing (never `ParseOne` on text that is then executed), the AST, strict generation in the Snowflake and DuckDB dialects, and qualification under a strict configuration. The optimiser and the in-memory executor stay out of production |
-| Integration rules | Each comes from INTEGRATIONS, "four important source-level details":<br>- exactly one executable statement;<br>- refuse `exp.Command` and unknown nodes;<br>- unsupported transformations fail, and no driver call follows;<br>- qualification is not authorisation;<br>- bounded input size, AST depth and compilation concurrency, because parsing takes no cancellation context |
-| Tests at the boundary | INTEGRATIONS, "what to test at the integration boundary". The references' `vectors/guard.json` is the first of them |
+The gateway uses full-statement parsing, the expression tree, strict Snowflake and
+DuckDB generation, and qualification under a strict configuration. Keep the
+in-memory executor separate from warehouse execution, and do not treat optimizer
+output as a warehouse cost estimate.
+
+At the integration boundary:
+
+- Require exactly one executable statement; never validate only `ParseOne` and then
+  execute the original text.
+- Refuse `exp.Command` and unknown nodes.
+- Fail unsupported transformations before calling a driver.
+- Treat qualification and authorization as separate checks.
+- Bound input size, expression-tree depth and compilation concurrency; parsing does
+  not accept a cancellation context.
+
+The [guard vectors](../../../spec/protocol/references/vectors/guard.json) and
+[Snowflake adapter](../../../gateway/adapter/snowflake) anchor the boundary tests.

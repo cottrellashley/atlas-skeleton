@@ -1,24 +1,23 @@
-# Digest: cloud-gateway-patterns-go at 44ba81a, for the Atlas pass-2 first build
+# Digest: shared gateway mechanisms and their failure modes
+
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
 
 Reader: patterns. Written 2026-10-31.
 
-## 0. Sources, method, legend
+## 0. Scope and reading guide
 
-| What | Where |
-|---|---|
-| Library clone | `/private/tmp/claude-501/-Users-ashleycottrell/45a5c432-d2c8-4875-a3e2-9d5fbe25f062/scratchpad/cgp/repo`, HEAD `44ba81a` "Add the architectural principles layer, kernel packages and control-plane reference". Module `github.com/cottrellashley/cloud-gateway-patterns-go`, `go 1.25` (go.mod L1-3). Zero third-party deps (README L45) |
-| Pinned commit in Atlas | `44ba81aa92ee901c131c0b80dcadafa25de440a2` (2026-10-30), sdk/go/kit/PROVENANCE.md L10; INTEGRATIONS.md L9 |
-| Governing | atlas-skeleton AGENTS.md; docs/pass-2/REVIEW.md; review/INTEGRATIONS.md "Cloud patterns: reuse and adapt" (L37-54); spec §6.7 (06-7-implementation-patterns.md, read in full because it is the spec's own pattern-to-kit mapping); §9.3.3 problem registry (09-3-documents.md L76-104); §9.6.3 headers (09-6-http-binding.md L24-50); references schemas operation/page/problem |
-| Verification I ran | `go test -race -count=1 -cover ./...` in the clone: every package `ok`, race-clean (coverage per package in section 1). `go vet ./...`: clean. Atlas's own `staticcheck` (`atlas-skeleton/.bin/staticcheck`): 3 findings (section 3, P-SC). A separate repro module `/private/tmp/claude-501/-Users-ashleycottrell/45a5c432-d2c8-4875-a3e2-9d5fbe25f062/scratchpad/build/repro/repro_test.go` (replace-directive to the clone; nothing in the clone or repo modified): 21 tests, each asserting a defective behaviour, all PASS under `-race`, i.e. all 21 defects reproduce |
+This study compares reusable gateway patterns with Atlas's requirements. Current shared primitives live in `sdk/go/kit`; registry and invocation decisions live in `gateway/core`. The governing design is `docs/pass-2/REVIEW.md`, the integration review, specification §6.7, the problem registry (§9.3.3) and HTTP headers (§9.6.3).
+
+The reviewed examples supplied 21 reproducible failure cases, summarized below. Their historical coverage and timings describe those examples only; they are not claims about current Atlas test coverage. Keep the counterexamples as regression requirements when implementing the relevant mechanism.
 
 Legend:
 - **IN SCOPE** = the first build (the journey: `portfolio.holdings@v1`, `portfolio.list@v1`, `portfolio.search@v1`, `data.status@v1`, then `portfolio.holdings-dates@v1`; REVIEW.md L37-42) must implement it. **DEFERRED** = not in the first build.
 - **OVERRIDDEN BY REVIEW (Rnn)** = the review / REVIEW.md changes the spec or the library's behaviour.
 - **AMBIGUOUS** = the sources allow more than one reading; each reading listed.
 - **CONFIRMED (Dn)** = reproduced by test Dn in the repro module. **BY READING** = from the code, not executed.
-- Line numbers are the clone's files unless another path is given.
+- Pattern filename/line labels below identify historical examples discussed in this study. Current implementations are in `sdk/go/kit` and `gateway/core`; use their symbols and tests for implementation work.
 
-### The six places the library loses to the spec (atlas-skeleton AGENTS.md L9-15)
+### The six places the library loses to the spec (AGENTS.md L9-15)
 
 | # | Rule (verbatim) | Library behaviour it overrides |
 |---|---|---|
@@ -31,7 +30,7 @@ Legend:
 
 ## 1. Per pattern
 
-Common to every package: errors are written with the sibling `apierror` (Azure-style `{"error":{code,message,target,retryable,retryAfter,hop,details,innererror}}`, `X-Error-Code` header, CamelCase codes; apierror.go L23-40, L155-171). Atlas replaces it with `kit/problem` (RFC 9457, `Atlas-Error-Code`, snake_case codes of §9.3.3; PROVENANCE.md L27; atlas-skeleton sdk/go/kit/problem/problem.go L44). No package injects a clock through an exported option except where noted; most hold an unexported `now func() time.Time` that only in-package tests can set.
+Common to every package: errors are written with the sibling `apierror` (Azure-style `{"error":{code,message,target,retryable,retryAfter,hop,details,innererror}}`, `X-Error-Code` header, CamelCase codes; apierror.go L23-40, L155-171). Atlas replaces it with `kit/problem` (RFC 9457, `Atlas-Error-Code`, snake_case codes of §9.3.3; PROVENANCE.md L27; sdk/go/kit/problem/problem.go L44). No package injects a clock through an exported option except where noted; most hold an unexported `now func() time.Time` that only in-package tests can set.
 
 ### 1.0 apierror (dependency of most packages; DEFERRED as such: replaced by kit/problem)
 
@@ -140,7 +139,7 @@ Common to every package: errors are written with the sibling `apierror` (Azure-s
 ### 1.10 concurrency — IN SCOPE only for what kit/conc lacks (Semaphore for bulkheads; AMBIGUOUS A6)
 
 - API (concurrency.go): `type Group`; `NewGroup(ctx, limit int) (*Group, context.Context)` (L33; limit ≤ 0 unlimited; ctx cancelled with cause on first error); `(*Group).Go(fn func() error)` (L44; blocks for a slot; panic → error with stack); `(*Group).Wait() error` (L73); `ForEach[T any](ctx, items []T, limit int, fn func(ctx, item T) error) error` (L81); `type Semaphore`; `NewSemaphore(n int)`; `Acquire(ctx) error`; `TryAcquire() bool`; `Release()` (L99-125); `Go(fn func(), onPanic func(v any, stack []byte))` (L129: fire-and-forget).
-- Atlas already has its own `kit/conc` (`Go(fn func() error) (wait func() error)`, `Group`, `WithContext`, `SetLimit`, `TryGo`, `Wait`, `PanicError`; atlas-skeleton sdk/go/kit/conc/conc.go L16-134), not listed in PROVENANCE (Atlas-owned).
+- Atlas already has its own `kit/conc` (`Go(fn func() error) (wait func() error)`, `Group`, `WithContext`, `SetLimit`, `TryGo`, `Wait`, `PanicError`; sdk/go/kit/conc/conc.go L16-134), not listed in PROVENANCE (Atlas-owned).
 - Tests (concurrency_test.go): limit 2 and cancel cause; panic → error; ForEach sum; semaphore TryAcquire/Acquire timeout; Go recovers. Coverage 95.7%.
 
 ### 1.11 cache — DEFERRED (results never cached, ATLAS-MECH-011; JWKS single flight is inside kit/jwt)
@@ -178,29 +177,24 @@ cmd/kernel/main.go: providers registered in `init()` (L130-133); `registry.Confo
 
 Differences from Atlas's edge order (§6.7.2 L100-112: Recover, Request id, Real client address, Trace context, Access log, Request metrics, Draining, Body size, Outer deadline, Pre-auth limit, In flight): cmd/gateway puts authn/in-flight/rate limit/idempotency in the chain (Atlas: pipeline steps 1, 4, 5); body 8 MiB (Atlas 1 MiB, ATLAS-MECH-002); `X-Request-Deadline` (Atlas `Atlas-Deadline`, an RFC 9651 Date, §6.7.2 row 9); `Propagate(false)` starts a new root (Atlas row 4: "Continue the caller's `traceparent`"); draining 429 (Atlas `unavailable`); no pre-auth limit (Atlas row 10).
 
-### 1.18 The docs, in brief (background; principles are not normative for Atlas)
+### 1.18 Design principles and operational defaults
 
-- 15 principles + constitution (docs/00-principles/README.md L9-43) map one-to-one onto Atlas's constitution (atlas-skeleton AGENTS.md L17-33). Where Atlas's wording differs, Atlas's wins.
+- Atlas’s 15 principles and constitution are recorded in `docs/source/atlas-spec/06-6-principles.md` and `AGENTS.md`. They govern the use of every shared mechanism.
 - Values from pattern docs that Atlas also states: server ReadHeaderTimeout 10 s, IdleTimeout 5 m, WriteTimeout 0, MaxHeaderBytes 16 KiB (http-server-lifecycle.md L26-32; Atlas header bytes are 64 KiB, §6.7.15 L268); shutdown readiness off → delay → drain → close (L98-107); JWKS rules: fetch at startup, honour max-age (24 h default), refresh on unknown kid at most once per 1 min, one in-flight fetch, keep serving stale keys if a refresh fails, bound document 1 MiB and client 5 s (bearer-tokens-and-jwks.md L66-73); retry checklist base 100 ms–1 s, multiplier 1.6–2, jitter ≥ 0.2 (retries doc L128); composition order `timeout → retry(budget, backoff) → breaker → per-attempt timeout → call` (retries doc L114-118).
 - Doc statements Atlas overrides: registration "at init" (04 L54, L93, L117; overridden by AGENTS.md L13); `nextCursor` "absent ... never null" and `410` on expiry (pagination.md L46, L52; Atlas `next_cursor: null` at end and `invalid_request` target `/cursor`, page.schema.json L19-26, ATLAS-MECH-009); same key different body → 422 (11-idempotency L27; Atlas 409 `idempotency_conflict`); envelope with `spec` (01 L48; AGENTS.md L11); CamelCase terminal states (01 L54; Atlas lowercase); `Repeatability-*` and RateLimit IETF headers (Atlas: `Idempotency-Key` and `Atlas-Limit-Remaining`, §9.6.3).
 
 ## 2. Adapting the patterns this build needs
 
-### 2.0 Common copy procedure (every package below)
+### 2.0 Shared implementation procedure
 
-1. Work on branch `pass-2` (AGENTS.md L72). Commit only when asked.
-2. Target: the package named in §6.7.1 (06-7 L76-92): `kit/idem` ← `idempotency`; `kit/ops` ← `lro`; `kit/limit` ← `ratelimit`; `kit/retry` ← `resilience`; `kit/page` ← `pagination`; `kit/conc` ← `concurrency` (exists); `kit/jwt` ← `auth` (exists, verifier only); `core/registry` ← `registry` (gateway module, not kit). Shedding has no §6.7.1 row of its own: it is part of the edge middleware under `kit/serve` in the spec, which the existing kit spells `kit/middleware`/`kit/httpserver` (AMBIGUOUS A6).
-3. Copy each `.go` and `_test.go` file verbatim, then prepend the header in the exact form the kit already uses (atlas-skeleton sdk/go/kit/health/health.go L1-3, kit/jwt/verifier.go L1-3):
-   ```
-   // Adapted from github.com/cottrellashley/cloud-gateway-patterns-go at 44ba81a
-   // (patterns/<pkg>/<file>.go), MIT licence: see sdk/go/THIRD_PARTY_NOTICES.md.
-   // Changes: import paths[, package name]; later edits are marked ATLAS.
-   ```
-4. Change the import path and, if renamed, the package clause. Replace every `apierror` use by `kit/problem` (`problem.Write(w, requestID, err)`, kit/problem/problem.go L44) with a `protocol` problem code from §9.3.3. Mark each Atlas edit with `// ATLAS:` and its reason (kit/jwt/jwks.go L92 is the model).
-5. Make time injectable through `kit/clock.Clock` (kit/clock/clock.go L14-56) wherever the package calls `time.Now` or holds an unexported `now`; convert sleeping tests to `testing/synctest` or the manual clock (AGENTS.md L56). Replace bare `go` with `kit/conc` only outside the kit (inside `sdk/go/kit` a bare `go` is allowed, AGENTS.md L41).
-6. Carry the tests; add a test per requirement id the package proves, naming the id in a comment (AGENTS.md L54); add the repro cases from section 3 as regression tests that assert the fixed behaviour; fuzz every parser (cursor decode, Idempotency-Key, JWS; AGENTS.md L57).
-7. Add each file to the table in `sdk/go/THIRD_PARTY_NOTICES.md` ("File here | Adapted from"), and a row to PROVENANCE.md "Imported" (`kit` package | From `patterns/` | Files | Tests carried | Local changes), moving it out of "To import" (PROVENANCE.md L31-44).
-8. `make check` must pass: gofmt, vet, atlasvet (noinit, nobarego, nogetenv, nohttperror), staticcheck, `-race` tests, layer check (kit imports only `sdk/go/protocol` and the standard library; layers.toml `[[external]] from = "sdk/go/kit/..." allow = []`), tidy (AGENTS.md L35-50, L70-72). Staticcheck findings to clear on import: section 3 P-SC.
+1. Use the existing shared package when it provides the required behavior. Keep policy decisions in the invocation pipeline and reusable mechanics in the kit.
+2. Planned package responsibilities are `kit/idem` (ownership and replay), `kit/ops` (operation mechanics), `kit/limit` (limit arithmetic), `kit/retry` (safe retries), `kit/page` (cursors), `kit/conc` (concurrency), `kit/jwt` (verification) and `core/registry` (registration). This list does not claim every planned package exists.
+3. Preserve applicable third-party notices for reused code. The owning module's `THIRD_PARTY_NOTICES.md` records licensing; do not add a runtime dependency merely to reuse a pattern.
+4. Use `kit/problem` and the protocol's error codes. Authentication, limits and idempotency remain pipeline steps, with a single owner for each decision.
+5. Inject time through `kit/clock` where needed; use `testing/synctest` or a manual clock in time-dependent tests. Start goroutines through `kit/conc` outside the kit.
+6. Carry useful behavior tests; turn the counterexamples in section 3 into regressions that assert the corrected behavior. Name the requirement or finding each test proves and fuzz parsers.
+7. Update the shared mechanism's documentation and evidence level. A local map or one-process proof never establishes restart or multi-replica safety.
+8. Run `make check`: formatting, analyzers, race tests, layer validation and module checks. Clear the static-analysis findings in section 3 when adopting a mechanism.
 
 ### 2.1 idempotency → `kit/idem` (mechanics) + pipeline step 4 (decision) — IN SCOPE
 
@@ -402,9 +396,9 @@ Steps: in the pipeline (not kit, since it is a decision), build the principal fr
 
 ### 3.3 Staticcheck (P-SC) — must be cleared on import (Atlas's `.bin/staticcheck`)
 
-- `patterns/auth/jwks.go:87:7` SA1019 `curve.IsOnCurve` deprecated (already fixed in kit/jwt, PROVENANCE.md L22).
-- `patterns/ratelimit/middleware.go:60:6` U1000 `func wait is unused`.
-- `patterns/resource/resource_test.go:107:2` SA4006 value of `obj` never used.
+- the `auth` pattern SA1019 `curve.IsOnCurve` deprecated (already fixed in kit/jwt, PROVENANCE.md L22).
+- the `ratelimit` pattern U1000 `func wait is unused`.
+- the `resource` pattern SA4006 value of `obj` never used.
 
 ## 4. Ambiguities (also in the structured result)
 

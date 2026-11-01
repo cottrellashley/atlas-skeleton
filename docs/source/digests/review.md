@@ -1,25 +1,27 @@
 # Digest: the 2026-10-31 design review, and pass 2's adoption of it
 
+> Historical engineering study (2026-10-31). Retained for its requirements, counterexamples and design reasoning. Implementation observations and line references describe that review snapshot; use [current progress](../../HANDOFF-PROGRESS.md) and the named source symbols for current status. Paths are relative to the repository root unless a citation key says otherwise.
+
 Read in full, every line: the review's README, ATLAS-CORE, DESIGN-REVIEW and INTEGRATIONS; `docs/pass-2/REVIEW.md`; `sdk/go/kit/PROVENANCE.md`. AGENTS.md was also read in full. The handbook was read in part (lines 1-254, 354-365 and 531-596), because section 5's three rules and the journey's catalogue rows are there. It is not counted as read in full.
 
 ## Citation keys
 
 | Key | File |
 |---|---|
-| RM | `~/Documents/ChatGPT/creation/atlas-spec/review/README.md` (43 lines) |
-| CORE | `~/Documents/ChatGPT/creation/atlas-spec/review/ATLAS-CORE.md` (245 lines) |
-| DR | `~/Documents/ChatGPT/creation/atlas-spec/review/DESIGN-REVIEW.md` (192 lines) |
-| INT | `~/Documents/ChatGPT/creation/atlas-spec/review/INTEGRATIONS.md` (117 lines) |
-| HB | `~/Documents/ChatGPT/creation/atlas-spec/review/CAPABILITY-HANDBOOK.md` (595 lines; read in part, as above) |
-| P2 | `~/repos/atlas-skeleton/docs/pass-2/REVIEW.md` (100 lines). **It governs `PLAN.md` where they disagree (P2:5)** |
-| PROV | `~/repos/atlas-skeleton/sdk/go/kit/PROVENANCE.md` (54 lines) |
-| AG | `~/repos/atlas-skeleton/AGENTS.md` (72 lines) |
+| RM | `docs/source/atlas-spec/review/README.md` (43 lines) |
+| CORE | `docs/source/atlas-spec/review/ATLAS-CORE.md` (245 lines) |
+| DR | `docs/source/atlas-spec/review/DESIGN-REVIEW.md` (192 lines) |
+| INT | `docs/source/atlas-spec/review/INTEGRATIONS.md` (117 lines) |
+| HB | `docs/source/atlas-spec/review/CAPABILITY-HANDBOOK.md` (595 lines; read in part, as above) |
+| P2 | `docs/pass-2/REVIEW.md` (100 lines). **It governs `PLAN.md` where they disagree (P2:5)** |
+| PROV | `sdk/go/kit/PROVENANCE.md` (54 lines) |
+| AG | `AGENTS.md` (72 lines) |
 
 A citation reads `CORE §8 L170-180`, meaning ATLAS-CORE, section 8, lines 170 to 180.
 
 **Status of the sources.**
 - The review is "a proposal dated **2026-10-31**… It does not change the existing requirements by implication" (RM L7). It is "design proposal… not a claim that the interfaces or capabilities below are deployed" (CORE L3). Its recommendations are "proposed changes, not silently amended source requirements" (DR L3).
-- P2 adopts it by Ashley's instruction: "Ashley asked that the build follow it" (P2 L3). "Where pass 2 now departs from the spec or from `PLAN.md`, this file records the change and the review finding (R01–R26) behind it" (P2 L5).
+- P2 adopts it by the maintainer's instruction: "the product owner asked that the build follow it" (P2 L3). "Where pass 2 now departs from the spec or from `PLAN.md`, this file records the change and the review finding (R01–R26) behind it" (P2 L5).
 - So, for this build: **spec §9 is normative for the wire, except where P2 records an R-numbered departure.** P2 governs `PLAN.md`.
 
 ---
@@ -130,7 +132,7 @@ The definition must answer these. They "are documentation requirements, not a ne
 | C6.6 | Clients keep exact decimals, large integers, timestamps and nulls. A local representation may differ (Python `Decimal`, a TS exact type, a JSON decimal string), but a client "must not silently turn an exact amount into a binary floating-point value" | L134 | IN SCOPE |
 | C6.7 | Parity per result shape covers: "the logical value, schema, warnings, request identity, data provenance and completion status". It does not require the same in-memory container or the same file location | L136 | IN SCOPE |
 | C6.8 | "Large tables are iterators or batch readers by default. Materialising a whole DataFrame or array is an explicit caller choice." File output and dataframe conversion stay outside capability definitions | L138 | IN SCOPE |
-| C6.9 | The Go engine behind the Python proof is retained while it is measured. "The TypeScript implementation must pass the same semantic fixtures." A subprocess is an implementation choice behind Python's contract | L140 | IN SCOPE. P2 L19, L92: the engine and the Python face come back from branch `pass-1` in step 4 |
+| C6.9 | The Go engine behind the Python proof is retained while it is measured. "The TypeScript implementation must pass the same semantic fixtures." A subprocess is an implementation choice behind Python's contract | L140 | IN SCOPE. P2 L19, L92: the engine and the Python face come back from the first implementation in step 4 |
 
 ### §7 Contract evolution and a program's lock (CORE L142-166)
 
@@ -213,14 +215,14 @@ The order of every invocation, verbatim (L170-180). **IN SCOPE: the pipeline ste
 
 | # | Statement | Cite | Scope |
 |---|---|---|---|
-| C12.1 | "Integrate the pinned cloud pattern packages and `sqlglot-go` behind Atlas-owned interfaces" | L236 | IN SCOPE |
+| C12.1 | "Integrate the pinned cloud pattern packages and `sqlglot` behind Atlas-owned interfaces" | L236 | IN SCOPE |
 | C12.2 | "Author complete profiles for a small, coherent domain journey, including its identifier lookups and freshness/status capability" | L237 | IN SCOPE |
 | C12.3 | "Implement bootstrap, identity, authorized catalogue/search, describe/guide, the call path, problems, data streaming and durable operations where that journey needs them" | L238 | IN SCOPE |
 | C12.4 | "Prove the exact same requests and logical results through CLI, Python and Node against a fixed fixture or declared data revision. Add a capability after the clients are built and use it from all three" | L239 | IN SCOPE |
 | C12.5 | "Test two identities with different portfolio/data scope, denied and invalid calls, decimal precision, incomplete streams and stale metadata. For metered/changing work, test two callers contending for one shared budget and a repeat after a crash following upstream commit but before receipt persistence" | L240 | IN SCOPE |
 | C12.6 | "Connect the real Development source and measure the assumptions that fakes cannot prove. Direct Snowflake chunks and Service Bus remain separately gated proofs" | L241 | DEFERRED (P2 step 5, L33) |
 | C12.7 | The measure of the first agent journey is "a correct, authorized result with understandable recovery and reasonable cost". "Require deterministic route replay from the built artifact"; do not require an exploratory agent to repeat its exact tool sequence | L243 | IN SCOPE (R22) |
-| C12.8 | Not required in the first release: "arbitrary remote provider hosting, a universal bidirectional lens language, multiple SQL backends, every transport, harness lifecycle tools or a design for `bt-research`" | L245 | DEFERRED |
+| C12.8 | Not required in the first release: "arbitrary remote provider hosting, a universal bidirectional lens language, multiple SQL backends, every transport, harness lifecycle tools or a design for `backtesting integration`" | L245 | DEFERRED |
 
 ---
 
@@ -250,7 +252,7 @@ The finding, decision and acceptance text is verbatim from DR. "P2 now" is verba
 - **Acceptance (verbatim):** "Compatibility tests contain those counterexamples and reject the change or retain a real old-version implementation. The gate never classifies an unrepresentable old value as safe."
 - **P2 now:** "Within a version: optional request fields; result fields only with a defined missing value; aliases for exact renames. A removal, a unit change, a type change, a field made non-null in a result, or a changed default is a new major version". **Step 2 (gate).**
 - OVERRIDDEN BY REVIEW (R03): spec §3.3 rule 1, and the change-table rows for removal after sunset, nullable to non-null and promotion.
-- Observation, not from the sources: the working tree has uncommitted R03 edits in `sdk/go/protocol/gate/classify.go` (messages cite R03 at L17, L234-334, L600-609) and in `gate_test.go` L249 ("R03's counterexamples"). `git status` shows them as modified.
+- Observation, not from the sources: the reviewed implementation contains R03 edits in `sdk/go/protocol/gate/classify.go` (messages cite R03 at L17, L234-334, L600-609) and in `gate_test.go` L249 ("R03's counterexamples").
 
 ### R04: the transformation language does not express its own examples (DR L58-64)
 - **Evidence:** §9.5 (`09-5-resolution.md:17`) has one lens chain per profile with top-level field operations. The §3.3 rename example (`03-contracts.md:646`) is `{ "portfolios": ["147HYC"], "columns": ["portfolio", "mv"] }`, which needs value translation inside `columns`.
@@ -351,45 +353,42 @@ The finding, decision and acceptance text is verbatim from DR. "P2 now" is verba
 
 ## 3. INTEGRATIONS in full detail (INT)
 
-### 3.1 Reviewed revisions (INT L5-16)
+### 3.1 Local integration modules
 
-| Repository | Commit | Module / Go | Role |
-|---|---|---|---|
-| cloud-gateway-patterns-go | `44ba81aa92ee901c131c0b80dcadafa25de440a2` | `github.com/cottrellashley/cloud-gateway-patterns-go`, Go 1.25 | "Reusable gateway mechanisms behind Atlas's central invocation path" |
-| sqlglot-go | `3d81e5393850e249136284859f6203a34db29f16` | `github.com/cottrellashley/sqlglot-go`, Go 1.23 | "SQL AST construction, parsing, qualification and strict generation behind the data adapter" |
+| Module | Role |
+|---|---|
+| `sdk/go/kit` (part of `atlas.local/sdk/go`) | Reusable gateway mechanisms behind the central invocation path |
+| `sqlglot` (`atlas.local/sqlglot`) | SQL AST construction, parsing, qualification and strict generation behind the data adapter |
 
-- "Build the combined integration on a compatible toolchain" (L12).
-- D28's unnamed Go SQL replacement: "**`sqlglot-go` is that Go SQL dependency**. Keep D28's typed-AST and adapter boundary, without proposing another parser" (L14).
-- "`bt-research` remains a future capability implementation" (L16). DEFERRED.
+Build these with a compatible toolchain. The SQL library stays behind Atlas's typed planning boundary. A backtesting integration remains a future capability; its internal design is deferred.
 
 ### 3.2 The one path (INT L18-35)
 
-The flow is: Clients (CLI, Python, Node), then the Atlas invocation pipeline (the cloud patterns supply mechanisms), then the domain capability provider, then the Atlas SQL compiler and guard (sqlglot-go supplies AST, parsing and generation), then the Snowflake adapter, then Snowflake with a constrained identity, then a checked result under the capability contract, back to the clients (L20-31).
+The flow is: Clients (CLI, Python, Node), then the Atlas invocation pipeline (the cloud patterns supply mechanisms), then the domain capability provider, then the Atlas SQL compiler and guard (sqlglot supplies AST, parsing and generation), then the Snowflake adapter, then Snowflake with a constrained identity, then a checked result under the capability contract, back to the clients (L20-31).
 
 - "The public profile exposes business parameters and types. It does not expose Go AST types or the cloud kit's internal models. Atlas owns the integration interfaces" (L33). Test: no profile, describe or guide output contains a kit or sqlglot type name.
-- Route: copy selected cloud packages into `sdk/go/kit` with notices and tests, "unless the team chooses a pinned module dependency instead" (L35).
-- "For either route, record upstream repository, exact commit, imported packages, notices, local modifications and carried tests in a provenance manifest. Pin sqlglot-go similarly…; never track an unreviewed branch head in a release" (L35).
+- Reuse the local shared kit and SQL module. Preserve third-party notices and regression coverage; release dependencies must be reviewed and pinned.
 
-### 3.3 Cloud patterns: reuse and adapt (INT L37-54), verbatim
+### 3.3 Shared patterns: integration responsibilities
 
-| Mechanism (source at 44ba81a) | Existing value | Atlas responsibility |
+| Mechanism | Existing value | Atlas responsibility |
 |---|---|---|
-| JWT verifier `patterns/auth/verifier.go#L97` and middleware `patterns/auth/middleware.go#L93` | Signature/claim verification and authentication plumbing | Require configured issuer, audience and tenant; establish stable identity/delegation context; add Entra-specific behavior and OBO where required |
-| Idempotency `patterns/idempotency/idempotency.go#L106` | Request ownership and response replay mechanism | Replace method/path/raw-body identity with caller-scoped canonical business requests; activate by semantic execution needs; retain uncertain effects instead of dropping keys on 5xx or response overflow |
-| Long operations `patterns/lro/lro.go#L142` | An operation manager and lifecycle foundation | Persist key-to-operation ownership, use bounded durable workers and leases/fencing, reconcile on restart; process-local maps and goroutines do not provide restart safety |
-| Rate limiting `patterns/ratelimit/window.go#L68` | Fixed-window counters and local protective primitives | Add the selected hard-budget transaction model, reservations, settlement and shared concurrency semantics |
-| Retries `patterns/resilience/retry.go#L20` | Backoff and retry throttling | Add replay safety, deadline and operation recovery rules; do not claim its token budget is the spec's exact 10%-per-minute rule |
-| Configuration snapshots `patterns/config/config.go#L63` | Validated atomic publication | Serialize catalogue construction or use correct compare-and-swap; add revision monotonicity, persistence and freshness policy |
-| Reconciliation `patterns/reconcile/controller.go#L38` | Queue and resync model | Supply durable ownership, distributed leases and event/outbox handling where needed |
-| Registry `patterns/registry/registry.go#L262` | Provisioning and module lifecycle | Use explicit registration; discard a partially failed new generation completely; drain old users before cleanup |
-| Resource store `patterns/resource/store.go#L170` | State/version management | Add Atlas masks and mandatory preconditions; adapt its envelope; settle representation ETags versus desired generation first |
-| Audit guidance `docs/05-observability/request-telemetry-and-audit.md` | Separation of operational telemetry and audit concerns | Implement durable invocation lifecycle facts, source reconciliation and a queryable audit view |
+| JWT verifier the `auth` pattern and middleware the `auth` pattern | Signature/claim verification and authentication plumbing | Require configured issuer, audience and tenant; establish stable identity/delegation context; add Entra-specific behavior and OBO where required |
+| Idempotency the `idempotency` pattern | Request ownership and response replay mechanism | Replace method/path/raw-body identity with caller-scoped canonical business requests; activate by semantic execution needs; retain uncertain effects instead of dropping keys on 5xx or response overflow |
+| Long operations the `lro` pattern | An operation manager and lifecycle foundation | Persist key-to-operation ownership, use bounded durable workers and leases/fencing, reconcile on restart; process-local maps and goroutines do not provide restart safety |
+| Rate limiting the `ratelimit` pattern | Fixed-window counters and local protective primitives | Add the selected hard-budget transaction model, reservations, settlement and shared concurrency semantics |
+| Retries the `resilience` pattern | Backoff and retry throttling | Add replay safety, deadline and operation recovery rules; do not claim its token budget is the spec's exact 10%-per-minute rule |
+| Configuration snapshots the `config` pattern | Validated atomic publication | Serialize catalogue construction or use correct compare-and-swap; add revision monotonicity, persistence and freshness policy |
+| Reconciliation the `reconcile` pattern | Queue and resync model | Supply durable ownership, distributed leases and event/outbox handling where needed |
+| Registry the `registry` pattern | Provisioning and module lifecycle | Use explicit registration; discard a partially failed new generation completely; drain old users before cleanup |
+| Resource store the `resource` pattern | State/version management | Add Atlas masks and mandatory preconditions; adapt its envelope; settle representation ETags versus desired generation first |
+| Audit guidance (telemetry versus audit design) | Separation of operational telemetry and audit concerns | Implement durable invocation lifecycle facts, source reconciliation and a queryable audit view |
 
-- `cmd/gateway/main.go` and `cmd/kernel/main.go` "are useful references, not deployable Atlas replacements. Their defaults include in-memory state and authentication arrangements that differ from Atlas's requirements" (L54).
+- Reference gateway/kernel designs use in-memory state and authentication arrangements that differ from Atlas. Their example defaults are not production guarantees.
 
-**What PROV records as imported** (PROV L17-25). All are at the commit above, copied into `sdk/go/kit`, each file with a header naming its source, and Atlas's edits marked `ATLAS`:
+**Shared kit components reviewed:** the following table records their responsibilities, useful tests and adaptation decisions.
 
-| kit pkg | From `patterns/` | Files | Tests carried | Local changes |
+| kit pkg | Pattern | Files | Tests carried | Local changes |
 |---|---|---|---|---|
 | `health` | `health` | `health.go` | `health_test.go` | Header. `http.Error` replaced with a status and body write (atlasvet) |
 | `hot` | `config` | `config.go` | `config_test.go` | Header and package name |
@@ -403,14 +402,14 @@ The flow is: Clients (CLI, Python, Node), then the Atlas invocation pipeline (th
 - `kit/clock` and `kit/conc` exist in the tree but are not in PROV. Their package docs show they are Atlas's own (clock: "inject the clock"; conc: "ATLAS-MECH-012"). There are no upstream headers. Observed by `head` on the files.
 - **Known defect** (PROV L29): "`middleware.Deadline` turns a client deadline already in the past into the route's maximum, instead of refusing the call. It also reads the wall clock rather than an injected one. Fixed in step 3, with R17."
   - Verified in `sdk/go/kit/middleware/middleware.go` L304-322: `until := time.Until(t)` uses the wall clock. A negative `until` makes `d` negative, and then `if max > 0 && (d <= 0 || d > max) { d = max }`. Also, when `max == 0` and `d <= 0`, the handler runs with no deadline at all (L319-321).
-- **To import later**, each with the step that needs it (PROV L33-44): `auth` (middleware), `idempotency`, `lro`, `ratelimit`, `resilience` (retry), `reconcile`, `registry`, `resource` (store). Their Atlas responsibilities match the table above. PROV adds R08 to idempotency, R07 to ratelimit and R14 to resource, and says of retry: "Its token budget is not claimed to be the spec's one-in-ten rule".
-- Licences: `sdk/go/THIRD_PARTY_NOTICES.md` (PROV L3). It lists each adapted file at `44ba81a`.
+- **Mechanisms still required in the historical plan**, each with the step that needs it (PROV L33-44): `auth` (middleware), `idempotency`, `lro`, `ratelimit`, `resilience` (retry), `reconcile`, `registry`, `resource` (store). Their Atlas responsibilities match the table above. PROV adds R08 to idempotency, R07 to ratelimit and R14 to resource, and says of retry: "Its token budget is not claimed to be the spec's one-in-ten rule".
+- Licences: `sdk/go/THIRD_PARTY_NOTICES.md` (PROV L3). It records the applicable notices for adapted files.
 
-### 3.4 sqlglot-go integration rules (INT L56-98; PROV L46-54)
+### 3.4 sqlglot integration rules (INT L56-98; PROV L46-54)
 
 **What it is** (INT L58): base, Snowflake and DuckDB dialects; AST construction, parsing, generation, optimization and qualification. "Its logical planner and in-memory executor are not a Snowflake driver or a warehouse cost estimator. SQL Server and Postgres are not already available."
 
-**Route taken** (PROV L48): ported into the repo as its own module `sqlglot/`, `github.com/jhgonline/fi-app-atlas/sqlglot`, at commit `3d81e5393850e249136284859f6203a34db29f16`, "with every test. It is not taken as a dependency". Its changes are in `sqlglot/PROVENANCE.md`: module path in 178 files; twelve unused declarations removed (staticcheck U1000); `ParseOneOpts` simplified (SA4004, "behaviour is unchanged"); `strings.EqualFold` (SA6005).
+**Local implementation.** The SQL library is the `sqlglot/` module (`atlas.local/sqlglot`). Its tests and third-party notices stay with it; Atlas uses it through the compiler and guard rather than exposing AST types to callers.
 
 **What is used** (PROV L52): "Full-statement parsing (never `ParseOne` on text that is then executed), the AST, strict generation in the Snowflake and DuckDB dialects, and qualification under a strict configuration. The optimiser and the in-memory executor stay out of production". INT L98: "Do not bring the library's entire optimizer or in-memory executor into production solely because they exist."
 
@@ -457,7 +456,7 @@ PROV L54 adds: "The references' `vectors/guard.json` is the first of them" (the 
 
 | # | INT L106-111 (verbatim) | P2 L46-51 wording difference |
 |---|---|---|
-| 1 | "Both pinned repositories participate in the running path, with provenance and carried tests." | "take part in" (same meaning) |
+| 1 | The shared gateway kit and SQL library participate in the running path, with integration tests and applicable notices. | Same integration obligation for the local modules. |
 | 2 | "The same person discovers and calls the same capability from CLI, Python and Node using identical request records." | same |
 | 3 | "A second person with narrower data scope receives a correspondingly narrower result or a clear refusal." | same |
 | 4 | "A capability added after the clients were built works without releasing any of those clients." | same |
@@ -465,7 +464,7 @@ PROV L54 adds: "The references' `vectors/guard.json` is the first of them" (the 
 | 6 | "The guide's example succeeds and its result can be checked independently against the source." | "**against the source fixture**". P2 narrows "the source" to the fixture, since the Development source is step 5 |
 
 - "The existing Go/Python hermetic proof reduces the work needed to start. It does not remove the need for CLI/Node parity or live source proofs. Its report explicitly identifies assumed Snowflake chunk behavior, missing Windows lifetime handling and unimplemented client features" (INT L113).
-- Evidence limits (INT L117): the review ran neither repo's tests. The SQL repo's CI at the commit "was observed successful; that is upstream CI evidence, not a passed Atlas integration test". The cloud repo's claims were not rerun.
+- Evidence limit: this historical design review did not run the kit or SQL library tests. Library-level claims do not establish Atlas integration behavior; the local module tests and end-to-end journey must verify the actual running path.
 
 ### 3.7 The Development source
 
@@ -587,12 +586,12 @@ The rule text: "'available to this caller' is the permission boundary; 'recommen
 | D12 | INT acceptance #6: "checked independently against the source" (INT L111) | "against the source fixture" (P2 L51) | Narrowed, because the Development source is step 5 |
 | D13 | CORE §12.5 tests "stale metadata", "denied" calls, budget contention and crash-after-commit (L240) | P2's acceptance list (L46-51) omits "stale metadata" and "denied" | Covered elsewhere: stale metadata by the R01/R02 acceptance tests; budget contention by R07; crash-after-commit by R08 (step 3); denied by acceptance #3. Include all of them |
 | D14 | CORE §12 order (integrate first, L236) | P2 uses DR's "practical decision order" (L25, L27-33) | Integration is step 4, not step 1 |
-| D15 | INT L35: copy into `sdk/go/kit` "unless the team chooses a pinned module"; pin sqlglot-go "through the chosen dependency mechanism" | Kit copied (PROV L12). sqlglot ported as an in-repo module `github.com/jhgonline/fi-app-atlas/sqlglot` with a renamed module path (PROV L48) | Consistent with INT; the route is chosen. Also matches the memory note "In-repo modules, not dependencies" |
+| D15 | Shared gateway mechanics and SQL planning must remain behind Atlas-owned interfaces | Local modules `sdk/go/kit` and `sqlglot` provide those boundaries; preserve their tests and applicable notices | The module layout and integration boundaries are repository-local |
 | D16 | DR R20 "remote transport/authentication conformance on first extraction" | P2 L78 adopts it. AGENTS.md L66 still says "Pass the family's battery, in process and over loopback" | P2 governs (P2 L5 governs PLAN.md). AGENTS.md is not amended. AMBIGUOUS whether loopback tests are still wanted |
 | D17 | CORE §6 L140: retain the Go engine "while measured"; the subprocess is an implementation choice | P2 L19, L92: the engine, the Python face and the hermetic Snowflake fake come back from `pass-1` onto the new protocol | Consistent |
 | D18 | Review leaves open: holdings questions; org/tenant switching; catalogue overlaps (HB L531-548) | P2 L94-100 "Left to owners", adding "The minimum sunset and the lock's format, which the spec still has open" | The fixture states each choice |
-| D19 | P2 "These carry over unchanged": building without Docker, DuckDB and sqlglot-go faking Snowflake, fakes behind real adapters, references as the independent check (D22), committing only when asked (P2 L21) | Not from the review; carried from PLAN.md | Binding |
-| D20 | P2 Phase 0 (`709bb24`) and Phase 1 (`0634137`) stand (P2 L88-89) | Verified in `git log`: `0634137 Pass 2, phase 1…`, `709bb24 Pass 2, phase 0…`; current branch `pass-2`; branch `pass-1` exists | The working tree has uncommitted changes in `gate`, `resolve`, `schema` and `frame`, plus untracked `gateway/`, `REVIEW.md`, `PROVENANCE.md` and `kit/clock/` (`git status`) |
+| D19 | P2 "These carry over unchanged": building without Docker, DuckDB and sqlglot faking Snowflake, fakes behind real adapters, references as the independent check (D22), committing only when asked (P2 L21) | Not from the review; carried from PLAN.md | Binding |
+| D20 | Phase 0 layout/checks and Phase 1 protocol/reference work are retained | Historical implementation findings in this digest may have later fixes | Consult the current code and handoff progress before extending them |
 
 ### Spec rules the review overrides, per P2 (quick list)
 

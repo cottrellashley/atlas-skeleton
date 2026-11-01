@@ -1,7 +1,5 @@
 # 6. Inside the gateway
 
-Source: `IMG_2138.MOV` 00:14:48–00:15:12.
-
 `spec/gateway.md` · proposed
 
 How the Atlas Gateway, Atlas's one host, keeps the writer side of every contract for every client: a front door that decides every call once and routes it to services that can be scaled and moved apart, an access decision in a fixed order, engines behind one data-source port, and one Go module in six layers.

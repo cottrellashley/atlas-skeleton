@@ -9,9 +9,9 @@ import (
 	"sort"
 	"strings"
 
-	sqlglot "github.com/jhgonline/fi-app-atlas/sqlglot"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/internal/ghelp"
+	sqlglot "atlas.local/sqlglot"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/internal/ghelp"
 )
 
 func tablesampleSQL(sup func(g *gen, e *exp.Expr, kw string) string) func(g *gen, e *exp.Expr, kw string) string {

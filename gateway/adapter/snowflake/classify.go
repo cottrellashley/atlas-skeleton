@@ -9,7 +9,7 @@ import (
 	"net"
 	"syscall"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"atlas.local/gateway/ports"
 )
 
 // classify marks an engine's failure the caller may retry

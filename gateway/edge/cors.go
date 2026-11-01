@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/sdk/go/protocol"
 )
 
 // The headers a browser page may send, and read, across origins: the

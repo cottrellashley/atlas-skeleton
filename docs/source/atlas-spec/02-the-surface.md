@@ -1,7 +1,5 @@
 # §2 The surface
 
-Source: `IMG_2138.MOV` 00:02:22–00:02:48. Manually verified from overlapping full-resolution frames at 02:24–02:48.
-
 What Atlas offers: every capability sits on one of four surfaces (data, resources, actions, events) or is a built-in, and each surface fixes the verbs a caller can use, what its contract adds, and how its results travel.
 
 ### In short

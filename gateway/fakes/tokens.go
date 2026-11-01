@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/clock"
 )
 
 // Tokens is an Authenticator over a table of tokens it was told about: the

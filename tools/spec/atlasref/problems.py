@@ -1,13 +1,15 @@
 """§9.3.3, the problem registry, and §9.7.6's CLI exit codes.
 
-The table is transcribed here; when the spec's directory is present (the
-ATLAS_SPEC environment variable, else ~/Documents/ChatGPT/creation/atlas-spec),
-`check` also reads 09-3-documents.md and fails if the transcription differs.
+The table is transcribed here; `check` also reads 09-3-documents.md from the
+repository's docs/source/atlas-spec directory and fails if the transcription
+differs. ATLAS_SPEC can override that directory.
 """
 
 import os
 import pathlib
 import re
+
+from . import REPO
 
 TYPE_BASE = "https://atlas.jhg.com/problems/"
 
@@ -87,7 +89,7 @@ def problem(code, target=None, **members):
 
 
 def spec_dir():
-    return pathlib.Path(os.environ.get("ATLAS_SPEC", pathlib.Path.home() / "Documents/ChatGPT/creation/atlas-spec"))
+    return pathlib.Path(os.environ.get("ATLAS_SPEC", REPO / "docs/source/atlas-spec"))
 
 
 def read_spec_table(directory=None):

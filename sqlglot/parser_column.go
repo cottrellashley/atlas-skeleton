@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
-	"github.com/jhgonline/fi-app-atlas/sqlglot/tokens"
+	"atlas.local/sqlglot/exp"
+	"atlas.local/sqlglot/tokens"
 )
 
 // FunctionOpts are the optional arguments of ParseFunction / ParseFunctionCall.

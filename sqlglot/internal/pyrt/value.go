@@ -13,7 +13,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+	"atlas.local/sqlglot/exp"
 )
 
 // Value is any Python value.

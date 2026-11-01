@@ -32,7 +32,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "clients" / "python"))
 from fiatlas import AtlasError, FIAtlas  # noqa: E402
 
-ENV = {**os.environ, "GOTOOLCHAIN": "local", "GOPRIVATE": "github.com/jhgonline", "GOVCS": "github.com/jhgonline:off"}
+ENV = {**os.environ, "GOTOOLCHAIN": "local", "GOPRIVATE": "atlas.local", "GOVCS": "atlas.local:off"}
 
 
 def build(tmp: Path, module: str, pkg: str, name: str) -> str:

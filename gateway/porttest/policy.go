@@ -7,8 +7,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
+	"atlas.local/gateway/ports"
+	"atlas.local/sdk/go/kit/conc"
 )
 
 // PolicyHarness is the suite's hold on a PolicySource's store: what the

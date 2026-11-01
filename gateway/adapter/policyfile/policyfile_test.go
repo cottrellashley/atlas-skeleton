@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/fixtures"
-	"github.com/jhgonline/fi-app-atlas/gateway/ports"
-	"github.com/jhgonline/fi-app-atlas/gateway/porttest"
+	"atlas.local/gateway/fixtures"
+	"atlas.local/gateway/ports"
+	"atlas.local/gateway/porttest"
 )
 
 func write(t *testing.T, path string, b []byte) {

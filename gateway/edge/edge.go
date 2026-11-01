@@ -25,15 +25,15 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/jhgonline/fi-app-atlas/gateway/core/pipeline"
-	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/health"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/lifecycle"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/middleware"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/problem"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/telemetry"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"atlas.local/gateway/core/pipeline"
+	"atlas.local/gateway/core/registry"
+	"atlas.local/sdk/go/kit/clock"
+	"atlas.local/sdk/go/kit/health"
+	"atlas.local/sdk/go/kit/lifecycle"
+	"atlas.local/sdk/go/kit/middleware"
+	"atlas.local/sdk/go/kit/problem"
+	"atlas.local/sdk/go/kit/telemetry"
+	"atlas.local/sdk/go/protocol"
 )
 
 // SignIn is how a client signs in (bootstrap.schema.json's sign_in).

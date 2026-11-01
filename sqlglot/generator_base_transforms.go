@@ -3,7 +3,7 @@ package sqlglot
 // The base Generator.TRANSFORMS table and AFTER_HAVING_MODIFIER_TRANSFORMS, translated from
 // sqlglot/generator.py.
 
-import "github.com/jhgonline/fi-app-atlas/sqlglot/exp"
+import "atlas.local/sqlglot/exp"
 
 // NamedGenFunc is an entry of an ordered generator table (AFTER_HAVING_MODIFIER_TRANSFORMS).
 type NamedGenFunc struct {

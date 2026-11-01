@@ -4,10 +4,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/internal/refs"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
+	"atlas.local/sdk/go/internal/refs"
+	"atlas.local/sdk/go/protocol/grammar"
+	"atlas.local/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/schema"
 )
 
 // AP-RESOLVE-001: every case of resolution.json gives exactly its record,

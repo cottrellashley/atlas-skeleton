@@ -1,6 +1,6 @@
 # Pass 2 follows the design review
 
-**Source:** the 2026-10-31 design review, [`docs/source/atlas-spec/review/`](../source/atlas-spec/review). It was read on 2026-10-31 in the order its README sets: [ATLAS-CORE](../source/atlas-spec/review/ATLAS-CORE.md), CAPABILITY-HANDBOOK, DESIGN-REVIEW, INTEGRATIONS. Ashley asked that the build follow it. The review keeps Atlas's product promise and reduces its universal guarantees, so the first build is one complete, narrow journey rather than a fraction of every subsystem.
+**Source:** the 2026-10-31 design review, [`docs/source/atlas-spec/review/`](../source/atlas-spec/review). It was read on 2026-10-31 in the order its README sets: [ATLAS-CORE](../source/atlas-spec/review/ATLAS-CORE.md), CAPABILITY-HANDBOOK, DESIGN-REVIEW, INTEGRATIONS. the product owner asked that the build follow it. The review keeps Atlas's product promise and reduces its universal guarantees, so the first build is one complete, narrow journey rather than a fraction of every subsystem.
 
 The review does not change requirements by implication. Where pass 2 now departs from the spec or from `PLAN.md`, this file records the change and the review finding (R01–R26) behind it. Where the two disagree, this file governs `PLAN.md`.
 
@@ -16,9 +16,9 @@ The review does not change requirements by implication. Where pass 2 now departs
 | Exact budgets per caller × capability | A declared budget authority per metered provider. Unsupported combinations of hard budgets are refused. Protective rate limits are kept apart | ATLAS-CORE §11; R07 |
 | One immutable final audit record | An invocation history of immutable admission, outcome and settlement facts | ATLAS-CORE §11; R09 |
 | `Atlas-Confirm` as consent | A confirmation or approval receipt bound to the principal, address, normalised request, plan digest, scope, maximum and expiry. The header is the client's claim only | ATLAS-CORE §9; R06 |
-| Pass 1's gateway, clients and engine removed in Phase 0 | Kept as an asset. In step 4 the engine and the Python face come back from branch `pass-1` onto the new protocol rather than being rewritten | DESIGN-REVIEW, "keep the existing Go/Python proof"; ATLAS-CORE §6 |
+| Pass 1's gateway, clients and engine removed in Phase 0 | Kept as an asset. In step 4 the engine and the Python face come back from the first implementation onto the new protocol rather than being rewritten | DESIGN-REVIEW, "keep the existing Go/Python proof"; ATLAS-CORE §6 |
 
-These carry over unchanged: building without Docker, DuckDB and sqlglot-go faking Snowflake, fakes behind real adapters, the references as the independent check (D22), and committing only when asked.
+These carry over unchanged: building without Docker, DuckDB and sqlglot faking Snowflake, fakes behind real adapters, the references as the independent check (D22), and committing only when asked.
 
 ## The order of work
 
@@ -26,10 +26,10 @@ The review's "practical decision order" is now pass 2's.
 
 | Step | What | Done when |
 |---|---|---|
-| 1 | **Agree** the capability card (ATLAS-CORE §4, the handbook's page contract), the call and result lifecycle (ATLAS-CORE §6, R11) and the identity and scope model (ATLAS-CORE §3, R05, R26) | Agreed as written in the review, by Ashley's instruction to follow it |
+| 1 | **Agree** the capability card (ATLAS-CORE §4, the handbook's page contract), the call and result lifecycle (ATLAS-CORE §6, R11) and the identity and scope model (ATLAS-CORE §3, R05, R26) | Agreed as written in the review, by the recorded design decision |
 | 2 | **Revisions and compatibility:** split the contract fingerprint, the document revision and the routing (R01, R02); apply the smaller compatibility policy in the gate (R03, R04); write the first complete executable profiles and the shared fixtures | The four journey profiles pass the gate and the readiness check. Fixtures cover two identities with different portfolio scope |
 | 3 | **Before metered or changing work:** idempotency scope and uncertain outcomes (R08), approval evidence (R06), budget transaction boundaries (R07), the audit lifecycle (R09) | Each R's acceptance test passes against the fakes |
-| 4 | **Integrate and prove:** the cloud kit with provenance, sqlglot-go behind the Atlas compiler and guard, and the journey through the CLI, Python and Node | The acceptance result below |
+| 4 | **Integrate and prove:** the cloud kit with provenance, sqlglot behind the Atlas compiler and guard, and the journey through the CLI, Python and Node | The acceptance result below |
 | 5 | **Real systems:** the Development source, direct downloads, events, delegated identity | Out of reach from this machine. The plug-in points and gated proofs are ready, and only the guarantees a proof establishes are promoted |
 
 ### The journey
@@ -43,7 +43,7 @@ The capability added after the clients are built is `portfolio.holdings-dates@v1
 
 ### The acceptance result (INTEGRATIONS)
 
-1. Both pinned repositories take part in the running path, with provenance and carried tests.
+1. The shared gateway kit and SQL library take part in the running path, with their integration tests and applicable notices.
 2. The same person discovers and calls the same capability from the CLI, Python and Node with identical request records.
 3. A second person with narrower data scope receives a correspondingly narrower result, or a clear refusal.
 4. A capability added after the clients were built works without releasing any of them.
@@ -85,11 +85,11 @@ Each row is a decision the review proposes. Each acceptance test becomes a named
 
 ## What happens to what is built
 
-- **Phase 0** (`709bb24`) stands: the layout, `make check`, the analyzers, the layer and requirement tools.
-- **Phase 1** (`0634137`) stands, because R12 asks for exactly what it supplies: executable schemas and unambiguous encodings, proved against independent vectors. Two parts change role:
+- **Phase 0** stands: the layout, `make check`, the analyzers, the layer and requirement tools.
+- **Phase 1** stands, because R12 asks for exactly what it supplies: executable schemas and unambiguous encodings, proved against independent vectors. Two parts change role:
   - **`protocol/resolve`** becomes the experimental resolver ATLAS-CORE §7 allows. A client is obliged only to aliases, defaults, UNKNOWN and projection. Its vectors still pass, but no served profile may depend on `convert_unit`, `promote` or `drop` within a version.
   - **`protocol/gate`** takes the smaller compatibility model of R03.
-- **Pass 1's proof** (branch `pass-1`) is an asset. Step 4 brings its engine, the Python face and the hermetic Snowflake fake back onto the new protocol.
+- **Pass 1's proof** (historical first implementation) is an asset. Step 4 brings its engine, the Python face and the hermetic Snowflake fake back onto the new protocol.
 
 ## Left to owners
 

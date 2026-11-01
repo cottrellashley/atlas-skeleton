@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"atlas.local/sdk/go/protocol/ijson"
 )
 
 const head = `"$schema": "https://json-schema.org/draft/2020-12/schema",
