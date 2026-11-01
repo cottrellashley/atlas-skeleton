@@ -1,0 +1,75 @@
+{
+  "id": "CORE-CALL-005",
+  "level": "Core",
+  "description": "The same inputs give the same request record in every client, byte for byte once canonicalised by RFC 8785 (AP-CLIENT-003).",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {},
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "naïve é",
+          "count": 2,
+          "ratio": 0.5,
+          "when": "2026-10-31",
+          "kind": "loud",
+          "tags": [
+            "b",
+            "a"
+          ]
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value_contains": {
+        "text": "naïve é",
+        "kind": "loud"
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "body",
+      "select": {
+        "address": "conformance.echo@v1:fetch"
+      },
+      "jcs": "{\"count\":2,\"kind\":\"loud\",\"ratio\":0.5,\"tags\":[\"b\",\"a\"],\"text\":\"naïve é\",\"when\":\"2026-10-31\"}"
+    }
+  ]
+}

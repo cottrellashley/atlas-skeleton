@@ -1,0 +1,254 @@
+{
+  "description": "The problem registry (§9.3.3): each code's HTTP status, whether it is retryable, its type URI, and the CLI's exit code for it (§9.7.6). output_limit_exceeded travels with status 200, in an end line or final frame.",
+  "type_base": "https://atlas.jhg.com/problems/",
+  "cases": [
+    {
+      "name": "invalid_document",
+      "code": "invalid_document",
+      "expected": {
+        "status": 400,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/invalid_document",
+        "cli_exit": 1
+      }
+    },
+    {
+      "name": "invalid_request",
+      "code": "invalid_request",
+      "expected": {
+        "status": 400,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/invalid_request",
+        "cli_exit": 2
+      }
+    },
+    {
+      "name": "unauthenticated",
+      "code": "unauthenticated",
+      "expected": {
+        "status": 401,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/unauthenticated",
+        "cli_exit": 3
+      }
+    },
+    {
+      "name": "not_granted",
+      "code": "not_granted",
+      "expected": {
+        "status": 403,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/not_granted",
+        "cli_exit": 4
+      }
+    },
+    {
+      "name": "denied",
+      "code": "denied",
+      "expected": {
+        "status": 403,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/denied",
+        "cli_exit": 4
+      }
+    },
+    {
+      "name": "budget_exceeded",
+      "code": "budget_exceeded",
+      "expected": {
+        "status": 403,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/budget_exceeded",
+        "cli_exit": 4
+      }
+    },
+    {
+      "name": "approval_required",
+      "code": "approval_required",
+      "expected": {
+        "status": 403,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/approval_required",
+        "cli_exit": 4
+      }
+    },
+    {
+      "name": "confirmation_required",
+      "code": "confirmation_required",
+      "expected": {
+        "status": 428,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/confirmation_required",
+        "cli_exit": 4
+      }
+    },
+    {
+      "name": "not_found",
+      "code": "not_found",
+      "expected": {
+        "status": 404,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/not_found",
+        "cli_exit": 5
+      }
+    },
+    {
+      "name": "not_in_environment",
+      "code": "not_in_environment",
+      "expected": {
+        "status": 404,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/not_in_environment",
+        "cli_exit": 5
+      }
+    },
+    {
+      "name": "idempotency_conflict",
+      "code": "idempotency_conflict",
+      "expected": {
+        "status": 409,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/idempotency_conflict",
+        "cli_exit": 1
+      }
+    },
+    {
+      "name": "in_progress",
+      "code": "in_progress",
+      "expected": {
+        "status": 409,
+        "retryable": true,
+        "type": "https://atlas.jhg.com/problems/in_progress",
+        "cli_exit": 6
+      }
+    },
+    {
+      "name": "resume_gap",
+      "code": "resume_gap",
+      "expected": {
+        "status": 409,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/resume_gap",
+        "cli_exit": 1
+      }
+    },
+    {
+      "name": "retired",
+      "code": "retired",
+      "expected": {
+        "status": 410,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/retired",
+        "cli_exit": 5
+      }
+    },
+    {
+      "name": "precondition_failed",
+      "code": "precondition_failed",
+      "expected": {
+        "status": 412,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/precondition_failed",
+        "cli_exit": 1
+      }
+    },
+    {
+      "name": "critical_trait_unsupported",
+      "code": "critical_trait_unsupported",
+      "expected": {
+        "status": 422,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/critical_trait_unsupported",
+        "cli_exit": 8
+      }
+    },
+    {
+      "name": "resolution_failed",
+      "code": "resolution_failed",
+      "expected": {
+        "status": 422,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/resolution_failed",
+        "cli_exit": 8
+      }
+    },
+    {
+      "name": "upgrade_required",
+      "code": "upgrade_required",
+      "expected": {
+        "status": 426,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/upgrade_required",
+        "cli_exit": 8
+      }
+    },
+    {
+      "name": "limit_exceeded",
+      "code": "limit_exceeded",
+      "expected": {
+        "status": 429,
+        "retryable": true,
+        "type": "https://atlas.jhg.com/problems/limit_exceeded",
+        "cli_exit": 6
+      }
+    },
+    {
+      "name": "output_limit_exceeded",
+      "code": "output_limit_exceeded",
+      "expected": {
+        "status": 200,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/output_limit_exceeded",
+        "cli_exit": 1
+      }
+    },
+    {
+      "name": "internal",
+      "code": "internal",
+      "expected": {
+        "status": 500,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/internal",
+        "cli_exit": 1
+      }
+    },
+    {
+      "name": "upstream_failed",
+      "code": "upstream_failed",
+      "expected": {
+        "status": 502,
+        "retryable": true,
+        "type": "https://atlas.jhg.com/problems/upstream_failed",
+        "cli_exit": 1
+      }
+    },
+    {
+      "name": "unavailable",
+      "code": "unavailable",
+      "expected": {
+        "status": 503,
+        "retryable": true,
+        "type": "https://atlas.jhg.com/problems/unavailable",
+        "cli_exit": 6
+      }
+    },
+    {
+      "name": "deadline_exceeded",
+      "code": "deadline_exceeded",
+      "expected": {
+        "status": 504,
+        "retryable": false,
+        "type": "https://atlas.jhg.com/problems/deadline_exceeded",
+        "cli_exit": 7
+      }
+    },
+    {
+      "name": "unknown code",
+      "code": "warehouse_suspended",
+      "note": "A code outside the registry is handled by the problem's own status and retryable (§9.3.3); the CLI exits 1 (§9.7.6).",
+      "expected": {
+        "cli_exit": 1
+      }
+    }
+  ]
+}

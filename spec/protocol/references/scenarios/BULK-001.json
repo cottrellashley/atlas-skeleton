@@ -1,0 +1,110 @@
+{
+  "id": "BULK-001",
+  "level": "Bulk",
+  "description": "An export to parts, one failing once: every part fetched and checked by its sha256, the failed one again.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ],
+    "cwd": "{WORKDIR}"
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "nth": 1,
+          "storage_part": 2,
+          "method": "GET"
+        },
+        "respond": {
+          "status": 500,
+          "body": null
+        },
+        "times": 1
+      }
+    ],
+    "state": {
+      "export_parts": 3
+    }
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "export",
+      "args": {
+        "id": "conformance.rows@v1",
+        "request": {
+          "n": 100
+        },
+        "format": "parquet",
+        "path": "{WORKDIR}/export/"
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value_contains": {
+        "manifest": {
+          "files": [
+            {
+              "media_type": "application/vnd.apache.parquet"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "storage_part": 1,
+        "method": "GET"
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "storage_part": 2,
+        "method": "GET"
+      },
+      "equals": 2
+    },
+    {
+      "assert": "count",
+      "select": {
+        "storage_part": 3,
+        "method": "GET"
+      },
+      "equals": 1
+    }
+  ]
+}

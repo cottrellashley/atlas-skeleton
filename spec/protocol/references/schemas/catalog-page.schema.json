@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/catalog-page.schema.json",
+  "title": "Catalogue page",
+  "description": "atlas.catalog and atlas.search (§9.3.2): the capabilities in the caller's working view, a page at a time, with the house rules that name a capability on the page. atlas.search's items carry `score` and `why`.",
+  "type": "object",
+  "required": [
+    "items",
+    "next_cursor",
+    "house_rules"
+  ],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/item"
+      }
+    },
+    "next_cursor": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "description": "The cursor of the next page; null on the last."
+    },
+    "house_rules": {
+      "$ref": "#/$defs/house_rules"
+    }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "exact",
+        "summary",
+        "family",
+        "interactions"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "capability-id"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "exact": {
+          "type": "string",
+          "format": "exact-id",
+          "description": "Its current profile, with the fingerprint."
+        },
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "family": {
+          "type": "string",
+          "enum": [
+            "data",
+            "resource",
+            "action",
+            "event",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "data"
+            },
+            {
+              "value": "resource"
+            },
+            {
+              "value": "action"
+            },
+            {
+              "value": "event"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ]
+        },
+        "lifecycle": {
+          "type": "string",
+          "enum": [
+            "preview",
+            "stable",
+            "deprecated",
+            "retired",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "preview"
+            },
+            {
+              "value": "stable"
+            },
+            {
+              "value": "deprecated"
+            },
+            {
+              "value": "retired"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ]
+        },
+        "interactions": {
+          "type": "object",
+          "description": "The interactions the caller may use, with their effect classes.",
+          "propertyNames": {
+            "pattern": "^[a-z](-?[a-z0-9])*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "effect"
+            ],
+            "properties": {
+              "effect": {
+                "type": "string",
+                "enum": [
+                  "read",
+                  "write",
+                  "external",
+                  "irreversible",
+                  "UNKNOWN"
+                ],
+                "x-atlas-enum": [
+                  {
+                    "value": "read"
+                  },
+                  {
+                    "value": "write"
+                  },
+                  {
+                    "value": "external"
+                  },
+                  {
+                    "value": "irreversible"
+                  },
+                  {
+                    "value": "UNKNOWN",
+                    "description": "A value this reader does not know (§9.5.5)."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "score": {
+          "type": "number",
+          "description": "atlas.search: how well it matched."
+        },
+        "why": {
+          "type": "string",
+          "description": "atlas.search: why it matched."
+        }
+      }
+    },
+    "house_rules": {
+      "type": "object",
+      "description": "House rules (§2.6, §9.3.2).",
+      "required": [
+        "revision",
+        "rules"
+      ],
+      "properties": {
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The rules' revision."
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "text",
+              "capabilities"
+            ],
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The rule, in words."
+              },
+              "capabilities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "capability-id"
+                },
+                "description": "The capabilities it names; it reaches a caller only when the caller can use every one."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

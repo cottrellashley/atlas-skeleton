@@ -1,0 +1,85 @@
+{
+  "id": "CORE-UPGRADE-001",
+  "level": "Core",
+  "description": "A client below the gateway's minimum protocol: 426, upgrade_required.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "bootstrap": {
+      "protocols": [
+        "atlas/1.0",
+        "atlas/2.0"
+      ],
+      "minimum_protocol": "atlas/2.0"
+    },
+    "steps": [
+      {
+        "match": {
+          "address": "atlas.whoami:fetch"
+        },
+        "respond": {
+          "status": 426,
+          "problem": {
+            "code": "upgrade_required",
+            "retryable": false
+          }
+        },
+        "times": 5
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "whoami",
+      "args": {}
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": false,
+      "problem": {
+        "code": "upgrade_required"
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "atlas.whoami:fetch"
+      },
+      "equals": 1
+    }
+  ],
+  "note": "Whether connect itself refuses a bootstrap whose minimum is above the client's protocol is not said; the suite accepts either connect failing upgrade_required, or whoami doing so."
+}

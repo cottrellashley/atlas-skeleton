@@ -1,0 +1,2295 @@
+{
+  "description": "Every Atlas header of §9.6.3 (AP-HTTP-001): its field lines (several lines are joined with \", \", RFC 9110 section 5.3); for a Structured Field, `sf` is its RFC 9651 parse in the form of github.com/httpwg/structured-field-tests (null when it does not parse as its type); `value` is what Atlas reads from it; `absent` means a receiver treats the header as absent (§9.6.3: one that does not parse as its type), with `why`. A value that parses as its Structured Field type but breaks the grammar §9.6.3 gives it is absent too (Q-HDR-1). Atlas-Client-Features lists every member, empty when the header leaves it out.",
+  "headers": [
+    "Atlas-Client",
+    "Atlas-Client-Features",
+    "Atlas-Confirm",
+    "Atlas-Deadline",
+    "Atlas-Error-Code",
+    "Atlas-Execution",
+    "Atlas-Governance-Revision",
+    "Atlas-Limit-Remaining",
+    "Atlas-Profile",
+    "Atlas-Profile-Expect",
+    "Authorization",
+    "Cache-Control",
+    "Deprecation",
+    "Idempotency-Key",
+    "If-Match",
+    "Operation-Location",
+    "Retry-After",
+    "Sunset",
+    "WWW-Authenticate",
+    "X-Atlas-Interactive",
+    "traceparent"
+  ],
+  "cases": [
+    {
+      "name": "Atlas-Client: name=\"fiatlas\", version=\"2.3.0\", protocol=\"atlas/1.0\"",
+      "header": "Atlas-Client",
+      "lines": [
+        "name=\"fiatlas\", version=\"2.3.0\", protocol=\"atlas/1.0\""
+      ],
+      "expected": {
+        "value": {
+          "name": "fiatlas",
+          "version": "2.3.0",
+          "protocol": "atlas/1.0"
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "name",
+              [
+                "fiatlas",
+                []
+              ]
+            ],
+            [
+              "version",
+              [
+                "2.3.0",
+                []
+              ]
+            ],
+            [
+              "protocol",
+              [
+                "atlas/1.0",
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "§9.6.3's example"
+    },
+    {
+      "name": "Atlas-Client: protocol=\"atlas/1.0\", name=\"atlas\", version=\"1.4.0\"",
+      "header": "Atlas-Client",
+      "lines": [
+        "protocol=\"atlas/1.0\", name=\"atlas\", version=\"1.4.0\""
+      ],
+      "expected": {
+        "value": {
+          "name": "atlas",
+          "version": "1.4.0",
+          "protocol": "atlas/1.0"
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "protocol",
+              [
+                "atlas/1.0",
+                []
+              ]
+            ],
+            [
+              "name",
+              [
+                "atlas",
+                []
+              ]
+            ],
+            [
+              "version",
+              [
+                "1.4.0",
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "member order is free"
+    },
+    {
+      "name": "Atlas-Client: name=\"fiatlas\" / version=\"2.3.0\", protocol=\"atlas/1.0\"",
+      "header": "Atlas-Client",
+      "lines": [
+        "name=\"fiatlas\"",
+        "version=\"2.3.0\", protocol=\"atlas/1.0\""
+      ],
+      "expected": {
+        "value": {
+          "name": "fiatlas",
+          "version": "2.3.0",
+          "protocol": "atlas/1.0"
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "name",
+              [
+                "fiatlas",
+                []
+              ]
+            ],
+            [
+              "version",
+              [
+                "2.3.0",
+                []
+              ]
+            ],
+            [
+              "protocol",
+              [
+                "atlas/1.0",
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "two field lines, joined with \", \""
+    },
+    {
+      "name": "Atlas-Client: name=\"fiatlas\";build=7, version=\"2.3.0\", protocol=\"atlas/...",
+      "header": "Atlas-Client",
+      "lines": [
+        "name=\"fiatlas\";build=7, version=\"2.3.0\", protocol=\"atlas/1.0\", os=\"linux\""
+      ],
+      "expected": {
+        "value": {
+          "name": "fiatlas",
+          "version": "2.3.0",
+          "protocol": "atlas/1.0"
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "name",
+              [
+                "fiatlas",
+                [
+                  [
+                    "build",
+                    7
+                  ]
+                ]
+              ]
+            ],
+            [
+              "version",
+              [
+                "2.3.0",
+                []
+              ]
+            ],
+            [
+              "protocol",
+              [
+                "atlas/1.0",
+                []
+              ]
+            ],
+            [
+              "os",
+              [
+                "linux",
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "unknown members and parameters are ignored"
+    },
+    {
+      "name": "Atlas-Client: name=fiatlas, version=\"2.3.0\", protocol=\"atlas/1.0\"",
+      "header": "Atlas-Client",
+      "lines": [
+        "name=fiatlas, version=\"2.3.0\", protocol=\"atlas/1.0\""
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not name: a String",
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "name",
+              [
+                {
+                  "__type": "token",
+                  "value": "fiatlas"
+                },
+                []
+              ]
+            ],
+            [
+              "version",
+              [
+                "2.3.0",
+                []
+              ]
+            ],
+            [
+              "protocol",
+              [
+                "atlas/1.0",
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "name is a Token, not a String"
+    },
+    {
+      "name": "Atlas-Client: name=\"fiatlas\", version=\"2.3.0\"",
+      "header": "Atlas-Client",
+      "lines": [
+        "name=\"fiatlas\", version=\"2.3.0\""
+      ],
+      "expected": {
+        "absent": true,
+        "why": "no protocol",
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "name",
+              [
+                "fiatlas",
+                []
+              ]
+            ],
+            [
+              "version",
+              [
+                "2.3.0",
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "no protocol"
+    },
+    {
+      "name": "Atlas-Client: name=\"fiatlas\", version=\"2.3.0\", protocol=\"atlas/1\"",
+      "header": "Atlas-Client",
+      "lines": [
+        "name=\"fiatlas\", version=\"2.3.0\", protocol=\"atlas/1\""
+      ],
+      "expected": {
+        "absent": true,
+        "why": "protocol is not a protocol-ver",
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "name",
+              [
+                "fiatlas",
+                []
+              ]
+            ],
+            [
+              "version",
+              [
+                "2.3.0",
+                []
+              ]
+            ],
+            [
+              "protocol",
+              [
+                "atlas/1",
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "protocol is not a protocol-ver",
+      "question": "Q-HDR-1"
+    },
+    {
+      "name": "Atlas-Client: name=\"fiatlas\", version=\"2.3.0\", protocol=\"atlas/1.0\",",
+      "header": "Atlas-Client",
+      "lines": [
+        "name=\"fiatlas\", version=\"2.3.0\", protocol=\"atlas/1.0\","
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Structured Field dictionary: trailing , in dictionary",
+        "sf": {
+          "type": "dictionary",
+          "parsed": null
+        }
+      },
+      "note": "a trailing comma"
+    },
+    {
+      "name": "Atlas-Client: Name=\"fiatlas\", version=\"2.3.0\", protocol=\"atlas/1.0\"",
+      "header": "Atlas-Client",
+      "lines": [
+        "Name=\"fiatlas\", version=\"2.3.0\", protocol=\"atlas/1.0\""
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Structured Field dictionary: bad key",
+        "sf": {
+          "type": "dictionary",
+          "parsed": null
+        }
+      },
+      "note": "an upper-case key"
+    },
+    {
+      "name": "Atlas-Client: name=\"fiatlas\", version=\"2.3.0\", protocol=\"atlas/1.0\", na...",
+      "header": "Atlas-Client",
+      "lines": [
+        "name=\"fiatlas\", version=\"2.3.0\", protocol=\"atlas/1.0\", name=\"other\""
+      ],
+      "expected": {
+        "value": {
+          "name": "other",
+          "version": "2.3.0",
+          "protocol": "atlas/1.0"
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "name",
+              [
+                "other",
+                []
+              ]
+            ],
+            [
+              "version",
+              [
+                "2.3.0",
+                []
+              ]
+            ],
+            [
+              "protocol",
+              [
+                "atlas/1.0",
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "a repeated key: the last value wins (RFC 9651)"
+    },
+    {
+      "name": "Atlas-Client-Features: levels=(core streaming columnar bulk events handoff), han...",
+      "header": "Atlas-Client-Features",
+      "lines": [
+        "levels=(core streaming columnar bulk events handoff), handoff=(snowflake-arrow/1 reach-snowflake), lens=(rename alias_value convert_unit promote default drop), deliveries=(single chunked subscription operation transfer), encodings=(json ndjson arrow csv parquet)"
+      ],
+      "expected": {
+        "value": {
+          "levels": [
+            "core",
+            "streaming",
+            "columnar",
+            "bulk",
+            "events",
+            "handoff"
+          ],
+          "lens": [
+            "rename",
+            "alias_value",
+            "convert_unit",
+            "promote",
+            "default",
+            "drop"
+          ],
+          "deliveries": [
+            "single",
+            "chunked",
+            "subscription",
+            "operation",
+            "transfer"
+          ],
+          "encodings": [
+            "json",
+            "ndjson",
+            "arrow",
+            "csv",
+            "parquet"
+          ],
+          "traits": [],
+          "handoff": [
+            "snowflake-arrow/1",
+            "reach-snowflake"
+          ]
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "levels",
+              [
+                [
+                  [
+                    {
+                      "__type": "token",
+                      "value": "core"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "streaming"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "columnar"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "bulk"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "events"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "handoff"
+                    },
+                    []
+                  ]
+                ],
+                []
+              ]
+            ],
+            [
+              "handoff",
+              [
+                [
+                  [
+                    {
+                      "__type": "token",
+                      "value": "snowflake-arrow/1"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "reach-snowflake"
+                    },
+                    []
+                  ]
+                ],
+                []
+              ]
+            ],
+            [
+              "lens",
+              [
+                [
+                  [
+                    {
+                      "__type": "token",
+                      "value": "rename"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "alias_value"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "convert_unit"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "promote"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "default"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "drop"
+                    },
+                    []
+                  ]
+                ],
+                []
+              ]
+            ],
+            [
+              "deliveries",
+              [
+                [
+                  [
+                    {
+                      "__type": "token",
+                      "value": "single"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "chunked"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "subscription"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "operation"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "transfer"
+                    },
+                    []
+                  ]
+                ],
+                []
+              ]
+            ],
+            [
+              "encodings",
+              [
+                [
+                  [
+                    {
+                      "__type": "token",
+                      "value": "json"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "ndjson"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "arrow"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "csv"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "parquet"
+                    },
+                    []
+                  ]
+                ],
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "§9.6.3's example"
+    },
+    {
+      "name": "Atlas-Client-Features: levels=(core)",
+      "header": "Atlas-Client-Features",
+      "lines": [
+        "levels=(core)"
+      ],
+      "expected": {
+        "value": {
+          "levels": [
+            "core"
+          ],
+          "lens": [],
+          "deliveries": [],
+          "encodings": [],
+          "traits": [],
+          "handoff": []
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "levels",
+              [
+                [
+                  [
+                    {
+                      "__type": "token",
+                      "value": "core"
+                    },
+                    []
+                  ]
+                ],
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "a member left out is empty"
+    },
+    {
+      "name": "Atlas-Client-Features: levels=(core), traits=(projectable paged)",
+      "header": "Atlas-Client-Features",
+      "lines": [
+        "levels=(core), traits=(projectable paged)"
+      ],
+      "expected": {
+        "value": {
+          "levels": [
+            "core"
+          ],
+          "lens": [],
+          "deliveries": [],
+          "encodings": [],
+          "traits": [
+            "projectable",
+            "paged"
+          ],
+          "handoff": []
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "levels",
+              [
+                [
+                  [
+                    {
+                      "__type": "token",
+                      "value": "core"
+                    },
+                    []
+                  ]
+                ],
+                []
+              ]
+            ],
+            [
+              "traits",
+              [
+                [
+                  [
+                    {
+                      "__type": "token",
+                      "value": "projectable"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "paged"
+                    },
+                    []
+                  ]
+                ],
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "traits, lowercased"
+    },
+    {
+      "name": "Atlas-Client-Features: levels=(core warp), future=(x y)",
+      "header": "Atlas-Client-Features",
+      "lines": [
+        "levels=(core warp), future=(x y)"
+      ],
+      "expected": {
+        "value": {
+          "levels": [
+            "core",
+            "warp"
+          ],
+          "lens": [],
+          "deliveries": [],
+          "encodings": [],
+          "traits": [],
+          "handoff": []
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "levels",
+              [
+                [
+                  [
+                    {
+                      "__type": "token",
+                      "value": "core"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "warp"
+                    },
+                    []
+                  ]
+                ],
+                []
+              ]
+            ],
+            [
+              "future",
+              [
+                [
+                  [
+                    {
+                      "__type": "token",
+                      "value": "x"
+                    },
+                    []
+                  ],
+                  [
+                    {
+                      "__type": "token",
+                      "value": "y"
+                    },
+                    []
+                  ]
+                ],
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "an unknown token is kept and ignored when acting; an unknown member is ignored"
+    },
+    {
+      "name": "Atlas-Client-Features: levels=()",
+      "header": "Atlas-Client-Features",
+      "lines": [
+        "levels=()"
+      ],
+      "expected": {
+        "value": {
+          "levels": [],
+          "lens": [],
+          "deliveries": [],
+          "encodings": [],
+          "traits": [],
+          "handoff": []
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "levels",
+              [
+                [],
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "an empty Inner List"
+    },
+    {
+      "name": "Atlas-Client-Features: levels=core",
+      "header": "Atlas-Client-Features",
+      "lines": [
+        "levels=core"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "levels is not an Inner List",
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "levels",
+              [
+                {
+                  "__type": "token",
+                  "value": "core"
+                },
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "a Token where an Inner List is required"
+    },
+    {
+      "name": "Atlas-Client-Features: levels=(core \"streaming\")",
+      "header": "Atlas-Client-Features",
+      "lines": [
+        "levels=(core \"streaming\")"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "levels holds something other than a Token",
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "levels",
+              [
+                [
+                  [
+                    {
+                      "__type": "token",
+                      "value": "core"
+                    },
+                    []
+                  ],
+                  [
+                    "streaming",
+                    []
+                  ]
+                ],
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "a String in the list"
+    },
+    {
+      "name": "Atlas-Client-Features: levels=(core streaming",
+      "header": "Atlas-Client-Features",
+      "lines": [
+        "levels=(core streaming"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Structured Field dictionary: expected SP or ) in inner list",
+        "sf": {
+          "type": "dictionary",
+          "parsed": null
+        }
+      },
+      "note": "an unterminated Inner List"
+    },
+    {
+      "name": "Atlas-Client-Features: levels=(Core)",
+      "header": "Atlas-Client-Features",
+      "lines": [
+        "levels=(Core)"
+      ],
+      "expected": {
+        "value": {
+          "levels": [
+            "Core"
+          ],
+          "lens": [],
+          "deliveries": [],
+          "encodings": [],
+          "traits": [],
+          "handoff": []
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "levels",
+              [
+                [
+                  [
+                    {
+                      "__type": "token",
+                      "value": "Core"
+                    },
+                    []
+                  ]
+                ],
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "tokens are case-sensitive: Core is not core, so no level is known"
+    },
+    {
+      "name": "Atlas-Profile-Expect: \"portfolio.holdings@v1#bcaa5bbad97cc612\"",
+      "header": "Atlas-Profile-Expect",
+      "lines": [
+        "\"portfolio.holdings@v1#bcaa5bbad97cc612\""
+      ],
+      "expected": {
+        "value": "portfolio.holdings@v1#bcaa5bbad97cc612",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "portfolio.holdings@v1#bcaa5bbad97cc612",
+            []
+          ]
+        }
+      },
+      "note": "§9.6.3's example"
+    },
+    {
+      "name": "Atlas-Profile-Expect: portfolio.holdings@v1#bcaa5bbad97cc612",
+      "header": "Atlas-Profile-Expect",
+      "lines": [
+        "portfolio.holdings@v1#bcaa5bbad97cc612"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Structured Field item: trailing characters",
+        "sf": {
+          "type": "item",
+          "parsed": null
+        }
+      },
+      "note": "not a String: unquoted, it does not even parse as a Token (# and @)"
+    },
+    {
+      "name": "Atlas-Profile-Expect: \"portfolio.holdings@v1\"",
+      "header": "Atlas-Profile-Expect",
+      "lines": [
+        "\"portfolio.holdings@v1\""
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not an exact-id",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "portfolio.holdings@v1",
+            []
+          ]
+        }
+      },
+      "note": "a pinned-id, not an exact-id",
+      "question": "Q-HDR-1"
+    },
+    {
+      "name": "Atlas-Profile-Expect: \"portfolio.holdings@v1#BCAA5BBAD97CC612\"",
+      "header": "Atlas-Profile-Expect",
+      "lines": [
+        "\"portfolio.holdings@v1#BCAA5BBAD97CC612\""
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not an exact-id",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "portfolio.holdings@v1#BCAA5BBAD97CC612",
+            []
+          ]
+        }
+      },
+      "note": "an upper-case fingerprint",
+      "question": "Q-HDR-1"
+    },
+    {
+      "name": "Atlas-Profile: \"conformance.echo@v1#0123456789abcdef\"",
+      "header": "Atlas-Profile",
+      "lines": [
+        "\"conformance.echo@v1#0123456789abcdef\""
+      ],
+      "expected": {
+        "value": "conformance.echo@v1#0123456789abcdef",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "conformance.echo@v1#0123456789abcdef",
+            []
+          ]
+        }
+      }
+    },
+    {
+      "name": "Atlas-Profile: \"conformance.echo@v1#0123456789abcdef\";source=cache",
+      "header": "Atlas-Profile",
+      "lines": [
+        "\"conformance.echo@v1#0123456789abcdef\";source=cache"
+      ],
+      "expected": {
+        "value": "conformance.echo@v1#0123456789abcdef",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "conformance.echo@v1#0123456789abcdef",
+            [
+              [
+                "source",
+                {
+                  "__type": "token",
+                  "value": "cache"
+                }
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "a parameter is ignored"
+    },
+    {
+      "name": "Atlas-Deadline: @1793318400",
+      "header": "Atlas-Deadline",
+      "lines": [
+        "@1793318400"
+      ],
+      "expected": {
+        "value": 1793318400,
+        "sf": {
+          "type": "item",
+          "parsed": [
+            {
+              "__type": "date",
+              "value": 1793318400
+            },
+            []
+          ]
+        }
+      },
+      "note": "§9.6.3's example: whole seconds (Q-HDR-2)",
+      "question": "Q-HDR-2"
+    },
+    {
+      "name": "Atlas-Deadline: 1793318400",
+      "header": "Atlas-Deadline",
+      "lines": [
+        "1793318400"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Date",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            1793318400,
+            []
+          ]
+        }
+      },
+      "note": "an Integer, not a Date"
+    },
+    {
+      "name": "Atlas-Deadline: @1793318400.5",
+      "header": "Atlas-Deadline",
+      "lines": [
+        "@1793318400.5"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Structured Field item: a date is an integer",
+        "sf": {
+          "type": "item",
+          "parsed": null
+        }
+      },
+      "note": "a Date has no fraction"
+    },
+    {
+      "name": "Atlas-Deadline: @-1",
+      "header": "Atlas-Deadline",
+      "lines": [
+        "@-1"
+      ],
+      "expected": {
+        "value": -1,
+        "sf": {
+          "type": "item",
+          "parsed": [
+            {
+              "__type": "date",
+              "value": -1
+            },
+            []
+          ]
+        }
+      },
+      "note": "a Date before the epoch parses (and has passed)"
+    },
+    {
+      "name": "Deprecation: @1795046400",
+      "header": "Deprecation",
+      "lines": [
+        "@1795046400"
+      ],
+      "expected": {
+        "value": 1795046400,
+        "sf": {
+          "type": "item",
+          "parsed": [
+            {
+              "__type": "date",
+              "value": 1795046400
+            },
+            []
+          ]
+        }
+      },
+      "note": "RFC 9745: a Date, as §3.3.4's example"
+    },
+    {
+      "name": "Deprecation: Sun, 11 Nov 2026 23:59:59 GMT",
+      "header": "Deprecation",
+      "lines": [
+        "Sun, 11 Nov 2026 23:59:59 GMT"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Structured Field item: trailing characters",
+        "sf": {
+          "type": "item",
+          "parsed": null
+        }
+      },
+      "note": "RFC 9745's Deprecation is a Date, not an HTTP-date"
+    },
+    {
+      "name": "Idempotency-Key: \"8e03978e-40d5-43e8-bc93-6894a57f9324\"",
+      "header": "Idempotency-Key",
+      "lines": [
+        "\"8e03978e-40d5-43e8-bc93-6894a57f9324\""
+      ],
+      "expected": {
+        "value": "8e03978e-40d5-43e8-bc93-6894a57f9324",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "8e03978e-40d5-43e8-bc93-6894a57f9324",
+            []
+          ]
+        }
+      }
+    },
+    {
+      "name": "Idempotency-Key: \"run_2026.10.31\"",
+      "header": "Idempotency-Key",
+      "lines": [
+        "\"run_2026.10.31\""
+      ],
+      "expected": {
+        "value": "run_2026.10.31",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "run_2026.10.31",
+            []
+          ]
+        }
+      }
+    },
+    {
+      "name": "Idempotency-Key: \"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk... (257 characters)",
+      "header": "Idempotency-Key",
+      "lines": [
+        "\"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\""
+      ],
+      "expected": {
+        "value": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+            []
+          ]
+        }
+      },
+      "note": "255 characters"
+    },
+    {
+      "name": "Idempotency-Key: \"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk... (258 characters)",
+      "header": "Idempotency-Key",
+      "lines": [
+        "\"kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\""
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not 1-255 characters of A-Z a-z 0-9 - _ .",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+            []
+          ]
+        }
+      },
+      "note": "256 characters"
+    },
+    {
+      "name": "Idempotency-Key: \"\"",
+      "header": "Idempotency-Key",
+      "lines": [
+        "\"\""
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not 1-255 characters of A-Z a-z 0-9 - _ .",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "",
+            []
+          ]
+        }
+      },
+      "note": "empty"
+    },
+    {
+      "name": "Idempotency-Key: \"a b\"",
+      "header": "Idempotency-Key",
+      "lines": [
+        "\"a b\""
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not 1-255 characters of A-Z a-z 0-9 - _ .",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "a b",
+            []
+          ]
+        }
+      },
+      "note": "a space"
+    },
+    {
+      "name": "Idempotency-Key: 8e03978e",
+      "header": "Idempotency-Key",
+      "lines": [
+        "8e03978e"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Structured Field item: trailing characters",
+        "sf": {
+          "type": "item",
+          "parsed": null
+        }
+      },
+      "note": "a Token, not a String"
+    },
+    {
+      "name": "Atlas-Execution: handoff",
+      "header": "Atlas-Execution",
+      "lines": [
+        "handoff"
+      ],
+      "expected": {
+        "value": "handoff",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            {
+              "__type": "token",
+              "value": "handoff"
+            },
+            []
+          ]
+        }
+      }
+    },
+    {
+      "name": "Atlas-Execution: gateway",
+      "header": "Atlas-Execution",
+      "lines": [
+        "gateway"
+      ],
+      "expected": {
+        "value": "gateway",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            {
+              "__type": "token",
+              "value": "gateway"
+            },
+            []
+          ]
+        }
+      }
+    },
+    {
+      "name": "Atlas-Execution: \"handoff\"",
+      "header": "Atlas-Execution",
+      "lines": [
+        "\"handoff\""
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Token",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "handoff",
+            []
+          ]
+        }
+      },
+      "note": "a String, not a Token"
+    },
+    {
+      "name": "Atlas-Execution: broker",
+      "header": "Atlas-Execution",
+      "lines": [
+        "broker"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not gateway, handoff or client",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            {
+              "__type": "token",
+              "value": "broker"
+            },
+            []
+          ]
+        }
+      },
+      "note": "not gateway, handoff or client: an unknown preference is ignored",
+      "question": "Q-HDR-1"
+    },
+    {
+      "name": "X-Atlas-Interactive: ?1",
+      "header": "X-Atlas-Interactive",
+      "lines": [
+        "?1"
+      ],
+      "expected": {
+        "value": true,
+        "sf": {
+          "type": "item",
+          "parsed": [
+            true,
+            []
+          ]
+        }
+      }
+    },
+    {
+      "name": "X-Atlas-Interactive: ?0",
+      "header": "X-Atlas-Interactive",
+      "lines": [
+        "?0"
+      ],
+      "expected": {
+        "value": false,
+        "sf": {
+          "type": "item",
+          "parsed": [
+            false,
+            []
+          ]
+        }
+      }
+    },
+    {
+      "name": "X-Atlas-Interactive: 1",
+      "header": "X-Atlas-Interactive",
+      "lines": [
+        "1"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Boolean",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            1,
+            []
+          ]
+        }
+      },
+      "note": "an Integer, not a Boolean"
+    },
+    {
+      "name": "X-Atlas-Interactive: ?true",
+      "header": "X-Atlas-Interactive",
+      "lines": [
+        "?true"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Structured Field item: bad boolean",
+        "sf": {
+          "type": "item",
+          "parsed": null
+        }
+      },
+      "note": "not RFC 9651's Boolean"
+    },
+    {
+      "name": "Atlas-Confirm: 1250.5",
+      "header": "Atlas-Confirm",
+      "lines": [
+        "1250.5"
+      ],
+      "expected": {
+        "value": "1250.5",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            1250.5,
+            []
+          ]
+        }
+      }
+    },
+    {
+      "name": "Atlas-Confirm: 1250.0",
+      "header": "Atlas-Confirm",
+      "lines": [
+        "1250.0"
+      ],
+      "expected": {
+        "value": "1250.0",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            1250.0,
+            []
+          ]
+        }
+      },
+      "note": "a whole amount is still written as a Decimal"
+    },
+    {
+      "name": "Atlas-Confirm: 0.001",
+      "header": "Atlas-Confirm",
+      "lines": [
+        "0.001"
+      ],
+      "expected": {
+        "value": "0.001",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            0.001,
+            []
+          ]
+        }
+      }
+    },
+    {
+      "name": "Atlas-Confirm: 999999999999.999",
+      "header": "Atlas-Confirm",
+      "lines": [
+        "999999999999.999"
+      ],
+      "expected": {
+        "value": "999999999999.999",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            999999999999.999,
+            []
+          ]
+        }
+      },
+      "note": "12 integer and 3 fractional digits, the largest"
+    },
+    {
+      "name": "Atlas-Confirm: 1250",
+      "header": "Atlas-Confirm",
+      "lines": [
+        "1250"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Decimal",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            1250,
+            []
+          ]
+        }
+      },
+      "note": "an Integer, not a Decimal",
+      "question": "Q-HDR-4"
+    },
+    {
+      "name": "Atlas-Confirm: 1.2345",
+      "header": "Atlas-Confirm",
+      "lines": [
+        "1.2345"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Structured Field item: decimal with too many fractional digits",
+        "sf": {
+          "type": "item",
+          "parsed": null
+        }
+      },
+      "note": "four fractional digits"
+    },
+    {
+      "name": "Atlas-Confirm: 1234567890123.1",
+      "header": "Atlas-Confirm",
+      "lines": [
+        "1234567890123.1"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Structured Field item: decimal with too many integer digits",
+        "sf": {
+          "type": "item",
+          "parsed": null
+        }
+      },
+      "note": "13 integer digits"
+    },
+    {
+      "name": "Atlas-Confirm: \"1250.5\"",
+      "header": "Atlas-Confirm",
+      "lines": [
+        "\"1250.5\""
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Decimal",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "1250.5",
+            []
+          ]
+        }
+      },
+      "note": "a String"
+    },
+    {
+      "name": "Atlas-Governance-Revision: \"g-41\"",
+      "header": "Atlas-Governance-Revision",
+      "lines": [
+        "\"g-41\""
+      ],
+      "expected": {
+        "value": "g-41",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "g-41",
+            []
+          ]
+        }
+      }
+    },
+    {
+      "name": "Atlas-Governance-Revision: g-41",
+      "header": "Atlas-Governance-Revision",
+      "lines": [
+        "g-41"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a String",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            {
+              "__type": "token",
+              "value": "g-41"
+            },
+            []
+          ]
+        }
+      },
+      "note": "a Token, not a String"
+    },
+    {
+      "name": "Atlas-Limit-Remaining: rate=58, concurrency=3",
+      "header": "Atlas-Limit-Remaining",
+      "lines": [
+        "rate=58, concurrency=3"
+      ],
+      "expected": {
+        "value": {
+          "rate": 58,
+          "concurrency": 3
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "rate",
+              [
+                58,
+                []
+              ]
+            ],
+            [
+              "concurrency",
+              [
+                3,
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "§9.6.3's example"
+    },
+    {
+      "name": "Atlas-Limit-Remaining: rate=58;window=60",
+      "header": "Atlas-Limit-Remaining",
+      "lines": [
+        "rate=58;window=60"
+      ],
+      "expected": {
+        "value": {
+          "rate": 58
+        },
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "rate",
+              [
+                58,
+                [
+                  [
+                    "window",
+                    60
+                  ]
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "a parameter is ignored"
+    },
+    {
+      "name": "Atlas-Limit-Remaining: rate=58, budget=1.5",
+      "header": "Atlas-Limit-Remaining",
+      "lines": [
+        "rate=58, budget=1.5"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not budget: an Integer",
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "rate",
+              [
+                58,
+                []
+              ]
+            ],
+            [
+              "budget",
+              [
+                1.5,
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "a Decimal where an Integer is required"
+    },
+    {
+      "name": "Atlas-Limit-Remaining: rate=(58)",
+      "header": "Atlas-Limit-Remaining",
+      "lines": [
+        "rate=(58)"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not rate: an Integer",
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "rate",
+              [
+                [
+                  [
+                    58,
+                    []
+                  ]
+                ],
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "an Inner List"
+    },
+    {
+      "name": "Atlas-Limit-Remaining: rate",
+      "header": "Atlas-Limit-Remaining",
+      "lines": [
+        "rate"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not rate: an Integer",
+        "sf": {
+          "type": "dictionary",
+          "parsed": [
+            [
+              "rate",
+              [
+                true,
+                []
+              ]
+            ]
+          ]
+        }
+      },
+      "note": "a bare key is the Boolean true, not an Integer"
+    },
+    {
+      "name": "Atlas-Error-Code: limit_exceeded",
+      "header": "Atlas-Error-Code",
+      "lines": [
+        "limit_exceeded"
+      ],
+      "expected": {
+        "value": "limit_exceeded",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            {
+              "__type": "token",
+              "value": "limit_exceeded"
+            },
+            []
+          ]
+        }
+      }
+    },
+    {
+      "name": "Atlas-Error-Code: warehouse_suspended",
+      "header": "Atlas-Error-Code",
+      "lines": [
+        "warehouse_suspended"
+      ],
+      "expected": {
+        "value": "warehouse_suspended",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            {
+              "__type": "token",
+              "value": "warehouse_suspended"
+            },
+            []
+          ]
+        }
+      },
+      "note": "a capability's own code"
+    },
+    {
+      "name": "Atlas-Error-Code: \"limit_exceeded\"",
+      "header": "Atlas-Error-Code",
+      "lines": [
+        "\"limit_exceeded\""
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Token",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            "limit_exceeded",
+            []
+          ]
+        }
+      },
+      "note": "a String, not a Token"
+    },
+    {
+      "name": "Atlas-Error-Code: LimitExceeded",
+      "header": "Atlas-Error-Code",
+      "lines": [
+        "LimitExceeded"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a problem-code",
+        "sf": {
+          "type": "item",
+          "parsed": [
+            {
+              "__type": "token",
+              "value": "LimitExceeded"
+            },
+            []
+          ]
+        }
+      },
+      "note": "a Token that is not a problem-code",
+      "question": "Q-HDR-1"
+    },
+    {
+      "name": "Retry-After: 30",
+      "header": "Retry-After",
+      "lines": [
+        "30"
+      ],
+      "expected": {
+        "value": 30
+      }
+    },
+    {
+      "name": "Retry-After: 0",
+      "header": "Retry-After",
+      "lines": [
+        "0"
+      ],
+      "expected": {
+        "value": 0
+      }
+    },
+    {
+      "name": "Retry-After: Sun, 06 Nov 1994 08:49:37 GMT",
+      "header": "Retry-After",
+      "lines": [
+        "Sun, 06 Nov 1994 08:49:37 GMT"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not delay-seconds (an HTTP-date is not allowed)"
+      },
+      "note": "§9.6.3: delay-seconds only"
+    },
+    {
+      "name": "Retry-After: 1.5",
+      "header": "Retry-After",
+      "lines": [
+        "1.5"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not delay-seconds (an HTTP-date is not allowed)"
+      },
+      "note": "not delay-seconds"
+    },
+    {
+      "name": "Retry-After: -1",
+      "header": "Retry-After",
+      "lines": [
+        "-1"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not delay-seconds (an HTTP-date is not allowed)"
+      },
+      "note": "not delay-seconds"
+    },
+    {
+      "name": "Sunset: Sun, 06 Nov 1994 08:49:37 GMT",
+      "header": "Sunset",
+      "lines": [
+        "Sun, 06 Nov 1994 08:49:37 GMT"
+      ],
+      "expected": {
+        "value": 784111777
+      },
+      "note": "IMF-fixdate"
+    },
+    {
+      "name": "Sunset: Sat, 01 May 2027 00:00:00 GMT",
+      "header": "Sunset",
+      "lines": [
+        "Sat, 01 May 2027 00:00:00 GMT"
+      ],
+      "expected": {
+        "value": 1809129600
+      }
+    },
+    {
+      "name": "Sunset: Sunday, 06-Nov-94 08:49:37 GMT",
+      "header": "Sunset",
+      "lines": [
+        "Sunday, 06-Nov-94 08:49:37 GMT"
+      ],
+      "expected": {
+        "value": 784111777
+      },
+      "note": "the obsolete rfc850 form, which RFC 9110 says a recipient MUST accept",
+      "question": "Q-HDR-3"
+    },
+    {
+      "name": "Sunset: Sun Nov  6 08:49:37 1994",
+      "header": "Sunset",
+      "lines": [
+        "Sun Nov  6 08:49:37 1994"
+      ],
+      "expected": {
+        "value": 784111777
+      },
+      "note": "the obsolete asctime form"
+    },
+    {
+      "name": "Sunset: Mon, 06 Nov 1994 08:49:37 GMT",
+      "header": "Sunset",
+      "lines": [
+        "Mon, 06 Nov 1994 08:49:37 GMT"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "the day of the week is wrong"
+      },
+      "note": "the wrong day of the week"
+    },
+    {
+      "name": "Sunset: @1809129600",
+      "header": "Sunset",
+      "lines": [
+        "@1809129600"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not an HTTP-date"
+      },
+      "note": "a Structured Field Date is not an HTTP-date"
+    },
+    {
+      "name": "Sunset: Sun, 06 Nov 1994 08:49:37 UTC",
+      "header": "Sunset",
+      "lines": [
+        "Sun, 06 Nov 1994 08:49:37 UTC"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not an HTTP-date"
+      },
+      "note": "an HTTP-date says GMT"
+    },
+    {
+      "name": "Authorization: Bearer eyJhbGciOi.eyJzdWIi.c2lnbg",
+      "header": "Authorization",
+      "lines": [
+        "Bearer eyJhbGciOi.eyJzdWIi.c2lnbg"
+      ],
+      "expected": {
+        "value": "eyJhbGciOi.eyJzdWIi.c2lnbg"
+      }
+    },
+    {
+      "name": "Authorization: bearer abc",
+      "header": "Authorization",
+      "lines": [
+        "bearer abc"
+      ],
+      "expected": {
+        "value": "abc"
+      },
+      "note": "the scheme is case-insensitive (RFC 9110)"
+    },
+    {
+      "name": "Authorization: Bearer",
+      "header": "Authorization",
+      "lines": [
+        "Bearer"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Bearer credential"
+      },
+      "note": "no token"
+    },
+    {
+      "name": "Authorization: Basic dXNlcjpwYXNz",
+      "header": "Authorization",
+      "lines": [
+        "Basic dXNlcjpwYXNz"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a Bearer credential"
+      },
+      "note": "not Bearer"
+    },
+    {
+      "name": "Authorization: Bearer a b",
+      "header": "Authorization",
+      "lines": [
+        "Bearer a b"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a b64token (RFC 6750)"
+      },
+      "note": "a space inside the token"
+    },
+    {
+      "name": "If-Match: \"e8\"",
+      "header": "If-Match",
+      "lines": [
+        "\"e8\""
+      ],
+      "expected": {
+        "value": [
+          "\"e8\""
+        ]
+      }
+    },
+    {
+      "name": "If-Match: \"3f9a1c0b7d2e4a65\"",
+      "header": "If-Match",
+      "lines": [
+        "\"3f9a1c0b7d2e4a65\""
+      ],
+      "expected": {
+        "value": [
+          "\"3f9a1c0b7d2e4a65\""
+        ]
+      },
+      "note": "a profile's ETag"
+    },
+    {
+      "name": "If-Match: *",
+      "header": "If-Match",
+      "lines": [
+        "*"
+      ],
+      "expected": {
+        "value": [
+          "*"
+        ]
+      }
+    },
+    {
+      "name": "If-Match: e8",
+      "header": "If-Match",
+      "lines": [
+        "e8"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a list of entity-tags"
+      },
+      "note": "no quotes"
+    },
+    {
+      "name": "traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+      "header": "traceparent",
+      "lines": [
+        "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+      ],
+      "expected": {
+        "value": {
+          "version": "00",
+          "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+          "parent_id": "00f067aa0ba902b7",
+          "flags": "01"
+        }
+      },
+      "note": "W3C's example"
+    },
+    {
+      "name": "traceparent: 00-00000000000000000000000000000000-00f067aa0ba902b7-01",
+      "header": "traceparent",
+      "lines": [
+        "00-00000000000000000000000000000000-00f067aa0ba902b7-01"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a W3C traceparent"
+      },
+      "note": "an all-zero trace-id"
+    },
+    {
+      "name": "traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-0000000000000000-01",
+      "header": "traceparent",
+      "lines": [
+        "00-4bf92f3577b34da6a3ce929d0e0e4736-0000000000000000-01"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a W3C traceparent"
+      },
+      "note": "an all-zero parent-id"
+    },
+    {
+      "name": "traceparent: ff-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+      "header": "traceparent",
+      "lines": [
+        "ff-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a W3C traceparent"
+      },
+      "note": "version ff"
+    },
+    {
+      "name": "traceparent: 00-4BF92F3577B34DA6A3CE929D0E0E4736-00f067aa0ba902b7-01",
+      "header": "traceparent",
+      "lines": [
+        "00-4BF92F3577B34DA6A3CE929D0E0E4736-00f067aa0ba902b7-01"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not a W3C traceparent"
+      },
+      "note": "upper-case hexadecimal"
+    },
+    {
+      "name": "Operation-Location: https://atlas.example/v1/operations/op-91",
+      "header": "Operation-Location",
+      "lines": [
+        "https://atlas.example/v1/operations/op-91"
+      ],
+      "expected": {
+        "value": "https://atlas.example/v1/operations/op-91"
+      }
+    },
+    {
+      "name": "Operation-Location: /v1/operations/op-91",
+      "header": "Operation-Location",
+      "lines": [
+        "/v1/operations/op-91"
+      ],
+      "expected": {
+        "absent": true,
+        "why": "not an absolute URI"
+      },
+      "note": "relative"
+    },
+    {
+      "name": "Cache-Control: no-store",
+      "header": "Cache-Control",
+      "lines": [
+        "no-store"
+      ],
+      "expected": {
+        "value": [
+          "no-store"
+        ]
+      },
+      "note": "every handoff, connect, ticket and transfer answer"
+    },
+    {
+      "name": "Cache-Control: max-age=31536000, immutable",
+      "header": "Cache-Control",
+      "lines": [
+        "max-age=31536000, immutable"
+      ],
+      "expected": {
+        "value": [
+          "max-age=31536000",
+          "immutable"
+        ]
+      },
+      "note": "atlas.describe by exact (§9.6.7)"
+    },
+    {
+      "name": "WWW-Authenticate: Bearer realm=\"atlas\"",
+      "header": "WWW-Authenticate",
+      "lines": [
+        "Bearer realm=\"atlas\""
+      ],
+      "expected": {
+        "value": {
+          "scheme": "Bearer",
+          "params": {
+            "realm": "atlas"
+          }
+        }
+      }
+    },
+    {
+      "name": "WWW-Authenticate: Bearer realm=\"atlas\", error=\"invalid_token\"",
+      "header": "WWW-Authenticate",
+      "lines": [
+        "Bearer realm=\"atlas\", error=\"invalid_token\""
+      ],
+      "expected": {
+        "value": {
+          "scheme": "Bearer",
+          "params": {
+            "realm": "atlas",
+            "error": "invalid_token"
+          }
+        }
+      },
+      "note": "an expired token"
+    },
+    {
+      "name": "WWW-Authenticate: Bearer realm=\"atlas\", claims=\"eyJhY2Nlc3NfdG9rZW4iOnt9fQ\"",
+      "header": "WWW-Authenticate",
+      "lines": [
+        "Bearer realm=\"atlas\", claims=\"eyJhY2Nlc3NfdG9rZW4iOnt9fQ\""
+      ],
+      "expected": {
+        "value": {
+          "scheme": "Bearer",
+          "params": {
+            "realm": "atlas",
+            "claims": "eyJhY2Nlc3NfdG9rZW4iOnt9fQ"
+          }
+        }
+      },
+      "note": "a conditional-access claims challenge"
+    }
+  ]
+}

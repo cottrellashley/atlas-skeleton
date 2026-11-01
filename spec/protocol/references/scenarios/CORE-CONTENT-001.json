@@ -1,0 +1,159 @@
+{
+  "id": "CORE-CONTENT-001",
+  "level": "Core",
+  "description": "Small content: with no path, the bytes in memory with their metadata and nothing on disk; with a path, the file there, written atomically, beside atlas-manifest.json.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ],
+    "cwd": "{WORKDIR}"
+  },
+  "gateway": {
+    "state": {
+      "files": {
+        "small.txt": {
+          "base64": "aGVsbG8sIGF0bGFzCg==",
+          "media_type": "text/plain"
+        }
+      }
+    }
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.file@v1:get",
+        "request": {
+          "name": "small.txt"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "suite.expect_file",
+      "args": {
+        "path": "{ATLAS_HOME}/downloads",
+        "absent": true
+      }
+    },
+    {
+      "id": 4,
+      "op": "call",
+      "args": {
+        "address": "conformance.file@v1:get",
+        "request": {
+          "name": "small.txt"
+        },
+        "options": {
+          "path": "{WORKDIR}/out/"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "op": "suite.expect_file",
+      "args": {
+        "path": "{WORKDIR}/out/small.txt",
+        "base64": "aGVsbG8sIGF0bGFzCg=="
+      }
+    },
+    {
+      "id": 6,
+      "op": "suite.expect_file",
+      "args": {
+        "path": "{WORKDIR}/out/atlas-manifest.json",
+        "json_contains": {
+          "files": [
+            {
+              "name": "small.txt",
+              "media_type": "text/plain",
+              "bytes": 13,
+              "sha256": "84573aa5285407ac768602081d4d6157bc64445b716b01fb94b18c101301ab4d",
+              "address": "conformance.file@v1:get",
+              "metadata": {
+                "name": "small.txt",
+                "media_type": "text/plain",
+                "bytes": 13,
+                "sha256": "84573aa5285407ac768602081d4d6157bc64445b716b01fb94b18c101301ab4d"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value": {
+        "content": {
+          "base64": "aGVsbG8sIGF0bGFzCg==",
+          "metadata": {
+            "name": "small.txt",
+            "media_type": "text/plain",
+            "bytes": 13,
+            "sha256": "84573aa5285407ac768602081d4d6157bc64445b716b01fb94b18c101301ab4d"
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "ok": true
+    },
+    {
+      "id": 4,
+      "ok": true,
+      "value_contains": {
+        "manifest": {
+          "files": [
+            {
+              "name": "small.txt",
+              "path": "{WORKDIR}/out/small.txt"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 5,
+      "ok": true
+    },
+    {
+      "id": 6,
+      "ok": true
+    }
+  ],
+  "expected_requests": [],
+  "questions": [
+    "Q-DOC-14",
+    "Q-RUN-4"
+  ]
+}

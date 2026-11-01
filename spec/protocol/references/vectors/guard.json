@@ -1,0 +1,642 @@
+{
+  "description": "The read-only guard (§6.4.3): every statement is refused unless it is exactly one read-only query (SELECT, UNION, INTERSECT, EXCEPT, WITH) over the registered objects. `registered` lists identifiers as Snowflake resolves them (unquoted upper-cased, quoted exact): a [database, schema] pair registers every object in the schema, a triple one object. An implementation passes a case when it accepts or refuses it as `accepted` says; `reason` names the first rule that refuses it, in the order guard.py documents (dml, ddl, copy, file_transfer, call, not_a_query, select_into, stage, table_function, system_function, dynamic_identifier, unqualified_object, unregistered_object), and `objects` the objects an accepted statement reads. Generated with sqlglot 30.27.0's Snowflake parser.",
+  "registered": [
+    [
+      "HARBOUR",
+      "GOLD"
+    ],
+    [
+      "HARBOUR",
+      "SILVER",
+      "PRICES"
+    ]
+  ],
+  "cases": [
+    {
+      "name": "a select",
+      "statement": "SELECT portfolio, weight FROM HARBOUR.GOLD.HOLDINGS",
+      "expected": {
+        "accepted": true,
+        "objects": [
+          [
+            "HARBOUR",
+            "GOLD",
+            "HOLDINGS"
+          ]
+        ]
+      },
+      "note": "an object in a registered schema"
+    },
+    {
+      "name": "a registered object",
+      "statement": "SELECT close FROM HARBOUR.SILVER.PRICES",
+      "expected": {
+        "accepted": true,
+        "objects": [
+          [
+            "HARBOUR",
+            "SILVER",
+            "PRICES"
+          ]
+        ]
+      },
+      "note": "registered by itself"
+    },
+    {
+      "name": "unquoted names are upper-cased",
+      "statement": "select * from harbour.gold.holdings",
+      "expected": {
+        "accepted": true,
+        "objects": [
+          [
+            "HARBOUR",
+            "GOLD",
+            "HOLDINGS"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "a trailing semicolon",
+      "statement": "SELECT 1 FROM HARBOUR.GOLD.HOLDINGS;",
+      "expected": {
+        "accepted": true,
+        "objects": [
+          [
+            "HARBOUR",
+            "GOLD",
+            "HOLDINGS"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "a join and a subquery",
+      "statement": "SELECT h.portfolio, p.close FROM HARBOUR.GOLD.HOLDINGS h JOIN HARBOUR.SILVER.PRICES p ON p.isin = h.isin WHERE h.weight > (SELECT AVG(weight) FROM HARBOUR.GOLD.HOLDINGS)",
+      "expected": {
+        "accepted": true,
+        "objects": [
+          [
+            "HARBOUR",
+            "GOLD",
+            "HOLDINGS"
+          ],
+          [
+            "HARBOUR",
+            "SILVER",
+            "PRICES"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "WITH: a CTE name is not a table",
+      "statement": "WITH top AS (SELECT * FROM HARBOUR.GOLD.HOLDINGS WHERE weight > 0.01) SELECT * FROM top",
+      "expected": {
+        "accepted": true,
+        "objects": [
+          [
+            "HARBOUR",
+            "GOLD",
+            "HOLDINGS"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "a CTE that reads another CTE",
+      "statement": "WITH a AS (SELECT * FROM HARBOUR.GOLD.HOLDINGS), b AS (SELECT * FROM a) SELECT * FROM b",
+      "expected": {
+        "accepted": true,
+        "objects": [
+          [
+            "HARBOUR",
+            "GOLD",
+            "HOLDINGS"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "a recursive CTE",
+      "statement": "WITH RECURSIVE r AS (SELECT 1 AS n UNION ALL SELECT n + 1 FROM r WHERE n < 3) SELECT * FROM r",
+      "expected": {
+        "accepted": true,
+        "objects": []
+      }
+    },
+    {
+      "name": "UNION ALL",
+      "statement": "SELECT isin FROM HARBOUR.GOLD.HOLDINGS UNION ALL SELECT isin FROM HARBOUR.SILVER.PRICES",
+      "expected": {
+        "accepted": true,
+        "objects": [
+          [
+            "HARBOUR",
+            "GOLD",
+            "HOLDINGS"
+          ],
+          [
+            "HARBOUR",
+            "SILVER",
+            "PRICES"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "INTERSECT",
+      "statement": "SELECT isin FROM HARBOUR.GOLD.HOLDINGS INTERSECT SELECT isin FROM HARBOUR.SILVER.PRICES",
+      "expected": {
+        "accepted": true,
+        "objects": [
+          [
+            "HARBOUR",
+            "GOLD",
+            "HOLDINGS"
+          ],
+          [
+            "HARBOUR",
+            "SILVER",
+            "PRICES"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "EXCEPT",
+      "statement": "(SELECT isin FROM HARBOUR.GOLD.HOLDINGS) EXCEPT (SELECT isin FROM HARBOUR.SILVER.PRICES)",
+      "expected": {
+        "accepted": true,
+        "objects": [
+          [
+            "HARBOUR",
+            "GOLD",
+            "HOLDINGS"
+          ],
+          [
+            "HARBOUR",
+            "SILVER",
+            "PRICES"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "no table at all",
+      "statement": "SELECT 1",
+      "expected": {
+        "accepted": true,
+        "objects": []
+      }
+    },
+    {
+      "name": "VALUES",
+      "statement": "SELECT * FROM (VALUES (1), (2)) AS v(a)",
+      "expected": {
+        "accepted": true,
+        "objects": []
+      }
+    },
+    {
+      "name": "time travel reads only",
+      "statement": "SELECT * FROM HARBOUR.GOLD.HOLDINGS AT(OFFSET => -60)",
+      "expected": {
+        "accepted": true,
+        "objects": [
+          [
+            "HARBOUR",
+            "GOLD",
+            "HOLDINGS"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "a comment hides nothing",
+      "statement": "SELECT 1 FROM HARBOUR.GOLD.HOLDINGS -- ; DROP TABLE x",
+      "expected": {
+        "accepted": true,
+        "objects": [
+          [
+            "HARBOUR",
+            "GOLD",
+            "HOLDINGS"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "unparsable",
+      "statement": "SELEC 1",
+      "expected": {
+        "accepted": false,
+        "reason": "parse_error"
+      }
+    },
+    {
+      "name": "empty",
+      "statement": "   ",
+      "expected": {
+        "accepted": false,
+        "reason": "empty"
+      }
+    },
+    {
+      "name": "two statements",
+      "statement": "SELECT 1; SELECT 2",
+      "expected": {
+        "accepted": false,
+        "reason": "multiple_statements"
+      }
+    },
+    {
+      "name": "an empty second statement",
+      "statement": "SELECT 1;;",
+      "expected": {
+        "accepted": false,
+        "reason": "multiple_statements"
+      },
+      "question": "Q-GUARD-2"
+    },
+    {
+      "name": "a query then DML",
+      "statement": "SELECT 1 FROM HARBOUR.GOLD.HOLDINGS; DELETE FROM HARBOUR.GOLD.HOLDINGS",
+      "expected": {
+        "accepted": false,
+        "reason": "multiple_statements"
+      }
+    },
+    {
+      "name": "INSERT",
+      "statement": "INSERT INTO HARBOUR.GOLD.HOLDINGS VALUES (1)",
+      "expected": {
+        "accepted": false,
+        "reason": "dml"
+      }
+    },
+    {
+      "name": "UPDATE",
+      "statement": "UPDATE HARBOUR.GOLD.HOLDINGS SET weight = 0",
+      "expected": {
+        "accepted": false,
+        "reason": "dml"
+      }
+    },
+    {
+      "name": "DELETE",
+      "statement": "DELETE FROM HARBOUR.GOLD.HOLDINGS",
+      "expected": {
+        "accepted": false,
+        "reason": "dml"
+      }
+    },
+    {
+      "name": "MERGE",
+      "statement": "MERGE INTO HARBOUR.GOLD.HOLDINGS t USING HARBOUR.SILVER.PRICES s ON t.isin = s.isin WHEN MATCHED THEN DELETE",
+      "expected": {
+        "accepted": false,
+        "reason": "dml"
+      }
+    },
+    {
+      "name": "WITH, then INSERT",
+      "statement": "WITH x AS (SELECT 1) INSERT INTO HARBOUR.GOLD.HOLDINGS SELECT * FROM x",
+      "expected": {
+        "accepted": false,
+        "reason": "dml"
+      }
+    },
+    {
+      "name": "CREATE TABLE AS SELECT",
+      "statement": "CREATE TABLE HARBOUR.GOLD.COPY AS SELECT * FROM HARBOUR.GOLD.HOLDINGS",
+      "expected": {
+        "accepted": false,
+        "reason": "ddl"
+      }
+    },
+    {
+      "name": "DROP",
+      "statement": "DROP TABLE HARBOUR.GOLD.HOLDINGS",
+      "expected": {
+        "accepted": false,
+        "reason": "ddl"
+      }
+    },
+    {
+      "name": "ALTER",
+      "statement": "ALTER TABLE HARBOUR.GOLD.HOLDINGS ADD COLUMN x INT",
+      "expected": {
+        "accepted": false,
+        "reason": "ddl"
+      }
+    },
+    {
+      "name": "TRUNCATE",
+      "statement": "TRUNCATE TABLE HARBOUR.GOLD.HOLDINGS",
+      "expected": {
+        "accepted": false,
+        "reason": "ddl"
+      }
+    },
+    {
+      "name": "COPY INTO a stage",
+      "statement": "COPY INTO @out FROM HARBOUR.GOLD.HOLDINGS",
+      "expected": {
+        "accepted": false,
+        "reason": "copy"
+      }
+    },
+    {
+      "name": "COPY INTO a table",
+      "statement": "COPY INTO HARBOUR.GOLD.HOLDINGS FROM @in",
+      "expected": {
+        "accepted": false,
+        "reason": "copy"
+      }
+    },
+    {
+      "name": "PUT",
+      "statement": "PUT file:///tmp/x.csv @in",
+      "expected": {
+        "accepted": false,
+        "reason": "file_transfer"
+      }
+    },
+    {
+      "name": "GET",
+      "statement": "GET @out file:///tmp/",
+      "expected": {
+        "accepted": false,
+        "reason": "file_transfer"
+      }
+    },
+    {
+      "name": "CALL",
+      "statement": "CALL HARBOUR.GOLD.REFRESH()",
+      "expected": {
+        "accepted": false,
+        "reason": "call"
+      }
+    },
+    {
+      "name": "SHOW",
+      "statement": "SHOW TABLES",
+      "expected": {
+        "accepted": false,
+        "reason": "not_a_query"
+      }
+    },
+    {
+      "name": "DESCRIBE",
+      "statement": "DESCRIBE TABLE HARBOUR.GOLD.HOLDINGS",
+      "expected": {
+        "accepted": false,
+        "reason": "not_a_query"
+      }
+    },
+    {
+      "name": "USE",
+      "statement": "USE DATABASE HARBOUR",
+      "expected": {
+        "accepted": false,
+        "reason": "not_a_query"
+      }
+    },
+    {
+      "name": "GRANT",
+      "statement": "GRANT SELECT ON HARBOUR.GOLD.HOLDINGS TO ROLE r",
+      "expected": {
+        "accepted": false,
+        "reason": "not_a_query"
+      }
+    },
+    {
+      "name": "BEGIN",
+      "statement": "BEGIN",
+      "expected": {
+        "accepted": false,
+        "reason": "not_a_query"
+      }
+    },
+    {
+      "name": "EXPLAIN",
+      "statement": "EXPLAIN SELECT 1",
+      "expected": {
+        "accepted": false,
+        "reason": "not_a_query"
+      },
+      "note": "read-only, but not a query"
+    },
+    {
+      "name": "EXECUTE IMMEDIATE",
+      "statement": "EXECUTE IMMEDIATE 'DROP TABLE HARBOUR.GOLD.HOLDINGS'",
+      "expected": {
+        "accepted": false,
+        "reason": "not_a_query"
+      }
+    },
+    {
+      "name": "SELECT INTO writes",
+      "statement": "SELECT * INTO HARBOUR.GOLD.COPY FROM HARBOUR.GOLD.HOLDINGS",
+      "expected": {
+        "accepted": false,
+        "reason": "select_into"
+      }
+    },
+    {
+      "name": "a stage in FROM",
+      "statement": "SELECT $1 FROM @in",
+      "expected": {
+        "accepted": false,
+        "reason": "stage"
+      }
+    },
+    {
+      "name": "the user's stage",
+      "statement": "SELECT $1 FROM @~/staged/f.csv",
+      "expected": {
+        "accepted": false,
+        "reason": "stage"
+      }
+    },
+    {
+      "name": "a table's stage",
+      "statement": "SELECT $1 FROM @%holdings",
+      "expected": {
+        "accepted": false,
+        "reason": "stage"
+      }
+    },
+    {
+      "name": "a stage in a subquery",
+      "statement": "SELECT * FROM HARBOUR.GOLD.HOLDINGS WHERE isin IN (SELECT $1 FROM @in)",
+      "expected": {
+        "accepted": false,
+        "reason": "stage"
+      }
+    },
+    {
+      "name": "a stage as a function's argument",
+      "statement": "SELECT GET_PRESIGNED_URL(@out, 'f.csv')",
+      "expected": {
+        "accepted": false,
+        "reason": "stage"
+      }
+    },
+    {
+      "name": "TABLE(RESULT_SCAN(...))",
+      "statement": "SELECT * FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))",
+      "expected": {
+        "accepted": false,
+        "reason": "table_function"
+      }
+    },
+    {
+      "name": "TABLE(GENERATOR(...))",
+      "statement": "SELECT * FROM TABLE(GENERATOR(ROWCOUNT => 10))",
+      "expected": {
+        "accepted": false,
+        "reason": "table_function"
+      }
+    },
+    {
+      "name": "a registered schema's table function",
+      "statement": "SELECT * FROM HARBOUR.GOLD.HOLDINGS, TABLE(HARBOUR.GOLD.EXPLODE(1))",
+      "expected": {
+        "accepted": false,
+        "reason": "table_function"
+      }
+    },
+    {
+      "name": "LATERAL FLATTEN",
+      "statement": "SELECT f.value FROM HARBOUR.GOLD.HOLDINGS h, LATERAL FLATTEN(input => h.tags) f",
+      "expected": {
+        "accepted": false,
+        "reason": "table_function"
+      },
+      "note": "every table function is refused, FLATTEN with them",
+      "question": "Q-GUARD-3"
+    },
+    {
+      "name": "SYSTEM$ functions",
+      "statement": "SELECT SYSTEM$WHITELIST()",
+      "expected": {
+        "accepted": false,
+        "reason": "system_function"
+      }
+    },
+    {
+      "name": "SYSTEM$, in any case",
+      "statement": "SELECT system$typeof(1)",
+      "expected": {
+        "accepted": false,
+        "reason": "system_function"
+      }
+    },
+    {
+      "name": "SYSTEM$, quoted",
+      "statement": "SELECT \"SYSTEM$TYPEOF\"(1)",
+      "expected": {
+        "accepted": false,
+        "reason": "system_function"
+      }
+    },
+    {
+      "name": "SYSTEM$, qualified",
+      "statement": "SELECT HARBOUR.GOLD.SYSTEM$X(1)",
+      "expected": {
+        "accepted": false,
+        "reason": "system_function"
+      }
+    },
+    {
+      "name": "IDENTIFIER(...)",
+      "statement": "SELECT * FROM IDENTIFIER('HARBOUR.GOLD.HOLDINGS')",
+      "expected": {
+        "accepted": false,
+        "reason": "dynamic_identifier"
+      }
+    },
+    {
+      "name": "a schema-qualified name",
+      "statement": "SELECT * FROM GOLD.HOLDINGS",
+      "expected": {
+        "accepted": false,
+        "reason": "unqualified_object"
+      },
+      "note": "the session's database could be any",
+      "question": "Q-GUARD-1"
+    },
+    {
+      "name": "an unqualified name",
+      "statement": "SELECT * FROM HOLDINGS",
+      "expected": {
+        "accepted": false,
+        "reason": "unqualified_object"
+      },
+      "question": "Q-GUARD-1"
+    },
+    {
+      "name": "database..object",
+      "statement": "SELECT * FROM HARBOUR..HOLDINGS",
+      "expected": {
+        "accepted": false,
+        "reason": "unqualified_object"
+      },
+      "note": "the default schema",
+      "question": "Q-GUARD-1"
+    },
+    {
+      "name": "a CTE name out of scope",
+      "statement": "SELECT * FROM HARBOUR.GOLD.HOLDINGS h WHERE EXISTS (WITH c AS (SELECT 1 a) SELECT * FROM c) AND h.isin IN (SELECT isin FROM c)",
+      "expected": {
+        "accepted": false,
+        "reason": "unqualified_object"
+      },
+      "note": "c is visible only inside the subquery that defines it"
+    },
+    {
+      "name": "an unregistered schema",
+      "statement": "SELECT * FROM HARBOUR.BRONZE.RAW",
+      "expected": {
+        "accepted": false,
+        "reason": "unregistered_object"
+      }
+    },
+    {
+      "name": "an unregistered object in a registered database",
+      "statement": "SELECT * FROM HARBOUR.SILVER.TRADES",
+      "expected": {
+        "accepted": false,
+        "reason": "unregistered_object"
+      },
+      "note": "SILVER is registered object by object"
+    },
+    {
+      "name": "an unregistered object beside registered ones",
+      "statement": "SELECT * FROM HARBOUR.GOLD.HOLDINGS h JOIN SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY q ON true",
+      "expected": {
+        "accepted": false,
+        "reason": "unregistered_object"
+      }
+    },
+    {
+      "name": "a quoted name is exact",
+      "statement": "SELECT * FROM \"harbour\".GOLD.HOLDINGS",
+      "expected": {
+        "accepted": false,
+        "reason": "unregistered_object"
+      },
+      "note": "\"harbour\" is not HARBOUR"
+    },
+    {
+      "name": "INFORMATION_SCHEMA",
+      "statement": "SELECT * FROM HARBOUR.INFORMATION_SCHEMA.TABLES",
+      "expected": {
+        "accepted": false,
+        "reason": "unregistered_object"
+      }
+    }
+  ]
+}

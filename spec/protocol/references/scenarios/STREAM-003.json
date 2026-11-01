@@ -1,0 +1,129 @@
+{
+  "id": "STREAM-003",
+  "level": "Streaming",
+  "description": "A problem in the end line after rows is raised after the rows.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "conformance.rows@v1:fetch"
+        },
+        "respond": {
+          "status": 200,
+          "stream": {
+            "encoding": "ndjson",
+            "rows": [
+              {
+                "i": 0,
+                "label": "row-0",
+                "amount": "0.000000",
+                "at": "2026-01-01T00:00:00.000000Z",
+                "day": "2026-01-01",
+                "share": 0.0
+              },
+              {
+                "i": 1,
+                "label": "row-1",
+                "amount": "1.500000",
+                "at": "2026-01-01T00:00:01.000001Z",
+                "day": "2026-01-02",
+                "share": 0.01
+              }
+            ],
+            "end": {
+              "$atlas": "end",
+              "rows": 2,
+              "truncated": false,
+              "usage": {
+                "rows": 2
+              },
+              "problem": {
+                "code": "internal",
+                "retryable": false
+              }
+            }
+          }
+        },
+        "times": 1
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.rows@v1:fetch",
+        "request": {
+          "n": 5
+        },
+        "options": {
+          "accept": [
+            "application/x-ndjson"
+          ]
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": false,
+      "problem": {
+        "code": "internal"
+      },
+      "value": [
+        {
+          "i": 0,
+          "label": "row-0",
+          "amount": "0.000000",
+          "at": "2026-01-01T00:00:00.000000Z",
+          "day": "2026-01-01",
+          "share": 0.0
+        },
+        {
+          "i": 1,
+          "label": "row-1",
+          "amount": "1.500000",
+          "at": "2026-01-01T00:00:01.000001Z",
+          "day": "2026-01-02",
+          "share": 0.01
+        }
+      ]
+    }
+  ],
+  "expected_requests": [],
+  "questions": [
+    "Q-RUN-6"
+  ]
+}

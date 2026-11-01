@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/page.schema.json",
+  "title": "Page",
+  "description": "Every collection result (§9.6.5): `items` and `next_cursor`, null at the end. Cursors are opaque, bound to the request and the caller, and live an hour (§6.7).",
+  "type": "object",
+  "required": [
+    "items",
+    "next_cursor"
+  ],
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "This page's records, each in the collection's item schema."
+    },
+    "next_cursor": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "description": "The cursor of the next page; null on the last."
+    }
+  }
+}

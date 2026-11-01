@@ -1,0 +1,93 @@
+{
+  "id": "BULK-003",
+  "level": "Bulk",
+  "description": "A link that has expired: the client asks again for fresh links, and finishes.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ],
+    "cwd": "{WORKDIR}"
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "nth": 1,
+          "storage_part": 1,
+          "method": "GET"
+        },
+        "respond": {
+          "status": 403,
+          "body": null,
+          "expire_links": true
+        },
+        "times": 1
+      }
+    ],
+    "state": {
+      "export_parts": 2
+    }
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "export",
+      "args": {
+        "id": "conformance.rows@v1",
+        "request": {
+          "n": 10
+        },
+        "format": "parquet",
+        "path": "{WORKDIR}/export/"
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "atlas.operation:get"
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "storage_part": 1,
+        "method": "GET"
+      },
+      "equals": 2
+    }
+  ]
+}

@@ -1,0 +1,351 @@
+{
+  "description": "A complete, agent-ready action profile (§3.1.3, §3.1.4a), as the gateway serves it: valid against profile.schema.json, each of its schemas valid against atlas-schema.schema.json in its role (a request schema closed, every other open), with the fingerprint of §9.4.",
+  "cases": [
+    {
+      "name": "astronomer.deployment@v1#5bfc6de6fd4716cb",
+      "profile": {
+        "identity": {
+          "id": "astronomer.deployment",
+          "version": 1,
+          "title": "Astronomer deployment",
+          "summary": "Restart an Astronomer deployment's scheduler and workers.",
+          "domain": "astronomer",
+          "owner": "Data Platform"
+        },
+        "properties": {
+          "family": "action",
+          "stability": "official",
+          "lifecycle": "preview",
+          "visibility": "listed",
+          "traits": [
+            {
+              "name": "DryRunnable",
+              "critical": false
+            },
+            {
+              "name": "NeedsApproval",
+              "critical": false
+            }
+          ]
+        },
+        "interactions": {
+          "plan": {
+            "effect": "read",
+            "result": "record",
+            "delivery": "single",
+            "execution": [
+              "gateway"
+            ],
+            "takes": "request",
+            "returns": "plan",
+            "deadline": {
+              "default": "PT30S",
+              "max": "PT2M"
+            },
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/action/astronomer.deployment@v1:plan",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          },
+          "approve": {
+            "effect": "write",
+            "result": "record",
+            "delivery": "single",
+            "execution": [
+              "gateway"
+            ],
+            "takes": "approve_request",
+            "returns": "approval",
+            "deadline": {
+              "default": "PT30S",
+              "max": "PT2M"
+            },
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/action/astronomer.deployment@v1:approve",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          },
+          "restart": {
+            "effect": "external",
+            "result": "record",
+            "delivery": "operation",
+            "execution": [
+              "gateway"
+            ],
+            "takes": "restart_request",
+            "returns": "receipt",
+            "deadline": {
+              "default": "PT10M",
+              "max": "PT1H"
+            },
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/action/astronomer.deployment@v1:restart",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        },
+        "schemas": {
+          "request": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$vocabulary": {
+              "https://json-schema.org/draft/2020-12/vocab/core": true,
+              "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+              "https://json-schema.org/draft/2020-12/vocab/validation": true,
+              "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+              "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+              "https://atlas.jhg.com/vocab/2026-10": false
+            },
+            "type": "object",
+            "description": "The deployment to restart.",
+            "additionalProperties": false,
+            "required": [
+              "deployment"
+            ],
+            "properties": {
+              "deployment": {
+                "type": "string",
+                "description": "The deployment's id in Astronomer.",
+                "minLength": 1
+              }
+            }
+          },
+          "plan": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$vocabulary": {
+              "https://json-schema.org/draft/2020-12/vocab/core": true,
+              "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+              "https://json-schema.org/draft/2020-12/vocab/validation": true,
+              "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+              "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+              "https://atlas.jhg.com/vocab/2026-10": false
+            },
+            "type": "object",
+            "description": "What restarting will do, changing nothing yet.",
+            "required": [
+              "plan",
+              "deployment",
+              "will",
+              "expires"
+            ],
+            "properties": {
+              "plan": {
+                "type": "string",
+                "description": "The plan's id, which approve and restart name.",
+                "minLength": 1
+              },
+              "deployment": {
+                "type": "string",
+                "description": "The deployment it restarts."
+              },
+              "will": {
+                "type": "array",
+                "description": "What restarting will do, step by step.",
+                "items": {
+                  "type": "string",
+                  "description": "One step."
+                }
+              },
+              "expires": {
+                "type": "string",
+                "description": "When the plan must be planned again.",
+                "format": "date-time"
+              }
+            }
+          },
+          "approve_request": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$vocabulary": {
+              "https://json-schema.org/draft/2020-12/vocab/core": true,
+              "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+              "https://json-schema.org/draft/2020-12/vocab/validation": true,
+              "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+              "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+              "https://atlas.jhg.com/vocab/2026-10": false
+            },
+            "type": "object",
+            "description": "Approve a stored plan, as someone other than its requester.",
+            "additionalProperties": false,
+            "required": [
+              "plan"
+            ],
+            "properties": {
+              "plan": {
+                "type": "string",
+                "description": "The plan's id.",
+                "minLength": 1
+              }
+            }
+          },
+          "approval": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$vocabulary": {
+              "https://json-schema.org/draft/2020-12/vocab/core": true,
+              "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+              "https://json-schema.org/draft/2020-12/vocab/validation": true,
+              "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+              "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+              "https://atlas.jhg.com/vocab/2026-10": false
+            },
+            "type": "object",
+            "description": "The plan's approval.",
+            "required": [
+              "plan",
+              "approved_by",
+              "approved"
+            ],
+            "properties": {
+              "plan": {
+                "type": "string",
+                "description": "The plan's id."
+              },
+              "approved_by": {
+                "type": "string",
+                "description": "Who approved it.",
+                "x-atlas-logical": "Principal"
+              },
+              "approved": {
+                "type": "string",
+                "description": "When.",
+                "format": "date-time"
+              }
+            }
+          },
+          "restart_request": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$vocabulary": {
+              "https://json-schema.org/draft/2020-12/vocab/core": true,
+              "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+              "https://json-schema.org/draft/2020-12/vocab/validation": true,
+              "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+              "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+              "https://atlas.jhg.com/vocab/2026-10": false
+            },
+            "type": "object",
+            "description": "Run an approved plan.",
+            "additionalProperties": false,
+            "required": [
+              "plan"
+            ],
+            "properties": {
+              "plan": {
+                "type": "string",
+                "description": "The plan's id.",
+                "minLength": 1
+              }
+            }
+          },
+          "receipt": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$vocabulary": {
+              "https://json-schema.org/draft/2020-12/vocab/core": true,
+              "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+              "https://json-schema.org/draft/2020-12/vocab/validation": true,
+              "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+              "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+              "https://atlas.jhg.com/vocab/2026-10": false
+            },
+            "type": "object",
+            "description": "What actually happened: the evidence the audit keeps.",
+            "required": [
+              "restarted_at"
+            ],
+            "properties": {
+              "restarted_at": {
+                "type": "string",
+                "description": "When the scheduler came back.",
+                "format": "date-time"
+              },
+              "scheduler_pods": {
+                "type": "integer",
+                "description": "Scheduler pods running after.",
+                "minimum": 0,
+                "x-atlas-unit": "count"
+              }
+            }
+          }
+        },
+        "errors": [
+          {
+            "code": "deployment_busy",
+            "status": 409,
+            "retryable": true,
+            "description": "The deployment is already restarting.",
+            "next": "Wait retry_after seconds, then plan again."
+          }
+        ],
+        "meaning": {
+          "effects": {
+            "system": "Astronomer",
+            "changes": "restarts the deployment's scheduler and workers",
+            "environments": [
+              "dv",
+              "ac",
+              "pd"
+            ],
+            "reversible": false,
+            "undo": null
+          },
+          "policy": {
+            "approval": [
+              "ac",
+              "pd"
+            ],
+            "refused_unless_person": [
+              "pd"
+            ]
+          }
+        },
+        "compatibility": {
+          "request": "BACKWARD_TRANSITIVE",
+          "plan": "FULL_TRANSITIVE",
+          "receipt": "FULL_TRANSITIVE"
+        },
+        "usage": {
+          "when": "A deployment's scheduler is stuck and its owner asked for a restart.",
+          "when_not": "Tasks fail on their own: read their logs instead.",
+          "examples": [
+            {
+              "title": "Plan a restart",
+              "interaction": "plan",
+              "request": {
+                "deployment": "dep-7f2"
+              }
+            }
+          ]
+        },
+        "revision": 1,
+        "fingerprint": "5bfc6de6fd4716cb"
+      },
+      "expected": {
+        "fingerprint": "5bfc6de6fd4716cb",
+        "exact": "astronomer.deployment@v1#5bfc6de6fd4716cb",
+        "valid": true,
+        "agent_ready": true
+      }
+    }
+  ]
+}

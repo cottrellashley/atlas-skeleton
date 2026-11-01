@@ -1,0 +1,1245 @@
+{
+  "id": "CORE-PROB-001",
+  "level": "Core",
+  "description": "Each code of the registry in turn becomes the language's error with every member of the problem; a CLI runner reports §9.7.6's exit code as cli_exit.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "invalid_document"
+          }
+        },
+        "respond": {
+          "status": 400,
+          "problem": {
+            "code": "invalid_document",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: invalid_document"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "invalid_request"
+          }
+        },
+        "respond": {
+          "status": 400,
+          "problem": {
+            "code": "invalid_request",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: invalid_request"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "unauthenticated"
+          }
+        },
+        "respond": {
+          "status": 401,
+          "problem": {
+            "code": "unauthenticated",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: unauthenticated"
+          },
+          "headers": {
+            "WWW-Authenticate": "Bearer realm=\"atlas\", error=\"invalid_token\""
+          }
+        },
+        "times": 2
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "not_granted"
+          }
+        },
+        "respond": {
+          "status": 403,
+          "problem": {
+            "code": "not_granted",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: not_granted"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "denied"
+          }
+        },
+        "respond": {
+          "status": 403,
+          "problem": {
+            "code": "denied",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: denied"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "budget_exceeded"
+          }
+        },
+        "respond": {
+          "status": 403,
+          "problem": {
+            "code": "budget_exceeded",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: budget_exceeded"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "approval_required"
+          }
+        },
+        "respond": {
+          "status": 403,
+          "problem": {
+            "code": "approval_required",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: approval_required"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "confirmation_required"
+          }
+        },
+        "respond": {
+          "status": 428,
+          "problem": {
+            "code": "confirmation_required",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: confirmation_required",
+            "estimate": {
+              "amount": "1.000",
+              "unit": "credits"
+            }
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "not_found"
+          }
+        },
+        "respond": {
+          "status": 404,
+          "problem": {
+            "code": "not_found",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: not_found"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "not_in_environment"
+          }
+        },
+        "respond": {
+          "status": 404,
+          "problem": {
+            "code": "not_in_environment",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: not_in_environment"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "idempotency_conflict"
+          }
+        },
+        "respond": {
+          "status": 409,
+          "problem": {
+            "code": "idempotency_conflict",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: idempotency_conflict"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "in_progress"
+          }
+        },
+        "respond": {
+          "status": 409,
+          "problem": {
+            "code": "in_progress",
+            "retryable": true,
+            "target": "/text",
+            "detail": "conformance: in_progress",
+            "retry_after": 0
+          },
+          "headers": {
+            "Retry-After": "0"
+          }
+        },
+        "times": 4
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "resume_gap"
+          }
+        },
+        "respond": {
+          "status": 409,
+          "problem": {
+            "code": "resume_gap",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: resume_gap"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "retired"
+          }
+        },
+        "respond": {
+          "status": 410,
+          "problem": {
+            "code": "retired",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: retired"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "precondition_failed"
+          }
+        },
+        "respond": {
+          "status": 412,
+          "problem": {
+            "code": "precondition_failed",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: precondition_failed"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "critical_trait_unsupported"
+          }
+        },
+        "respond": {
+          "status": 422,
+          "problem": {
+            "code": "critical_trait_unsupported",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: critical_trait_unsupported"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "resolution_failed"
+          }
+        },
+        "respond": {
+          "status": 422,
+          "problem": {
+            "code": "resolution_failed",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: resolution_failed"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "upgrade_required"
+          }
+        },
+        "respond": {
+          "status": 426,
+          "problem": {
+            "code": "upgrade_required",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: upgrade_required"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "limit_exceeded"
+          }
+        },
+        "respond": {
+          "status": 429,
+          "problem": {
+            "code": "limit_exceeded",
+            "retryable": true,
+            "target": "/text",
+            "detail": "conformance: limit_exceeded",
+            "retry_after": 0
+          },
+          "headers": {
+            "Retry-After": "0"
+          }
+        },
+        "times": 4
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "internal"
+          }
+        },
+        "respond": {
+          "status": 500,
+          "problem": {
+            "code": "internal",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: internal"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "upstream_failed"
+          }
+        },
+        "respond": {
+          "status": 502,
+          "problem": {
+            "code": "upstream_failed",
+            "retryable": true,
+            "target": "/text",
+            "detail": "conformance: upstream_failed",
+            "retry_after": 0
+          },
+          "headers": {
+            "Retry-After": "0"
+          }
+        },
+        "times": 4
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "unavailable"
+          }
+        },
+        "respond": {
+          "status": 503,
+          "problem": {
+            "code": "unavailable",
+            "retryable": true,
+            "target": "/text",
+            "detail": "conformance: unavailable",
+            "retry_after": 0
+          },
+          "headers": {
+            "Retry-After": "0"
+          }
+        },
+        "times": 4
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "deadline_exceeded"
+          }
+        },
+        "respond": {
+          "status": 504,
+          "problem": {
+            "code": "deadline_exceeded",
+            "retryable": false,
+            "target": "/text",
+            "detail": "conformance: deadline_exceeded"
+          }
+        },
+        "times": 1
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "invalid_document"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "invalid_request"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "unauthenticated"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "not_granted"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "denied"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "budget_exceeded"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "approval_required"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "confirmation_required"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "not_found"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "not_in_environment"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "idempotency_conflict"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "in_progress"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "resume_gap"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "retired"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "precondition_failed"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "critical_trait_unsupported"
+        }
+      }
+    },
+    {
+      "id": 18,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "resolution_failed"
+        }
+      }
+    },
+    {
+      "id": 19,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "upgrade_required"
+        }
+      }
+    },
+    {
+      "id": 20,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "limit_exceeded"
+        }
+      }
+    },
+    {
+      "id": 21,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "internal"
+        }
+      }
+    },
+    {
+      "id": 22,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "upstream_failed"
+        }
+      }
+    },
+    {
+      "id": 23,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "unavailable"
+        }
+      }
+    },
+    {
+      "id": 24,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "deadline_exceeded"
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": false,
+      "problem": {
+        "code": "invalid_document",
+        "target": "/text",
+        "status": 400,
+        "retryable": false,
+        "detail": "conformance: invalid_document",
+        "type": "https://atlas.jhg.com/problems/invalid_document",
+        "cli_exit": 1
+      }
+    },
+    {
+      "id": 3,
+      "ok": false,
+      "problem": {
+        "code": "invalid_request",
+        "target": "/text",
+        "status": 400,
+        "retryable": false,
+        "detail": "conformance: invalid_request",
+        "type": "https://atlas.jhg.com/problems/invalid_request",
+        "cli_exit": 2
+      }
+    },
+    {
+      "id": 4,
+      "ok": false,
+      "problem": {
+        "code": "unauthenticated",
+        "target": "/text",
+        "status": 401,
+        "retryable": false,
+        "detail": "conformance: unauthenticated",
+        "type": "https://atlas.jhg.com/problems/unauthenticated",
+        "cli_exit": 3
+      }
+    },
+    {
+      "id": 5,
+      "ok": false,
+      "problem": {
+        "code": "not_granted",
+        "target": "/text",
+        "status": 403,
+        "retryable": false,
+        "detail": "conformance: not_granted",
+        "type": "https://atlas.jhg.com/problems/not_granted",
+        "cli_exit": 4
+      }
+    },
+    {
+      "id": 6,
+      "ok": false,
+      "problem": {
+        "code": "denied",
+        "target": "/text",
+        "status": 403,
+        "retryable": false,
+        "detail": "conformance: denied",
+        "type": "https://atlas.jhg.com/problems/denied",
+        "cli_exit": 4
+      }
+    },
+    {
+      "id": 7,
+      "ok": false,
+      "problem": {
+        "code": "budget_exceeded",
+        "target": "/text",
+        "status": 403,
+        "retryable": false,
+        "detail": "conformance: budget_exceeded",
+        "type": "https://atlas.jhg.com/problems/budget_exceeded",
+        "cli_exit": 4
+      }
+    },
+    {
+      "id": 8,
+      "ok": false,
+      "problem": {
+        "code": "approval_required",
+        "target": "/text",
+        "status": 403,
+        "retryable": false,
+        "detail": "conformance: approval_required",
+        "type": "https://atlas.jhg.com/problems/approval_required",
+        "cli_exit": 4
+      }
+    },
+    {
+      "id": 9,
+      "ok": false,
+      "problem": {
+        "code": "confirmation_required",
+        "target": "/text",
+        "status": 428,
+        "retryable": false,
+        "detail": "conformance: confirmation_required",
+        "type": "https://atlas.jhg.com/problems/confirmation_required",
+        "cli_exit": 4
+      }
+    },
+    {
+      "id": 10,
+      "ok": false,
+      "problem": {
+        "code": "not_found",
+        "target": "/text",
+        "status": 404,
+        "retryable": false,
+        "detail": "conformance: not_found",
+        "type": "https://atlas.jhg.com/problems/not_found",
+        "cli_exit": 5
+      }
+    },
+    {
+      "id": 11,
+      "ok": false,
+      "problem": {
+        "code": "not_in_environment",
+        "target": "/text",
+        "status": 404,
+        "retryable": false,
+        "detail": "conformance: not_in_environment",
+        "type": "https://atlas.jhg.com/problems/not_in_environment",
+        "cli_exit": 5
+      }
+    },
+    {
+      "id": 12,
+      "ok": false,
+      "problem": {
+        "code": "idempotency_conflict",
+        "target": "/text",
+        "status": 409,
+        "retryable": false,
+        "detail": "conformance: idempotency_conflict",
+        "type": "https://atlas.jhg.com/problems/idempotency_conflict",
+        "cli_exit": 1
+      }
+    },
+    {
+      "id": 13,
+      "ok": false,
+      "problem": {
+        "code": "in_progress",
+        "target": "/text",
+        "status": 409,
+        "retryable": true,
+        "detail": "conformance: in_progress",
+        "type": "https://atlas.jhg.com/problems/in_progress",
+        "cli_exit": 6
+      }
+    },
+    {
+      "id": 14,
+      "ok": false,
+      "problem": {
+        "code": "resume_gap",
+        "target": "/text",
+        "status": 409,
+        "retryable": false,
+        "detail": "conformance: resume_gap",
+        "type": "https://atlas.jhg.com/problems/resume_gap",
+        "cli_exit": 1
+      }
+    },
+    {
+      "id": 15,
+      "ok": false,
+      "problem": {
+        "code": "retired",
+        "target": "/text",
+        "status": 410,
+        "retryable": false,
+        "detail": "conformance: retired",
+        "type": "https://atlas.jhg.com/problems/retired",
+        "cli_exit": 5
+      }
+    },
+    {
+      "id": 16,
+      "ok": false,
+      "problem": {
+        "code": "precondition_failed",
+        "target": "/text",
+        "status": 412,
+        "retryable": false,
+        "detail": "conformance: precondition_failed",
+        "type": "https://atlas.jhg.com/problems/precondition_failed",
+        "cli_exit": 1
+      }
+    },
+    {
+      "id": 17,
+      "ok": false,
+      "problem": {
+        "code": "critical_trait_unsupported",
+        "target": "/text",
+        "status": 422,
+        "retryable": false,
+        "detail": "conformance: critical_trait_unsupported",
+        "type": "https://atlas.jhg.com/problems/critical_trait_unsupported",
+        "cli_exit": 8
+      }
+    },
+    {
+      "id": 18,
+      "ok": false,
+      "problem": {
+        "code": "resolution_failed",
+        "target": "/text",
+        "status": 422,
+        "retryable": false,
+        "detail": "conformance: resolution_failed",
+        "type": "https://atlas.jhg.com/problems/resolution_failed",
+        "cli_exit": 8
+      }
+    },
+    {
+      "id": 19,
+      "ok": false,
+      "problem": {
+        "code": "upgrade_required",
+        "target": "/text",
+        "status": 426,
+        "retryable": false,
+        "detail": "conformance: upgrade_required",
+        "type": "https://atlas.jhg.com/problems/upgrade_required",
+        "cli_exit": 8
+      }
+    },
+    {
+      "id": 20,
+      "ok": false,
+      "problem": {
+        "code": "limit_exceeded",
+        "target": "/text",
+        "status": 429,
+        "retryable": true,
+        "detail": "conformance: limit_exceeded",
+        "type": "https://atlas.jhg.com/problems/limit_exceeded",
+        "cli_exit": 6
+      }
+    },
+    {
+      "id": 21,
+      "ok": false,
+      "problem": {
+        "code": "internal",
+        "target": "/text",
+        "status": 500,
+        "retryable": false,
+        "detail": "conformance: internal",
+        "type": "https://atlas.jhg.com/problems/internal",
+        "cli_exit": 1
+      }
+    },
+    {
+      "id": 22,
+      "ok": false,
+      "problem": {
+        "code": "upstream_failed",
+        "target": "/text",
+        "status": 502,
+        "retryable": true,
+        "detail": "conformance: upstream_failed",
+        "type": "https://atlas.jhg.com/problems/upstream_failed",
+        "cli_exit": 1
+      }
+    },
+    {
+      "id": 23,
+      "ok": false,
+      "problem": {
+        "code": "unavailable",
+        "target": "/text",
+        "status": 503,
+        "retryable": true,
+        "detail": "conformance: unavailable",
+        "type": "https://atlas.jhg.com/problems/unavailable",
+        "cli_exit": 6
+      }
+    },
+    {
+      "id": 24,
+      "ok": false,
+      "problem": {
+        "code": "deadline_exceeded",
+        "target": "/text",
+        "status": 504,
+        "retryable": false,
+        "detail": "conformance: deadline_exceeded",
+        "type": "https://atlas.jhg.com/problems/deadline_exceeded",
+        "cli_exit": 7
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "invalid_document"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "invalid_request"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "unauthenticated"
+        }
+      },
+      "equals": 2
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "not_granted"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "denied"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "budget_exceeded"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "approval_required"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "confirmation_required"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "not_found"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "not_in_environment"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "idempotency_conflict"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "in_progress"
+        }
+      },
+      "equals": 4
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "resume_gap"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "retired"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "precondition_failed"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "critical_trait_unsupported"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "resolution_failed"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "upgrade_required"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "limit_exceeded"
+        }
+      },
+      "equals": 4
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "internal"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "upstream_failed"
+        }
+      },
+      "equals": 4
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "unavailable"
+        }
+      },
+      "equals": 4
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "deadline_exceeded"
+        }
+      },
+      "equals": 1
+    }
+  ],
+  "note": "Retryable codes are answered four times (the call and its three retries, with Retry-After 0); unauthenticated twice (the call and its one repeat after a refresh). output_limit_exceeded only travels in an end line (STREAM-004).",
+  "questions": [
+    "Q-RUN-2"
+  ]
+}

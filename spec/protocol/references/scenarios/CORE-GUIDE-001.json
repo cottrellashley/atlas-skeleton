@@ -1,0 +1,114 @@
+{
+  "id": "CORE-GUIDE-001",
+  "level": "Core",
+  "description": "The client asks atlas.guide for its own syntax and returns the Markdown unchanged.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "atlas.guide:fetch"
+        },
+        "respond": {
+          "status": 200,
+          "body": {
+            "exact": "conformance.echo@v1#f17339273f0617c2",
+            "client": "python",
+            "markdown": "# conformance.echo@v1\n\n  Echo *anything* back.\t\n\n```python\natlas.call(\"conformance.echo@v1:fetch\", {\"text\": \"hi\"})\n```\n",
+            "tokens": 37,
+            "truncated": false,
+            "revisions": {
+              "governance": "g-1",
+              "context": "c-1"
+            }
+          }
+        },
+        "times": 1
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "guide",
+      "args": {
+        "id": "conformance.echo@v1"
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value_contains": {
+        "markdown": "# conformance.echo@v1\n\n  Echo *anything* back.\t\n\n```python\natlas.call(\"conformance.echo@v1:fetch\", {\"text\": \"hi\"})\n```\n"
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "body",
+      "select": {
+        "address": "atlas.guide:fetch"
+      },
+      "contains": {
+        "by": "id",
+        "id": "conformance.echo@v1"
+      }
+    },
+    {
+      "assert": "body_member_in",
+      "select": {
+        "address": "atlas.guide:fetch"
+      },
+      "member": "/client",
+      "values": [
+        "cli",
+        "python",
+        "node",
+        "go",
+        "mcp"
+      ]
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "atlas.guide:fetch"
+      },
+      "name": "Atlas-Profile-Expect",
+      "absent": true
+    }
+  ],
+  "questions": [
+    "Q-RUN-1"
+  ]
+}

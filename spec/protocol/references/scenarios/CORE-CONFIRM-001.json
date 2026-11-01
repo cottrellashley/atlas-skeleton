@@ -1,0 +1,163 @@
+{
+  "id": "CORE-CONFIRM-001",
+  "level": "Core",
+  "description": "confirmation_required with an estimate: without a person, the problem; a person who declines, the problem; a person who accepts, one repeat with Atlas-Confirm.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {},
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.costly@v1:fetch",
+        "request": {
+          "text": "a"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "call",
+      "args": {
+        "address": "conformance.costly@v1:fetch",
+        "request": {
+          "text": "b"
+        },
+        "options": {
+          "person": true,
+          "confirm": "decline"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "op": "call",
+      "args": {
+        "address": "conformance.costly@v1:fetch",
+        "request": {
+          "text": "c"
+        },
+        "options": {
+          "person": true,
+          "confirm": "accept"
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": false,
+      "problem": {
+        "code": "confirmation_required",
+        "estimate": {
+          "amount": "12.500",
+          "unit": "credits"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "ok": false,
+      "problem": {
+        "code": "confirmation_required"
+      }
+    },
+    {
+      "id": 4,
+      "ok": true,
+      "value": {
+        "ok": true
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.costly@v1:fetch",
+        "body_contains": {
+          "text": "a"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.costly@v1:fetch",
+        "body_contains": {
+          "text": "b"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.costly@v1:fetch",
+        "body_contains": {
+          "text": "c"
+        }
+      },
+      "equals": 2
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.costly@v1:fetch",
+        "nth": 2,
+        "body_contains": {
+          "text": "c"
+        }
+      },
+      "name": "Atlas-Confirm",
+      "equals": "12.5"
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.costly@v1:fetch",
+        "nth": 1,
+        "body_contains": {
+          "text": "c"
+        }
+      },
+      "name": "Atlas-Confirm",
+      "absent": true
+    }
+  ],
+  "note": "conformance.costly@v1 answers confirmation_required (estimate 12.500 credits) unless Atlas-Confirm is at least 12.5; it is a read, so no Idempotency-Key is sent (§9.6.3).",
+  "questions": [
+    "Q-DOC-10"
+  ]
+}

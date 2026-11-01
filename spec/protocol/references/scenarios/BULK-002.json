@@ -1,0 +1,117 @@
+{
+  "id": "BULK-002",
+  "level": "Bulk",
+  "description": "An upload in parts of at most 8 MiB, then one commit with the same Idempotency-Key as the call.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {},
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "suite.file",
+      "args": {
+        "path": "{WORKDIR}/bundle.bin",
+        "size": 20971520,
+        "pattern": "0123456789abcdef"
+      }
+    },
+    {
+      "id": 3,
+      "op": "upload",
+      "args": {
+        "address": "conformance.file@v1:publish",
+        "request": {
+          "name": "bundle.bin",
+          "media_type": "application/octet-stream",
+          "bytes": 20971520,
+          "sha256": "{sha256:{WORKDIR}/bundle.bin}"
+        },
+        "source": "{WORKDIR}/bundle.bin"
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true
+    },
+    {
+      "id": 3,
+      "ok": true,
+      "value_contains": {
+        "name": "bundle.bin",
+        "bytes": 20971520
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "max_body",
+      "select": {
+        "storage_upload": true,
+        "method": "PUT"
+      },
+      "bytes": 8388608
+    },
+    {
+      "assert": "count",
+      "select": {
+        "storage_upload": true,
+        "method": "PUT"
+      },
+      "equals": 3
+    },
+    {
+      "assert": "count",
+      "select": {
+        "path_suffix": ":commit",
+        "method": "POST"
+      },
+      "equals": 1
+    },
+    {
+      "assert": "same_header",
+      "name": "Idempotency-Key",
+      "selects": [
+        {
+          "address": "conformance.file@v1:publish"
+        },
+        {
+          "path_suffix": ":commit"
+        }
+      ]
+    }
+  ],
+  "note": "20 MiB in parts of 8, 8 and 4 MiB, as the transfer document lists them.",
+  "questions": [
+    "Q-RUN-4"
+  ]
+}

@@ -1,0 +1,1641 @@
+{
+  "description": "§9.2.7 (AP-SCHEMA-002): a table result's schema (a JSON Schema of an array of row objects) and its Arrow schema, derived: one field per row property in the order of `properties` (Q-ARROW-1), nullable when the property allows null or is not required, each Atlas keyword as field metadata atlas:<keyword> whose value is the keyword's JSON text in RFC 8785 form (Q-ARROW-4), and the schema metadata atlas:profile (the exact-id, here `exact`) and atlas:protocol. Arrow schemas are in the JSON form of Apache Arrow's integration tests (fields of name, nullable, type, children, metadata). A schema the table cannot map is refused: invalid_document, target the property.",
+  "cases": [
+    {
+      "name": "every scalar row of the table",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "flag",
+            "n",
+            "x",
+            "s",
+            "day",
+            "at",
+            "took",
+            "big",
+            "price"
+          ],
+          "properties": {
+            "flag": {
+              "type": "boolean"
+            },
+            "n": {
+              "type": "integer"
+            },
+            "x": {
+              "type": "number"
+            },
+            "s": {
+              "type": "string"
+            },
+            "day": {
+              "type": "string",
+              "format": "date"
+            },
+            "at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "took": {
+              "type": "string",
+              "format": "duration"
+            },
+            "big": {
+              "type": "string",
+              "format": "int64"
+            },
+            "price": {
+              "type": "string",
+              "format": "decimal",
+              "x-atlas-logical": "Decimal(18,6)"
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "expected": {
+        "arrow": {
+          "fields": [
+            {
+              "name": "flag",
+              "nullable": false,
+              "type": {
+                "name": "bool"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "n",
+              "nullable": false,
+              "type": {
+                "name": "int",
+                "bitWidth": 64,
+                "isSigned": true
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "x",
+              "nullable": false,
+              "type": {
+                "name": "floatingpoint",
+                "precision": "DOUBLE"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "s",
+              "nullable": false,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "day",
+              "nullable": false,
+              "type": {
+                "name": "date",
+                "unit": "DAY"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "at",
+              "nullable": false,
+              "type": {
+                "name": "timestamp",
+                "unit": "MICROSECOND",
+                "timezone": "UTC"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "took",
+              "nullable": false,
+              "type": {
+                "name": "duration",
+                "unit": "MICROSECOND"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "big",
+              "nullable": false,
+              "type": {
+                "name": "int",
+                "bitWidth": 64,
+                "isSigned": true
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "price",
+              "nullable": false,
+              "type": {
+                "name": "decimal",
+                "precision": 18,
+                "scale": 6,
+                "bitWidth": 128
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Decimal(18,6)\""
+                }
+              ]
+            }
+          ],
+          "metadata": [
+            {
+              "key": "atlas:profile",
+              "value": "conformance.rows@v1#0123456789abcdef"
+            },
+            {
+              "key": "atlas:protocol",
+              "value": "atlas/1.0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "nullable: a null type, or not required",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "a",
+            "b"
+          ],
+          "properties": {
+            "a": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "b": {
+              "type": "string"
+            },
+            "c": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "expected": {
+        "arrow": {
+          "fields": [
+            {
+              "name": "a",
+              "nullable": true,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "b",
+              "nullable": false,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "c",
+              "nullable": true,
+              "type": {
+                "name": "int",
+                "bitWidth": 64,
+                "isSigned": true
+              },
+              "children": [],
+              "metadata": []
+            }
+          ],
+          "metadata": [
+            {
+              "key": "atlas:profile",
+              "value": "conformance.rows@v1#0123456789abcdef"
+            },
+            {
+              "key": "atlas:protocol",
+              "value": "atlas/1.0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "the order of properties, not sorted",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "zeta",
+            "alpha",
+            "mid"
+          ],
+          "properties": {
+            "zeta": {
+              "type": "integer"
+            },
+            "alpha": {
+              "type": "integer"
+            },
+            "mid": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "expected": {
+        "arrow": {
+          "fields": [
+            {
+              "name": "zeta",
+              "nullable": false,
+              "type": {
+                "name": "int",
+                "bitWidth": 64,
+                "isSigned": true
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "alpha",
+              "nullable": false,
+              "type": {
+                "name": "int",
+                "bitWidth": 64,
+                "isSigned": true
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "mid",
+              "nullable": false,
+              "type": {
+                "name": "int",
+                "bitWidth": 64,
+                "isSigned": true
+              },
+              "children": [],
+              "metadata": []
+            }
+          ],
+          "metadata": [
+            {
+              "key": "atlas:profile",
+              "value": "conformance.rows@v1#0123456789abcdef"
+            },
+            {
+              "key": "atlas:protocol",
+              "value": "atlas/1.0"
+            }
+          ]
+        }
+      },
+      "question": "Q-ARROW-1"
+    },
+    {
+      "name": "Decimal(p,s) without format",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "d"
+          ],
+          "properties": {
+            "d": {
+              "type": "string",
+              "x-atlas-logical": "Decimal(38,0)"
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "expected": {
+        "arrow": {
+          "fields": [
+            {
+              "name": "d",
+              "nullable": false,
+              "type": {
+                "name": "decimal",
+                "precision": 38,
+                "scale": 0,
+                "bitWidth": 128
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Decimal(38,0)\""
+                }
+              ]
+            }
+          ],
+          "metadata": [
+            {
+              "key": "atlas:profile",
+              "value": "conformance.rows@v1#0123456789abcdef"
+            },
+            {
+              "key": "atlas:protocol",
+              "value": "atlas/1.0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Money",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "mv"
+          ],
+          "properties": {
+            "mv": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "x-atlas-logical": "Money"
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "expected": {
+        "arrow": {
+          "fields": [
+            {
+              "name": "mv",
+              "nullable": true,
+              "type": {
+                "name": "struct"
+              },
+              "children": [
+                {
+                  "name": "amount",
+                  "nullable": false,
+                  "type": {
+                    "name": "decimal",
+                    "precision": 38,
+                    "scale": 6,
+                    "bitWidth": 128
+                  },
+                  "children": [],
+                  "metadata": []
+                },
+                {
+                  "name": "currency",
+                  "nullable": false,
+                  "type": {
+                    "name": "utf8"
+                  },
+                  "children": [],
+                  "metadata": []
+                }
+              ],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Money\""
+                }
+              ]
+            }
+          ],
+          "metadata": [
+            {
+              "key": "atlas:profile",
+              "value": "conformance.rows@v1#0123456789abcdef"
+            },
+            {
+              "key": "atlas:protocol",
+              "value": "atlas/1.0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a list of strings, its items nullable",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "tags"
+          ],
+          "properties": {
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "expected": {
+        "arrow": {
+          "fields": [
+            {
+              "name": "tags",
+              "nullable": false,
+              "type": {
+                "name": "list"
+              },
+              "children": [
+                {
+                  "name": "item",
+                  "nullable": true,
+                  "type": {
+                    "name": "utf8"
+                  },
+                  "children": [],
+                  "metadata": []
+                }
+              ],
+              "metadata": []
+            }
+          ],
+          "metadata": [
+            {
+              "key": "atlas:profile",
+              "value": "conformance.rows@v1#0123456789abcdef"
+            },
+            {
+              "key": "atlas:protocol",
+              "value": "atlas/1.0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a list of structs",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "legs"
+          ],
+          "properties": {
+            "legs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "tenor"
+                ],
+                "properties": {
+                  "tenor": {
+                    "type": "string",
+                    "x-atlas-logical": "Tenor"
+                  },
+                  "rate": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "x-atlas-logical": "Percent"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "expected": {
+        "arrow": {
+          "fields": [
+            {
+              "name": "legs",
+              "nullable": false,
+              "type": {
+                "name": "list"
+              },
+              "children": [
+                {
+                  "name": "item",
+                  "nullable": false,
+                  "type": {
+                    "name": "struct"
+                  },
+                  "children": [
+                    {
+                      "name": "tenor",
+                      "nullable": false,
+                      "type": {
+                        "name": "utf8"
+                      },
+                      "children": [],
+                      "metadata": [
+                        {
+                          "key": "atlas:logical",
+                          "value": "\"Tenor\""
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rate",
+                      "nullable": true,
+                      "type": {
+                        "name": "floatingpoint",
+                        "precision": "DOUBLE"
+                      },
+                      "children": [],
+                      "metadata": [
+                        {
+                          "key": "atlas:logical",
+                          "value": "\"Percent\""
+                        }
+                      ]
+                    }
+                  ],
+                  "metadata": []
+                }
+              ],
+              "metadata": []
+            }
+          ],
+          "metadata": [
+            {
+              "key": "atlas:profile",
+              "value": "conformance.rows@v1#0123456789abcdef"
+            },
+            {
+              "key": "atlas:protocol",
+              "value": "atlas/1.0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a struct of the mapped properties",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "issuer": {
+              "type": "object",
+              "required": [
+                "lei"
+              ],
+              "properties": {
+                "lei": {
+                  "type": "string",
+                  "x-atlas-logical": "Lei"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "expected": {
+        "arrow": {
+          "fields": [
+            {
+              "name": "issuer",
+              "nullable": true,
+              "type": {
+                "name": "struct"
+              },
+              "children": [
+                {
+                  "name": "lei",
+                  "nullable": false,
+                  "type": {
+                    "name": "utf8"
+                  },
+                  "children": [],
+                  "metadata": [
+                    {
+                      "key": "atlas:logical",
+                      "value": "\"Lei\""
+                    }
+                  ]
+                },
+                {
+                  "name": "name",
+                  "nullable": true,
+                  "type": {
+                    "name": "utf8"
+                  },
+                  "children": [],
+                  "metadata": []
+                }
+              ],
+              "metadata": []
+            }
+          ],
+          "metadata": [
+            {
+              "key": "atlas:profile",
+              "value": "conformance.rows@v1#0123456789abcdef"
+            },
+            {
+              "key": "atlas:protocol",
+              "value": "atlas/1.0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "every Atlas keyword as metadata, its value the JSON text",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "portfolio",
+            "market_value",
+            "weight",
+            "status"
+          ],
+          "properties": {
+            "portfolio": {
+              "type": "string",
+              "x-atlas-logical": "PortfolioCode",
+              "x-atlas-key": true,
+              "x-atlas-reference": "portfolio.list@v1"
+            },
+            "market_value": {
+              "type": "object",
+              "x-atlas-logical": "Money",
+              "x-atlas-aliases": [
+                "mv"
+              ]
+            },
+            "oas": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "x-atlas-logical": "Bp",
+              "x-atlas-deprecated": null
+            },
+            "weight": {
+              "type": "number",
+              "x-atlas-unit": "fraction"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "open",
+                "UNKNOWN"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "open",
+                  "description": "Held."
+                },
+                {
+                  "value": "UNKNOWN"
+                }
+              ]
+            },
+            "duration": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "x-atlas-logical": "Years",
+              "x-atlas-deprecated": {
+                "reason": "Use risk.duration@v1.",
+                "since": "2026-09-01",
+                "sunset": "2027-03-01",
+                "replaced_by": null
+              }
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "expected": {
+        "arrow": {
+          "fields": [
+            {
+              "name": "portfolio",
+              "nullable": false,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"PortfolioCode\""
+                },
+                {
+                  "key": "atlas:key",
+                  "value": "true"
+                },
+                {
+                  "key": "atlas:reference",
+                  "value": "\"portfolio.list@v1\""
+                }
+              ]
+            },
+            {
+              "name": "market_value",
+              "nullable": false,
+              "type": {
+                "name": "struct"
+              },
+              "children": [
+                {
+                  "name": "amount",
+                  "nullable": false,
+                  "type": {
+                    "name": "decimal",
+                    "precision": 38,
+                    "scale": 6,
+                    "bitWidth": 128
+                  },
+                  "children": [],
+                  "metadata": []
+                },
+                {
+                  "name": "currency",
+                  "nullable": false,
+                  "type": {
+                    "name": "utf8"
+                  },
+                  "children": [],
+                  "metadata": []
+                }
+              ],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Money\""
+                },
+                {
+                  "key": "atlas:aliases",
+                  "value": "[\"mv\"]"
+                }
+              ]
+            },
+            {
+              "name": "oas",
+              "nullable": true,
+              "type": {
+                "name": "floatingpoint",
+                "precision": "DOUBLE"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Bp\""
+                },
+                {
+                  "key": "atlas:deprecated",
+                  "value": "null"
+                }
+              ]
+            },
+            {
+              "name": "weight",
+              "nullable": false,
+              "type": {
+                "name": "floatingpoint",
+                "precision": "DOUBLE"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:unit",
+                  "value": "\"fraction\""
+                }
+              ]
+            },
+            {
+              "name": "status",
+              "nullable": false,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:enum",
+                  "value": "[{\"description\":\"Held.\",\"value\":\"open\"},{\"value\":\"UNKNOWN\"}]"
+                }
+              ]
+            },
+            {
+              "name": "duration",
+              "nullable": true,
+              "type": {
+                "name": "floatingpoint",
+                "precision": "DOUBLE"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Years\""
+                },
+                {
+                  "key": "atlas:deprecated",
+                  "value": "{\"reason\":\"Use risk.duration@v1.\",\"replaced_by\":null,\"since\":\"2026-09-01\",\"sunset\":\"2027-03-01\"}"
+                }
+              ]
+            }
+          ],
+          "metadata": [
+            {
+              "key": "atlas:profile",
+              "value": "conformance.rows@v1#0123456789abcdef"
+            },
+            {
+              "key": "atlas:protocol",
+              "value": "atlas/1.0"
+            }
+          ]
+        }
+      },
+      "question": "Q-ARROW-4"
+    },
+    {
+      "name": "strings with other formats and string logical types are Utf8",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "u",
+            "id",
+            "cap",
+            "dec",
+            "isin",
+            "ccy"
+          ],
+          "properties": {
+            "u": {
+              "type": "string",
+              "format": "uri"
+            },
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "cap": {
+              "type": "string",
+              "format": "capability-id"
+            },
+            "dec": {
+              "type": "string",
+              "format": "decimal"
+            },
+            "isin": {
+              "type": "string",
+              "x-atlas-logical": "Isin"
+            },
+            "ccy": {
+              "type": "string",
+              "x-atlas-logical": "Currency"
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "expected": {
+        "arrow": {
+          "fields": [
+            {
+              "name": "u",
+              "nullable": false,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "id",
+              "nullable": false,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "cap",
+              "nullable": false,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "dec",
+              "nullable": false,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "isin",
+              "nullable": false,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Isin\""
+                }
+              ]
+            },
+            {
+              "name": "ccy",
+              "nullable": false,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Currency\""
+                }
+              ]
+            }
+          ],
+          "metadata": [
+            {
+              "key": "atlas:profile",
+              "value": "conformance.rows@v1#0123456789abcdef"
+            },
+            {
+              "key": "atlas:protocol",
+              "value": "atlas/1.0"
+            }
+          ]
+        }
+      },
+      "question": "Q-ARROW-2"
+    },
+    {
+      "name": "a property through $ref",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "p"
+          ],
+          "properties": {
+            "p": {
+              "$ref": "#/$defs/price",
+              "description": "A price."
+            }
+          }
+        },
+        "$defs": {
+          "price": {
+            "type": "string",
+            "x-atlas-logical": "Decimal(12,4)"
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "expected": {
+        "arrow": {
+          "fields": [
+            {
+              "name": "p",
+              "nullable": false,
+              "type": {
+                "name": "decimal",
+                "precision": 12,
+                "scale": 4,
+                "bitWidth": 128
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Decimal(12,4)\""
+                }
+              ]
+            }
+          ],
+          "metadata": [
+            {
+              "key": "atlas:profile",
+              "value": "conformance.rows@v1#0123456789abcdef"
+            },
+            {
+              "key": "atlas:protocol",
+              "value": "atlas/1.0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "the data profile's result",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "description": "The holdings, one row per position.",
+        "items": {
+          "type": "object",
+          "description": "One position: a security held in a portfolio on a date.",
+          "required": [
+            "portfolio",
+            "as_of",
+            "title",
+            "market_value",
+            "weight",
+            "status"
+          ],
+          "properties": {
+            "portfolio": {
+              "type": "string",
+              "description": "The portfolio's code.",
+              "x-atlas-logical": "PortfolioCode",
+              "x-atlas-key": true
+            },
+            "isin": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "The security's ISIN; null for cash and instruments without one.",
+              "x-atlas-logical": "Isin",
+              "x-atlas-key": true
+            },
+            "as_of": {
+              "type": "string",
+              "description": "The valuation date.",
+              "format": "date",
+              "x-atlas-key": true
+            },
+            "title": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "The security's name, as Harbour holds it."
+            },
+            "market_value": {
+              "type": "object",
+              "description": "The position's market value, in its currency.",
+              "x-atlas-logical": "Money",
+              "x-atlas-aliases": [
+                "mv"
+              ]
+            },
+            "weight": {
+              "type": "number",
+              "description": "Its share of the portfolio's market value.",
+              "x-atlas-logical": "Fraction"
+            },
+            "oas": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Option-adjusted spread over the government curve.",
+              "x-atlas-logical": "Bp",
+              "x-atlas-aliases": [
+                "oas_bp"
+              ],
+              "x-atlas-deprecated": null
+            },
+            "status": {
+              "description": "Whether the position is still held.",
+              "type": "string",
+              "enum": [
+                "open",
+                "closed",
+                "UNKNOWN"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "open",
+                  "description": "Held at the as-of date."
+                },
+                {
+                  "value": "closed",
+                  "description": "Sold that day, kept for the day.",
+                  "aliases": [
+                    "sold"
+                  ]
+                },
+                {
+                  "value": "UNKNOWN",
+                  "description": "A value this reader does not know (§9.5.5)."
+                }
+              ]
+            },
+            "duration": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Modified duration.",
+              "x-atlas-logical": "Years",
+              "x-atlas-deprecated": {
+                "reason": "Use risk.duration@v1, which states its curve.",
+                "since": "2026-09-01",
+                "sunset": "2027-03-01",
+                "replaced_by": null
+              }
+            }
+          }
+        }
+      },
+      "exact": "portfolio.holdings@v1#8e61efdf45779059",
+      "expected": {
+        "arrow": {
+          "fields": [
+            {
+              "name": "portfolio",
+              "nullable": false,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"PortfolioCode\""
+                },
+                {
+                  "key": "atlas:key",
+                  "value": "true"
+                }
+              ]
+            },
+            {
+              "name": "isin",
+              "nullable": true,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Isin\""
+                },
+                {
+                  "key": "atlas:key",
+                  "value": "true"
+                }
+              ]
+            },
+            {
+              "name": "as_of",
+              "nullable": false,
+              "type": {
+                "name": "date",
+                "unit": "DAY"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:key",
+                  "value": "true"
+                }
+              ]
+            },
+            {
+              "name": "title",
+              "nullable": true,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": []
+            },
+            {
+              "name": "market_value",
+              "nullable": false,
+              "type": {
+                "name": "struct"
+              },
+              "children": [
+                {
+                  "name": "amount",
+                  "nullable": false,
+                  "type": {
+                    "name": "decimal",
+                    "precision": 38,
+                    "scale": 6,
+                    "bitWidth": 128
+                  },
+                  "children": [],
+                  "metadata": []
+                },
+                {
+                  "name": "currency",
+                  "nullable": false,
+                  "type": {
+                    "name": "utf8"
+                  },
+                  "children": [],
+                  "metadata": []
+                }
+              ],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Money\""
+                },
+                {
+                  "key": "atlas:aliases",
+                  "value": "[\"mv\"]"
+                }
+              ]
+            },
+            {
+              "name": "weight",
+              "nullable": false,
+              "type": {
+                "name": "floatingpoint",
+                "precision": "DOUBLE"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Fraction\""
+                }
+              ]
+            },
+            {
+              "name": "oas",
+              "nullable": true,
+              "type": {
+                "name": "floatingpoint",
+                "precision": "DOUBLE"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Bp\""
+                },
+                {
+                  "key": "atlas:aliases",
+                  "value": "[\"oas_bp\"]"
+                },
+                {
+                  "key": "atlas:deprecated",
+                  "value": "null"
+                }
+              ]
+            },
+            {
+              "name": "status",
+              "nullable": false,
+              "type": {
+                "name": "utf8"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:enum",
+                  "value": "[{\"description\":\"Held at the as-of date.\",\"value\":\"open\"},{\"aliases\":[\"sold\"],\"description\":\"Sold that day, kept for the day.\",\"value\":\"closed\"},{\"description\":\"A value this reader does not know (§9.5.5).\",\"value\":\"UNKNOWN\"}]"
+                }
+              ]
+            },
+            {
+              "name": "duration",
+              "nullable": true,
+              "type": {
+                "name": "floatingpoint",
+                "precision": "DOUBLE"
+              },
+              "children": [],
+              "metadata": [
+                {
+                  "key": "atlas:logical",
+                  "value": "\"Years\""
+                },
+                {
+                  "key": "atlas:deprecated",
+                  "value": "{\"reason\":\"Use risk.duration@v1, which states its curve.\",\"replaced_by\":null,\"since\":\"2026-09-01\",\"sunset\":\"2027-03-01\"}"
+                }
+              ]
+            }
+          ],
+          "metadata": [
+            {
+              "key": "atlas:profile",
+              "value": "portfolio.holdings@v1#8e61efdf45779059"
+            },
+            {
+              "key": "atlas:protocol",
+              "value": "atlas/1.0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "refused: an object without properties",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "blob": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "problem": {
+        "code": "invalid_document",
+        "target": "/items/properties/blob"
+      },
+      "question": "Q-ARROW-3"
+    },
+    {
+      "name": "refused: an array without items",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "xs": {
+              "type": "array"
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "problem": {
+        "code": "invalid_document",
+        "target": "/items/properties/xs/items"
+      },
+      "question": "Q-ARROW-3"
+    },
+    {
+      "name": "refused: anyOf",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "e": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "problem": {
+        "code": "invalid_document",
+        "target": "/items/properties/e"
+      },
+      "question": "Q-ARROW-3"
+    },
+    {
+      "name": "refused: a DynamicSchema result: an open array of objects",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "problem": {
+        "code": "invalid_document",
+        "target": "/items"
+      },
+      "question": "Q-ARROW-3"
+    },
+    {
+      "name": "refused: a record result is not a table",
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "object",
+        "properties": {
+          "a": {
+            "type": "string"
+          }
+        }
+      },
+      "exact": "conformance.rows@v1#0123456789abcdef",
+      "problem": {
+        "code": "invalid_document",
+        "target": ""
+      }
+    }
+  ]
+}

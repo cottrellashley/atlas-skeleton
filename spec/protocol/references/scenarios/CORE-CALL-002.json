@@ -1,0 +1,87 @@
+{
+  "id": "CORE-CALL-002",
+  "level": "Core",
+  "description": "An invalid request fails invalid_request with its first pointer as target and every failure in details, and nothing is sent.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {},
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "",
+          "count": 101,
+          "extra": 1
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": false,
+      "problem": {
+        "code": "invalid_request",
+        "target": "/count",
+        "details": [
+          {
+            "target": "/count",
+            "keyword": "maximum"
+          },
+          {
+            "target": "/extra",
+            "keyword": "additionalProperties"
+          },
+          {
+            "target": "/text",
+            "keyword": "minLength"
+          }
+        ]
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch"
+      },
+      "equals": 0
+    }
+  ],
+  "questions": [
+    "Q-VAL-1",
+    "Q-DOC-9"
+  ]
+}

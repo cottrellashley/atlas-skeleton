@@ -1,0 +1,87 @@
+{
+  "id": "HAND-002",
+  "level": "Handoff",
+  "description": "Links that expire mid-download: the handoff's operation is asked again for fresh links.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "nth": 1,
+          "storage_chunk": 1,
+          "method": "GET"
+        },
+        "respond": {
+          "status": 403,
+          "body": null,
+          "expire_links": true
+        },
+        "times": 1
+      }
+    ],
+    "state": {
+      "handoff_case": "widths-change"
+    }
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.handoff@v1:fetch",
+        "request": {},
+        "options": {
+          "execution": "handoff",
+          "accept": [
+            "application/vnd.apache.arrow.stream"
+          ]
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value": "{vectors:handoff/snowflake-arrow-1/synthetic/cases.json#widths-change}"
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "atlas.operation:get"
+      },
+      "equals": 1
+    }
+  ]
+}

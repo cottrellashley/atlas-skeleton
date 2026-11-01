@@ -1,0 +1,65 @@
+{
+  "id": "EVT-003",
+  "level": "Events",
+  "description": "An emulator connect handover from a gateway whose environment is dv: refused (AP-EVENTS-002).",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-dv.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "bootstrap": {
+      "environment": "dv"
+    }
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "subscribe.open",
+      "args": {
+        "id": "conformance.tick@v1"
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": false,
+      "problem": {
+        "code": "invalid_document"
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "bus_connections",
+      "equals": 0
+    }
+  ],
+  "note": "With environment dv the token file is token-dv.json (Q-CLI-1)."
+}

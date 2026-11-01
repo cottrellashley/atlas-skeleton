@@ -1,0 +1,257 @@
+{
+  "description": "A complete, agent-ready event profile (§3.1.3, §3.1.4a), as the gateway serves it: valid against profile.schema.json, each of its schemas valid against atlas-schema.schema.json in its role (a request schema closed, every other open), with the fingerprint of §9.4.",
+  "cases": [
+    {
+      "name": "data.landed@v1#e2c614c989692ac3",
+      "profile": {
+        "identity": {
+          "id": "data.landed",
+          "version": 1,
+          "title": "Data landed",
+          "summary": "A source's data for a date has landed and is complete.",
+          "domain": "data",
+          "owner": "Harbour"
+        },
+        "properties": {
+          "family": "event",
+          "stability": "official",
+          "lifecycle": "stable",
+          "visibility": "listed",
+          "traits": [
+            {
+              "name": "Ordered",
+              "critical": false
+            }
+          ]
+        },
+        "interactions": {
+          "subscribe": {
+            "effect": "read",
+            "result": "record",
+            "delivery": "subscription",
+            "execution": [
+              "gateway"
+            ],
+            "takes": "subscribe_request",
+            "returns": "payload",
+            "deadline": {
+              "default": "PT30S",
+              "max": "PT2M"
+            },
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/event/data.landed@v1:subscribe",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          },
+          "publish": {
+            "effect": "external",
+            "result": "record",
+            "delivery": "single",
+            "execution": [
+              "gateway"
+            ],
+            "takes": "publish_request",
+            "deadline": {
+              "default": "PT30S",
+              "max": "PT2M"
+            },
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/event/data.landed@v1:publish",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        },
+        "schemas": {
+          "payload": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$vocabulary": {
+              "https://json-schema.org/draft/2020-12/vocab/core": true,
+              "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+              "https://json-schema.org/draft/2020-12/vocab/validation": true,
+              "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+              "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+              "https://atlas.jhg.com/vocab/2026-10": false
+            },
+            "type": "object",
+            "description": "A source's data for a date is complete.",
+            "required": [
+              "source",
+              "as_of"
+            ],
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "The source that landed.",
+                "x-atlas-reference": "data.sources@v1",
+                "minLength": 1
+              },
+              "as_of": {
+                "type": "string",
+                "description": "The date whose data landed.",
+                "format": "date"
+              },
+              "rows": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "description": "Rows landed, where the source counts them.",
+                "minimum": 0,
+                "x-atlas-unit": "count"
+              }
+            }
+          },
+          "attributes": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$vocabulary": {
+              "https://json-schema.org/draft/2020-12/vocab/core": true,
+              "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+              "https://json-schema.org/draft/2020-12/vocab/validation": true,
+              "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+              "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+              "https://atlas.jhg.com/vocab/2026-10": false
+            },
+            "type": "object",
+            "description": "The event's CloudEvents attributes beyond the envelope.",
+            "required": [
+              "subject"
+            ],
+            "properties": {
+              "subject": {
+                "type": "string",
+                "description": "The source's id.",
+                "minLength": 1
+              }
+            }
+          },
+          "subscribe_request": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$vocabulary": {
+              "https://json-schema.org/draft/2020-12/vocab/core": true,
+              "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+              "https://json-schema.org/draft/2020-12/vocab/validation": true,
+              "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+              "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+              "https://atlas.jhg.com/vocab/2026-10": false
+            },
+            "type": "object",
+            "description": "Which landings to receive, and whether to keep them while away.",
+            "additionalProperties": false,
+            "properties": {
+              "filter": {
+                "type": "object",
+                "description": "Receive only these, filtered at Service Bus.",
+                "additionalProperties": false,
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "description": "Only this source.",
+                    "minLength": 1
+                  }
+                }
+              },
+              "durable": {
+                "type": "string",
+                "description": "A durable subscription's name.",
+                "pattern": "^[a-z][a-z0-9-]{0,49}$"
+              }
+            }
+          },
+          "publish_request": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$vocabulary": {
+              "https://json-schema.org/draft/2020-12/vocab/core": true,
+              "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+              "https://json-schema.org/draft/2020-12/vocab/validation": true,
+              "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+              "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+              "https://atlas.jhg.com/vocab/2026-10": false
+            },
+            "type": "object",
+            "description": "The event to publish: its payload.",
+            "required": [
+              "source",
+              "as_of"
+            ],
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "The source that landed.",
+                "x-atlas-reference": "data.sources@v1",
+                "minLength": 1
+              },
+              "as_of": {
+                "type": "string",
+                "description": "The date whose data landed.",
+                "format": "date"
+              },
+              "rows": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "description": "Rows landed, where the source counts them.",
+                "minimum": 0,
+                "x-atlas-unit": "count"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "errors": [],
+        "meaning": {
+          "emitted": "when a source's data for a date is complete",
+          "subject": "the source",
+          "ordering": "per subject",
+          "retention": "P7D",
+          "history": "data.status@v1"
+        },
+        "compatibility": {
+          "payload": "FULL_TRANSITIVE"
+        },
+        "usage": {
+          "when": "You refresh something when a source's data lands.",
+          "when_not": "You need what landed in the past: read data.status@v1.",
+          "examples": [
+            {
+              "title": "Index landings",
+              "interaction": "subscribe",
+              "request": {
+                "filter": {
+                  "subject": "index"
+                }
+              }
+            }
+          ],
+          "related": [
+            "data.status@v1"
+          ]
+        },
+        "revision": 1,
+        "fingerprint": "e2c614c989692ac3"
+      },
+      "expected": {
+        "fingerprint": "e2c614c989692ac3",
+        "exact": "data.landed@v1#e2c614c989692ac3",
+        "valid": true,
+        "agent_ready": true
+      }
+    }
+  ]
+}

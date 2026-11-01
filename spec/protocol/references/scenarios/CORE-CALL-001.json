@@ -1,0 +1,253 @@
+{
+  "id": "CORE-CALL-001",
+  "level": "Core",
+  "description": "Every request header of §9.6.3 is present and parses as its type; a built-in carries no Atlas-Profile-Expect; only a call whose effect is not read carries an Idempotency-Key.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {},
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "whoami",
+      "args": {}
+    },
+    {
+      "id": 3,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "hello"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "op": "call",
+      "args": {
+        "address": "conformance.thing@v1:create",
+        "request": {
+          "name": "conformance/things/t1",
+          "colour": "red",
+          "size": 3
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true
+    },
+    {
+      "id": 3,
+      "ok": true,
+      "value": {
+        "text": "hello",
+        "count": 1,
+        "ratio": null,
+        "when": null,
+        "kind": "plain",
+        "tags": []
+      }
+    },
+    {
+      "id": 4,
+      "ok": true,
+      "value_contains": {
+        "name": "conformance/things/t1",
+        "colour": "red"
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "header",
+      "select": {
+        "address": "atlas.whoami:fetch"
+      },
+      "name": "Atlas-Client",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "atlas.whoami:fetch"
+      },
+      "name": "Atlas-Client-Features",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "atlas.whoami:fetch"
+      },
+      "name": "Atlas-Deadline",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "atlas.whoami:fetch"
+      },
+      "name": "traceparent",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "atlas.whoami:fetch"
+      },
+      "name": "Atlas-Profile-Expect",
+      "absent": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "atlas.whoami:fetch"
+      },
+      "name": "Authorization",
+      "equals": "Bearer ct-valid"
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.echo@v1:fetch"
+      },
+      "name": "Atlas-Client",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.echo@v1:fetch"
+      },
+      "name": "Atlas-Client-Features",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.echo@v1:fetch"
+      },
+      "name": "Atlas-Profile-Expect",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.echo@v1:fetch"
+      },
+      "name": "Atlas-Deadline",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.echo@v1:fetch"
+      },
+      "name": "traceparent",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.thing@v1:create"
+      },
+      "name": "Atlas-Client",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.thing@v1:create"
+      },
+      "name": "Atlas-Client-Features",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.thing@v1:create"
+      },
+      "name": "Atlas-Profile-Expect",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.thing@v1:create"
+      },
+      "name": "Atlas-Deadline",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.thing@v1:create"
+      },
+      "name": "traceparent",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.echo@v1:fetch"
+      },
+      "name": "Atlas-Profile-Expect",
+      "equals": "conformance.echo@v1#f17339273f0617c2"
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.echo@v1:fetch"
+      },
+      "name": "Idempotency-Key",
+      "absent": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.thing@v1:create"
+      },
+      "name": "Idempotency-Key",
+      "parses": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.echo@v1:fetch"
+      },
+      "name": "Accept",
+      "contains": "application/json"
+    }
+  ]
+}

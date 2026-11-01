@@ -1,0 +1,83 @@
+{
+  "id": "CORE-DEPR-001",
+  "level": "Core",
+  "description": "Deprecation and Sunset on an answer: a warning naming what is deprecated, its sunset and its replacement.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "headers": {
+      "conformance.evolving@v1:fetch": {
+        "Deprecation": "@1790812800",
+        "Sunset": "Sun, 31 Jan 2027 00:00:00 GMT"
+      }
+    }
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.evolving@v1:fetch",
+        "request": {
+          "ids": [
+            "p1"
+          ]
+        },
+        "options": {
+          "accept": [
+            "application/json"
+          ]
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "warnings": [
+        {
+          "code": "deprecated",
+          "text_contains": [
+            "conformance.evolving@v1",
+            "2027-01-31",
+            "conformance.evolving@v2"
+          ]
+        }
+      ]
+    }
+  ],
+  "expected_requests": [],
+  "note": "The sunset and the replacement are those of conformance.evolving@v1's profile (lifecycle deprecated, sunset 2027-01-31, replaced_by conformance.evolving@v2).",
+  "questions": [
+    "Q-RUN-3"
+  ]
+}

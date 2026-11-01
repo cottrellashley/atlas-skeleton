@@ -1,0 +1,213 @@
+{
+  "id": "EVT-001",
+  "level": "Events",
+  "description": "subscribe answers an emulator connect handover; the bus sends events, one twice and one under an older profile: each is yielded once, resolved.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "bus": [
+      {
+        "after": "connected",
+        "send": [
+          {
+            "id": "tick-1",
+            "source": "conformance",
+            "type": "com.jhg.fiquant.conformance.tick.v1",
+            "time": {
+              "$now_plus_iso": 0
+            },
+            "dataschema": "urn:atlas:profile:conformance.tick@v1:61948f2a0e7d7132",
+            "datacontenttype": "application/json",
+            "specversion": "1.0",
+            "subject": "ticker",
+            "data": {
+              "seq": 1,
+              "n": 10
+            }
+          },
+          {
+            "id": "tick-2",
+            "source": "conformance",
+            "type": "com.jhg.fiquant.conformance.tick.v1",
+            "time": {
+              "$now_plus_iso": 0
+            },
+            "dataschema": "urn:atlas:profile:conformance.tick@v1:61948f2a0e7d7132",
+            "datacontenttype": "application/json",
+            "specversion": "1.0",
+            "subject": "ticker",
+            "data": {
+              "seq": 2,
+              "n": 20
+            }
+          },
+          {
+            "id": "tick-2",
+            "source": "conformance",
+            "type": "com.jhg.fiquant.conformance.tick.v1",
+            "time": {
+              "$now_plus_iso": 0
+            },
+            "dataschema": "urn:atlas:profile:conformance.tick@v1:61948f2a0e7d7132",
+            "datacontenttype": "application/json",
+            "specversion": "1.0",
+            "subject": "ticker",
+            "data": {
+              "seq": 2,
+              "n": 20
+            }
+          },
+          {
+            "id": "tick-3",
+            "source": "conformance",
+            "type": "com.jhg.fiquant.conformance.tick.v1",
+            "time": {
+              "$now_plus_iso": 0
+            },
+            "dataschema": "urn:atlas:profile:conformance.tick@v1:1acba4963d7b5097",
+            "datacontenttype": "application/json",
+            "specversion": "1.0",
+            "subject": "ticker",
+            "data": {
+              "seq": 3,
+              "count": 30
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "subscribe.open",
+      "args": {
+        "id": "conformance.tick@v1"
+      }
+    },
+    {
+      "id": 3,
+      "op": "subscribe.next",
+      "args": {
+        "subscription": 2
+      }
+    },
+    {
+      "id": 4,
+      "op": "subscribe.next",
+      "args": {
+        "subscription": 2
+      }
+    },
+    {
+      "id": 5,
+      "op": "subscribe.next",
+      "args": {
+        "subscription": 2
+      }
+    },
+    {
+      "id": 6,
+      "op": "subscribe.next",
+      "args": {
+        "subscription": 2,
+        "timeout_ms": 1500
+      }
+    },
+    {
+      "id": 7,
+      "op": "subscribe.close",
+      "args": {
+        "subscription": 2
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true
+    },
+    {
+      "id": 3,
+      "ok": true,
+      "value_contains": {
+        "data": {
+          "seq": 1,
+          "n": 10
+        }
+      }
+    },
+    {
+      "id": 4,
+      "ok": true,
+      "value_contains": {
+        "data": {
+          "seq": 2,
+          "n": 20
+        }
+      }
+    },
+    {
+      "id": 5,
+      "ok": true,
+      "value_contains": {
+        "data": {
+          "seq": 3,
+          "n": 30
+        }
+      }
+    },
+    {
+      "id": 6,
+      "ok": true,
+      "value": {
+        "none": true
+      }
+    },
+    {
+      "id": 7,
+      "ok": true
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.tick@v1:subscribe"
+      },
+      "equals": 1
+    }
+  ],
+  "note": "The client resolves tick-3 from #A (count) to #B (n) by #B's lens; tick-2's second delivery is dropped by id. subscribe.next with a timeout answers {\"none\": true} when nothing arrives.",
+  "questions": [
+    "Q-RUN-7"
+  ]
+}

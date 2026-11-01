@@ -1,0 +1,2158 @@
+{
+  "description": "snowflake-arrow/1, synthetic (§9.8.2): result chunks written by tools/spec with pyarrow in the encoding ASSUMED until chunks are captured from Development (QUESTIONS.md, Q-SNOW-1): each chunk a complete Arrow IPC stream whose fields carry logicalType, precision and scale; FIXED with p <= 18 as the narrowest integer holding value x 10^s, p > 18 as Decimal128; REAL, TEXT, BOOLEAN, DATE as Float64, Utf8, Bool, Date32; TIMESTAMP_NTZ/LTZ as Int64 x 10^scale up to scale 7, else Struct{epoch, fraction}; TIMESTAMP_TZ as Struct{epoch scaled, timezone} up to scale 3, else Struct{epoch, fraction, timezone}, timezone being the offset in minutes + 1440. Each case gives the writer profile (its result schema and derived Arrow schema, §9.2.7), the source schema, the chunk files with their SHA-256, the handoff document that names them (first_chunk inline; links under https://results.conformance.test/, which the conformance gateway serves from its own storage), and the expected Atlas batches: one per chunk, as JSON rows (decimals as strings with exactly s digits, timestamps RFC 3339 UTC with six digits) and as an Arrow IPC stream. A chunk that does not decode into the writer's schema is invalid_document.",
+  "format": "snowflake-arrow/1",
+  "cases": [
+    {
+      "name": "every-type",
+      "note": "One chunk holding every type of the assumed encoding: FIXED as narrow integers, as Decimal128 (p > 18) and into a float column; REAL, TEXT, BOOLEAN, DATE; timestamps as scaled integers and as structs, with offsets; nulls; and instants before the epoch, truncated to the microsecond below.",
+      "writer": "conformance.handoff@v1#f06c3819d34aadf7",
+      "result_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "description": "The rows.",
+        "items": {
+          "type": "object",
+          "description": "One row of every type.",
+          "required": [
+            "i"
+          ],
+          "properties": {
+            "i": {
+              "description": "The row's key.",
+              "type": "integer",
+              "x-atlas-unit": "count",
+              "x-atlas-key": true
+            },
+            "amount": {
+              "description": "An exact amount.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-atlas-logical": "Decimal(18,6)"
+            },
+            "notional": {
+              "description": "A wide exact amount.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "x-atlas-logical": "Decimal(38,6)"
+            },
+            "spread": {
+              "description": "A spread, as a float.",
+              "type": [
+                "number",
+                "null"
+              ],
+              "x-atlas-logical": "Bp"
+            },
+            "ratio": {
+              "description": "A ratio.",
+              "type": [
+                "number",
+                "null"
+              ],
+              "x-atlas-logical": "Fraction"
+            },
+            "label": {
+              "description": "A label.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "open": {
+              "description": "Whether it is open.",
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "day": {
+              "description": "A date.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date"
+            },
+            "at_ntz": {
+              "description": "TIMESTAMP_NTZ(6), converted to UTC in the SQL.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "at_ltz": {
+              "description": "TIMESTAMP_LTZ(3).",
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "at_tz": {
+              "description": "TIMESTAMP_TZ(3).",
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "at_ntz9": {
+              "description": "TIMESTAMP_NTZ(9).",
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "at_tz9": {
+              "description": "TIMESTAMP_TZ(9).",
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            }
+          }
+        }
+      },
+      "arrow_schema": {
+        "fields": [
+          {
+            "name": "i",
+            "nullable": false,
+            "type": {
+              "name": "int",
+              "bitWidth": 64,
+              "isSigned": true
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:key",
+                "value": "true"
+              },
+              {
+                "key": "atlas:unit",
+                "value": "\"count\""
+              }
+            ]
+          },
+          {
+            "name": "amount",
+            "nullable": true,
+            "type": {
+              "name": "decimal",
+              "precision": 18,
+              "scale": 6,
+              "bitWidth": 128
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Decimal(18,6)\""
+              }
+            ]
+          },
+          {
+            "name": "notional",
+            "nullable": true,
+            "type": {
+              "name": "decimal",
+              "precision": 38,
+              "scale": 6,
+              "bitWidth": 128
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Decimal(38,6)\""
+              }
+            ]
+          },
+          {
+            "name": "spread",
+            "nullable": true,
+            "type": {
+              "name": "floatingpoint",
+              "precision": "DOUBLE"
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Bp\""
+              }
+            ]
+          },
+          {
+            "name": "ratio",
+            "nullable": true,
+            "type": {
+              "name": "floatingpoint",
+              "precision": "DOUBLE"
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Fraction\""
+              }
+            ]
+          },
+          {
+            "name": "label",
+            "nullable": true,
+            "type": {
+              "name": "utf8"
+            },
+            "children": [],
+            "metadata": []
+          },
+          {
+            "name": "open",
+            "nullable": true,
+            "type": {
+              "name": "bool"
+            },
+            "children": [],
+            "metadata": []
+          },
+          {
+            "name": "day",
+            "nullable": true,
+            "type": {
+              "name": "date",
+              "unit": "DAY"
+            },
+            "children": [],
+            "metadata": []
+          },
+          {
+            "name": "at_ntz",
+            "nullable": true,
+            "type": {
+              "name": "timestamp",
+              "unit": "MICROSECOND",
+              "timezone": "UTC"
+            },
+            "children": [],
+            "metadata": []
+          },
+          {
+            "name": "at_ltz",
+            "nullable": true,
+            "type": {
+              "name": "timestamp",
+              "unit": "MICROSECOND",
+              "timezone": "UTC"
+            },
+            "children": [],
+            "metadata": []
+          },
+          {
+            "name": "at_tz",
+            "nullable": true,
+            "type": {
+              "name": "timestamp",
+              "unit": "MICROSECOND",
+              "timezone": "UTC"
+            },
+            "children": [],
+            "metadata": []
+          },
+          {
+            "name": "at_ntz9",
+            "nullable": true,
+            "type": {
+              "name": "timestamp",
+              "unit": "MICROSECOND",
+              "timezone": "UTC"
+            },
+            "children": [],
+            "metadata": []
+          },
+          {
+            "name": "at_tz9",
+            "nullable": true,
+            "type": {
+              "name": "timestamp",
+              "unit": "MICROSECOND",
+              "timezone": "UTC"
+            },
+            "children": [],
+            "metadata": []
+          }
+        ],
+        "metadata": [
+          {
+            "key": "atlas:profile",
+            "value": "conformance.handoff@v1#f06c3819d34aadf7"
+          },
+          {
+            "key": "atlas:protocol",
+            "value": "atlas/1.0"
+          }
+        ]
+      },
+      "source_schema": [
+        {
+          "name": "i",
+          "type": "FIXED",
+          "precision": 9,
+          "scale": 0,
+          "nullable": false
+        },
+        {
+          "name": "amount",
+          "type": "FIXED",
+          "precision": 18,
+          "scale": 6,
+          "nullable": true
+        },
+        {
+          "name": "notional",
+          "type": "FIXED",
+          "precision": 38,
+          "scale": 6,
+          "nullable": true
+        },
+        {
+          "name": "spread",
+          "type": "FIXED",
+          "precision": 9,
+          "scale": 4,
+          "nullable": true
+        },
+        {
+          "name": "ratio",
+          "type": "REAL",
+          "nullable": true
+        },
+        {
+          "name": "label",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "open",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "day",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "at_ntz",
+          "type": "TIMESTAMP_NTZ",
+          "scale": 6,
+          "nullable": true
+        },
+        {
+          "name": "at_ltz",
+          "type": "TIMESTAMP_LTZ",
+          "scale": 3,
+          "nullable": true
+        },
+        {
+          "name": "at_tz",
+          "type": "TIMESTAMP_TZ",
+          "scale": 3,
+          "nullable": true
+        },
+        {
+          "name": "at_ntz9",
+          "type": "TIMESTAMP_NTZ",
+          "scale": 9,
+          "nullable": true
+        },
+        {
+          "name": "at_tz9",
+          "type": "TIMESTAMP_TZ",
+          "scale": 9,
+          "nullable": true
+        }
+      ],
+      "chunks": [
+        {
+          "file": "every-type/chunk-0.arrows",
+          "rows": 4,
+          "bytes": 3888,
+          "sha256": "0181c068341b20d8fc66287d01bb37d07dfefce16ec997233fff3f36e3a97b94"
+        }
+      ],
+      "handoff": {
+        "profile": "conformance.handoff@v1#f06c3819d34aadf7",
+        "format": "snowflake-arrow/1",
+        "source_schema": [
+          {
+            "name": "i",
+            "type": "FIXED",
+            "precision": 9,
+            "scale": 0,
+            "nullable": false
+          },
+          {
+            "name": "amount",
+            "type": "FIXED",
+            "precision": 18,
+            "scale": 6,
+            "nullable": true
+          },
+          {
+            "name": "notional",
+            "type": "FIXED",
+            "precision": 38,
+            "scale": 6,
+            "nullable": true
+          },
+          {
+            "name": "spread",
+            "type": "FIXED",
+            "precision": 9,
+            "scale": 4,
+            "nullable": true
+          },
+          {
+            "name": "ratio",
+            "type": "REAL",
+            "nullable": true
+          },
+          {
+            "name": "label",
+            "type": "TEXT",
+            "nullable": true
+          },
+          {
+            "name": "open",
+            "type": "BOOLEAN",
+            "nullable": true
+          },
+          {
+            "name": "day",
+            "type": "DATE",
+            "nullable": true
+          },
+          {
+            "name": "at_ntz",
+            "type": "TIMESTAMP_NTZ",
+            "scale": 6,
+            "nullable": true
+          },
+          {
+            "name": "at_ltz",
+            "type": "TIMESTAMP_LTZ",
+            "scale": 3,
+            "nullable": true
+          },
+          {
+            "name": "at_tz",
+            "type": "TIMESTAMP_TZ",
+            "scale": 3,
+            "nullable": true
+          },
+          {
+            "name": "at_ntz9",
+            "type": "TIMESTAMP_NTZ",
+            "scale": 9,
+            "nullable": true
+          },
+          {
+            "name": "at_tz9",
+            "type": "TIMESTAMP_TZ",
+            "scale": 9,
+            "nullable": true
+          }
+        ],
+        "first_chunk": {
+          "rows": 4,
+          "data": "/////xgJAAAQAAAAAAAKAAwABgAFAAgACgAAAAABBAAMAAAACAAIAAAABAAIAAAABAAAAA0AAAAoCAAAWAcAAKAGAADsBQAAgAUAABwFAAC8BAAAXAQAAMgDAAA0AwAALAIAADQBAAAEAAAAHvj//wAAAQ0gAAAAhAAAAAgAAAAgAAAAAwAAAOAAAACoAAAAcAAAAAYAAABhdF90ejkAAAIAAAAoAAAABAAAANT3//8QAAAABAAAAAEAAAA5AAAABQAAAHNjYWxlAAAA9Pf//xwAAAAEAAAADAAAAFRJTUVTVEFNUF9UWgAAAAALAAAAbG9naWNhbFR5cGUAPPv//7D9//8AAAECEAAAABwAAAAEAAAAAAAAAAgAAAB0aW1lem9uZQAAAAAg+P//AAAAASAAAADk/f//AAABAhAAAAAcAAAABAAAAAAAAAAIAAAAZnJhY3Rpb24AAAAAVPj//wAAAAEgAAAAGP7//wAAAQIQAAAAGAAAAAQAAAAAAAAABQAAAGVwb2NoAAAAhPj//wAAAAFAAAAASvn//wAAAQ0cAAAAgAAAAAgAAAAcAAAAAgAAAKgAAABwAAAABwAAAGF0X250ejkAAgAAACgAAAAEAAAA/Pj//xAAAAAEAAAAAQAAADkAAAAFAAAAc2NhbGUAAAAc+f//HAAAAAQAAAANAAAAVElNRVNUQU1QX05UWgAAAAsAAABsb2dpY2FsVHlwZQBk/P//2P7//wAAAQIQAAAAHAAAAAQAAAAAAAAACAAAAGZyYWN0aW9uAAAAAEj5//8AAAABIAAAAAz///8AAAECEAAAABgAAAAEAAAAAAAAAAUAAABlcG9jaAAAAHj5//8AAAABQAAAAD76//8AAAENHAAAAIAAAAAIAAAAHAAAAAIAAAC4AAAAcAAAAAUAAABhdF90egAAAAIAAAAoAAAABAAAAPD5//8QAAAABAAAAAEAAAAzAAAABQAAAHNjYWxlAAAAEPr//xwAAAAEAAAADAAAAFRJTUVTVEFNUF9UWgAAAAALAAAAbG9naWNhbFR5cGUAWP3//8z///8AAAECEAAAABwAAAAEAAAAAAAAAAgAAAB0aW1lem9uZQAAAAA8+v//AAAAASAAAAAQABQACAAGAAcADAAAABAAEAAAAAAAAQIQAAAAGAAAAAQAAAAAAAAABQAAAGVwb2NoAAAAfPr//wAAAAFAAAAAQvv//wAAAQIUAAAAeAAAAAgAAAAUAAAAAAAAAAYAAABhdF9sdHoAAAIAAAAoAAAABAAAAOz6//8QAAAABAAAAAEAAAAzAAAABQAAAHNjYWxlAAAADPv//xwAAAAEAAAADQAAAFRJTUVTVEFNUF9MVFoAAAALAAAAbG9naWNhbFR5cGUADPv//wAAAAFAAAAA0vv//wAAAQIUAAAAeAAAAAgAAAAUAAAAAAAAAAYAAABhdF9udHoAAAIAAAAoAAAABAAAAHz7//8QAAAABAAAAAEAAAA2AAAABQAAAHNjYWxlAAAAnPv//xwAAAAEAAAADQAAAFRJTUVTVEFNUF9OVFoAAAALAAAAbG9naWNhbFR5cGUAnPv//wAAAAFAAAAAYvz//wAAAQgUAAAASAAAAAgAAAAQAAAAAAAAAAMAAABkYXkAAQAAAAQAAAAE/P//FAAAAAQAAAAEAAAAREFURQAAAAALAAAAbG9naWNhbFR5cGUA4v7//wAAAAC+/P//AAABBhQAAABMAAAACAAAABQAAAAAAAAABAAAAG9wZW4AAAAAAQAAAAQAAABk/P//FAAAAAQAAAAHAAAAQk9PTEVBTgALAAAAbG9naWNhbFR5cGUApP///xr9//8AAAEFFAAAAFAAAAAIAAAAFAAAAAAAAAAFAAAAbGFiZWwAAAABAAAABAAAAMD8//8UAAAABAAAAAQAAABURVhUAAAAAAsAAABsb2dpY2FsVHlwZQAEAAQABAAAAHr9//8AAAEDFAAAAFQAAAAIAAAAFAAAAAAAAAAFAAAAcmF0aW8AAAABAAAABAAAACD9//8UAAAABAAAAAQAAABSRUFMAAAAAAsAAABsb2dpY2FsVHlwZQAAAAYACAAGAAYAAAAAAAIA4v3//wAAAQIUAAAAmAAAAAgAAAAUAAAAAAAAAAYAAABzcHJlYWQAAAMAAABQAAAAKAAAAAQAAACQ/f//EAAAAAQAAAABAAAANAAAAAUAAABzY2FsZQAAALD9//8QAAAABAAAAAEAAAA5AAAACQAAAHByZWNpc2lvbgAAANT9//8UAAAABAAAAAUAAABGSVhFRAAAAAsAAABsb2dpY2FsVHlwZQDM/f//AAAAASAAAACS/v//AAABBxQAAACcAAAACAAAABgAAAAAAAAACAAAAG5vdGlvbmFsAAAAAAMAAABQAAAAKAAAAAQAAABE/v//EAAAAAQAAAABAAAANgAAAAUAAABzY2FsZQAAAGT+//8QAAAABAAAAAIAAAAzOAAACQAAAHByZWNpc2lvbgAAAIj+//8UAAAABAAAAAUAAABGSVhFRAAAAAsAAABsb2dpY2FsVHlwZQCw/v//JgAAAAYAAABG////AAABAhQAAACgAAAACAAAABQAAAAAAAAABgAAAGFtb3VudAAAAwAAAFAAAAAoAAAABAAAAPT+//8QAAAABAAAAAEAAAA2AAAABQAAAHNjYWxlAAAAFP///xAAAAAEAAAAAgAAADE4AAAJAAAAcHJlY2lzaW9uAAAAOP///xQAAAAEAAAABQAAAEZJWEVEAAAACwAAAGxvZ2ljYWxUeXBlAAgADgAIAAcACAAAAAAAAAEgAAAAAAASABgACAAGAAcADAAAABAAFAASAAAAAAABAhQAAACkAAAACAAAABAAAAAAAAAAAQAAAGkAAAADAAAAWAAAACgAAAAEAAAAvP///xAAAAAEAAAAAQAAADAAAAAFAAAAc2NhbGUAAADc////EAAAAAQAAAABAAAAOQAAAAkAAABwcmVjaXNpb24AAAAIAAwABAAIAAgAAAAUAAAABAAAAAUAAABGSVhFRAAAAAsAAABsb2dpY2FsVHlwZQAIAAwACAAHAAgAAAAAAAABCAAAAAAAAAD/////+AMAABQAAAAAAAAADAAWAAYABQAIAAwADAAAAAADBAAYAAAACAIAAAAAAAAAAAoAGAAMAAQACAAKAAAAfAIAABAAAAAEAAAAAAAAAAAAAAAmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAIAAAAAAAAAAEAAAAAAAAAEAAAAAAAAAAQAAAAAAAAACAAAAAAAAAAAQAAAAAAAAAoAAAAAAAAAEAAAAAAAAAAaAAAAAAAAAABAAAAAAAAAHAAAAAAAAAAEAAAAAAAAACAAAAAAAAAAAEAAAAAAAAAiAAAAAAAAAAgAAAAAAAAAKgAAAAAAAAAAQAAAAAAAACwAAAAAAAAABQAAAAAAAAAyAAAAAAAAAAKAAAAAAAAANgAAAAAAAAAAQAAAAAAAADgAAAAAAAAAAEAAAAAAAAA6AAAAAAAAAABAAAAAAAAAPAAAAAAAAAAEAAAAAAAAAAAAQAAAAAAAAEAAAAAAAAACAEAAAAAAAAgAAAAAAAAACgBAAAAAAAAAQAAAAAAAAAwAQAAAAAAACAAAAAAAAAAUAEAAAAAAAABAAAAAAAAAFgBAAAAAAAAAAAAAAAAAABYAQAAAAAAACAAAAAAAAAAeAEAAAAAAAAAAAAAAAAAAHgBAAAAAAAAEAAAAAAAAACIAQAAAAAAAAEAAAAAAAAAkAEAAAAAAAAAAAAAAAAAAJABAAAAAAAAIAAAAAAAAACwAQAAAAAAAAAAAAAAAAAAsAEAAAAAAAAQAAAAAAAAAMABAAAAAAAAAQAAAAAAAADIAQAAAAAAAAAAAAAAAAAAyAEAAAAAAAAgAAAAAAAAAOgBAAAAAAAAAAAAAAAAAADoAQAAAAAAABAAAAAAAAAA+AEAAAAAAAAAAAAAAAAAAPgBAAAAAAAAEAAAAAAAAAAAAAAAFAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAEAAAAAAAAABAAAAAAAAAABAAAAAAAAAAQAAAAAAAAAAQAAAAAAAAAEAAAAAAAAAAEAAAAAAAAABAAAAAAAAAABAAAAAAAAAAQAAAAAAAAAAQAAAAAAAAAEAAAAAAAAAAEAAAAAAAAABAAAAAAAAAABAAAAAAAAAAQAAAAAAAAAAQAAAAAAAAAEAAAAAAAAAAEAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAEAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAEAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAECAwAAAAALAAAAAAAAAKAdiUr/////AAAAAAAAAAALAAAAAAAAAMC63GqqfiKYTDYKAAAAAADAvfD/////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALAAAAAAAAAIfWEgD/////AAAAAAAAAAALAAAAAAAAALgehetRuI4/AAAAAAAABMAAAAAAAAAAAAAAAAAAAAAACwAAAAAAAAAAAAAABwAAAAcAAAAHAAAACgAAAAAAAABaw7xyaWNoYQliAAAAAAAACwAAAAAAAAAJAAAAAAAAAAsAAAAAAAAAFFEAAP////8AAAAACCsAAAsAAAAAAAAAAEEXPg9fBgD//////////wAAAAAAAAAAAADbG6RhAwALAAAAAAAAADM7Ho2hAQAA//////////8AAAAAAAAAAADgpprdAAAACwAAAAAAAAAzOx6NoQEAAP//////////AAAAAAAAAAAA4Kaa3QAAAOoGAABkBQAAAAAAAKAFAAALAAAAAAAAAGOj5GoAAAAA//////////8AAAAAAAAAAAAMuzgAAAAAFc1bBwzImjsAAAAAAAAAAAsAAAAAAAAAY6PkagAAAAD//////////wAAAAAAAAAAAAy7OAAAAAAVzVsHDMiaOwAAAAAAAAAAwAMAAOgIAAAAAAAAoAUAAP////8AAAAA"
+        },
+        "chunks": [],
+        "rows": 4,
+        "expires": "2026-11-01T12:00:00Z",
+        "operation": "operations/handoff-every-type"
+      },
+      "question": "Q-SNOW-2",
+      "expected": {
+        "batches": [
+          {
+            "rows": [
+              {
+                "i": 0,
+                "amount": "1250.500000",
+                "notional": "12345678901234567890.123456",
+                "spread": 123.4567,
+                "ratio": 0.015,
+                "label": "Zürich",
+                "open": true,
+                "day": "2026-10-30",
+                "at_ntz": "2026-10-30T14:02:11.123456Z",
+                "at_ltz": "2026-10-30T14:02:11.123000Z",
+                "at_tz": "2026-10-30T14:02:11.123000Z",
+                "at_ntz9": "2026-10-30T14:02:11.123456Z",
+                "at_tz9": "2026-10-30T14:02:11.123456Z"
+              },
+              {
+                "i": 1,
+                "amount": "-0.000001",
+                "notional": "-1.000000",
+                "spread": -0.0001,
+                "ratio": -2.5,
+                "label": "",
+                "open": false,
+                "day": "1969-12-31",
+                "at_ntz": "1969-12-31T23:59:59.999999Z",
+                "at_ltz": "1969-12-31T23:59:59.999000Z",
+                "at_tz": "1969-12-31T23:59:59.999000Z",
+                "at_ntz9": "1969-12-31T23:59:59.999999Z",
+                "at_tz9": "1969-12-31T23:59:59.999999Z"
+              },
+              {
+                "i": 2,
+                "amount": null,
+                "notional": null,
+                "spread": null,
+                "ratio": null,
+                "label": null,
+                "open": null,
+                "day": null,
+                "at_ntz": null,
+                "at_ltz": null,
+                "at_tz": null,
+                "at_ntz9": null,
+                "at_tz9": null
+              },
+              {
+                "i": 3,
+                "amount": "0.000000",
+                "notional": "0.000000",
+                "spread": 0.0,
+                "ratio": 0.0,
+                "label": "a\tb",
+                "open": true,
+                "day": "2000-02-29",
+                "at_ntz": "2000-02-29T00:00:00.000000Z",
+                "at_ltz": "2000-02-29T00:00:00.000000Z",
+                "at_tz": "2000-02-29T00:00:00.000000Z",
+                "at_ntz9": "2000-02-29T00:00:00.000000Z",
+                "at_tz9": "2000-02-29T00:00:00.000000Z"
+              }
+            ]
+          }
+        ],
+        "file": "every-type/expected.arrows"
+      }
+    },
+    {
+      "name": "widths-change",
+      "note": "Three chunks of one result whose integers are encoded narrower or wider chunk by chunk (Int8, Int16, Int32, Int64): every batch decodes to the same Int64 and Decimal128 schema.",
+      "writer": "conformance.handoff@v1#989d23ce5bee527f",
+      "result_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "description": "The rows.",
+        "items": {
+          "type": "object",
+          "description": "Integers whose encoded width changes from chunk to chunk.",
+          "required": [
+            "i",
+            "price"
+          ],
+          "properties": {
+            "i": {
+              "description": "The key.",
+              "type": "integer",
+              "x-atlas-unit": "count",
+              "x-atlas-key": true
+            },
+            "price": {
+              "description": "A price.",
+              "type": "string",
+              "x-atlas-logical": "Decimal(10,2)"
+            }
+          }
+        }
+      },
+      "arrow_schema": {
+        "fields": [
+          {
+            "name": "i",
+            "nullable": false,
+            "type": {
+              "name": "int",
+              "bitWidth": 64,
+              "isSigned": true
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:key",
+                "value": "true"
+              },
+              {
+                "key": "atlas:unit",
+                "value": "\"count\""
+              }
+            ]
+          },
+          {
+            "name": "price",
+            "nullable": false,
+            "type": {
+              "name": "decimal",
+              "precision": 10,
+              "scale": 2,
+              "bitWidth": 128
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Decimal(10,2)\""
+              }
+            ]
+          }
+        ],
+        "metadata": [
+          {
+            "key": "atlas:profile",
+            "value": "conformance.handoff@v1#989d23ce5bee527f"
+          },
+          {
+            "key": "atlas:protocol",
+            "value": "atlas/1.0"
+          }
+        ]
+      },
+      "source_schema": [
+        {
+          "name": "i",
+          "type": "FIXED",
+          "precision": 18,
+          "scale": 0,
+          "nullable": false
+        },
+        {
+          "name": "price",
+          "type": "FIXED",
+          "precision": 10,
+          "scale": 2,
+          "nullable": false
+        }
+      ],
+      "chunks": [
+        {
+          "file": "widths-change/chunk-0.arrows",
+          "rows": 2,
+          "bytes": 672,
+          "sha256": "c8e68739cd9ef73b19e6e10030503918bf2471828b68e881499b66faac6b9a03"
+        },
+        {
+          "file": "widths-change/chunk-1.arrows",
+          "rows": 2,
+          "bytes": 672,
+          "sha256": "feaa012acbdc4034dbee37bad16a3d2af69263ec0d6fca9c8cf4a9b2029a928a"
+        },
+        {
+          "file": "widths-change/chunk-2.arrows",
+          "rows": 1,
+          "bytes": 672,
+          "sha256": "758d2300d120384c45c7724e682033049081e948803814168461239678b3517b"
+        }
+      ],
+      "handoff": {
+        "profile": "conformance.handoff@v1#989d23ce5bee527f",
+        "format": "snowflake-arrow/1",
+        "source_schema": [
+          {
+            "name": "i",
+            "type": "FIXED",
+            "precision": 18,
+            "scale": 0,
+            "nullable": false
+          },
+          {
+            "name": "price",
+            "type": "FIXED",
+            "precision": 10,
+            "scale": 2,
+            "nullable": false
+          }
+        ],
+        "first_chunk": {
+          "rows": 2,
+          "data": "/////8ABAAAQAAAAAAAKAAwABgAFAAgACgAAAAABBAAMAAAACAAIAAAABAAIAAAABAAAAAIAAADUAAAABAAAAEb///8AAAECFAAAAKAAAAAIAAAAFAAAAAAAAAAFAAAAcHJpY2UAAAADAAAAUAAAACgAAAAEAAAA9P7//xAAAAAEAAAAAQAAADIAAAAFAAAAc2NhbGUAAAAU////EAAAAAQAAAACAAAAMTAAAAkAAABwcmVjaXNpb24AAAA4////FAAAAAQAAAAFAAAARklYRUQAAAALAAAAbG9naWNhbFR5cGUACAAOAAgABwAIAAAAAAAAAQgAAAAAABIAGAAIAAYABwAMAAAAEAAUABIAAAAAAAECFAAAAKQAAAAIAAAAEAAAAAAAAAABAAAAaQAAAAMAAABYAAAAKAAAAAQAAAC8////EAAAAAQAAAABAAAAMAAAAAUAAABzY2FsZQAAANz///8QAAAABAAAAAIAAAAxOAAACQAAAHByZWNpc2lvbgAAAAgADAAEAAgACAAAABQAAAAEAAAABQAAAEZJWEVEAAAACwAAAGxvZ2ljYWxUeXBlAAgADAAIAAcACAAAAAAAAAEIAAAA/////7gAAAAUAAAAAAAAAAwAFgAGAAUACAAMAAwAAAAAAwQAGAAAABAAAAAAAAAAAAAKABgADAAEAAgACgAAAFwAAAAQAAAAAgAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAgAAAAAAAAAAAAAAAgAAAAIAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAQIAAAAAAAB9gAAAAAAAAP////8AAAAA"
+        },
+        "chunks": [
+          {
+            "url": "https://results.conformance.test/synthetic/widths-change/chunk-1.arrows",
+            "rows": 2,
+            "bytes": 672,
+            "headers": {
+              "x-ms-encryption-key-sha256": "b3cc0475bb78a5026098858e9889acf666d31062d513d303314eca31d36e72f2"
+            }
+          },
+          {
+            "url": "https://results.conformance.test/synthetic/widths-change/chunk-2.arrows",
+            "rows": 1,
+            "bytes": 672,
+            "headers": {
+              "x-ms-encryption-key-sha256": "b3cc0475bb78a5026098858e9889acf666d31062d513d303314eca31d36e72f2"
+            }
+          }
+        ],
+        "rows": 5,
+        "expires": "2026-11-01T12:00:00Z",
+        "operation": "operations/handoff-widths-change"
+      },
+      "expected": {
+        "batches": [
+          {
+            "rows": [
+              {
+                "i": 1,
+                "price": "1.25"
+              },
+              {
+                "i": 2,
+                "price": "-1.28"
+              }
+            ]
+          },
+          {
+            "rows": [
+              {
+                "i": 300,
+                "price": "327.67"
+              },
+              {
+                "i": -40000,
+                "price": "0.01"
+              }
+            ]
+          },
+          {
+            "rows": [
+              {
+                "i": 9007199254740991,
+                "price": "99999999.99"
+              }
+            ]
+          }
+        ],
+        "file": "widths-change/expected.arrows"
+      }
+    },
+    {
+      "name": "timestamp-scales",
+      "note": "Timestamps at scale 0 and 7 (scaled Int64) and a TIMESTAMP_TZ(6) struct with its fraction, its offset dropped for UTC.",
+      "writer": "conformance.handoff@v1#7eb5f96990408739",
+      "result_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "description": "The rows.",
+        "items": {
+          "type": "object",
+          "description": "Timestamp scales at the encoding's edges.",
+          "required": [
+            "i"
+          ],
+          "properties": {
+            "i": {
+              "description": "The key.",
+              "type": "integer",
+              "x-atlas-unit": "count",
+              "x-atlas-key": true
+            },
+            "s0": {
+              "description": "Seconds.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "s7": {
+              "description": "100 ns, truncated to microseconds.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "tz6": {
+              "description": "TIMESTAMP_TZ(6): a struct with its fraction.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            }
+          }
+        }
+      },
+      "arrow_schema": {
+        "fields": [
+          {
+            "name": "i",
+            "nullable": false,
+            "type": {
+              "name": "int",
+              "bitWidth": 64,
+              "isSigned": true
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:key",
+                "value": "true"
+              },
+              {
+                "key": "atlas:unit",
+                "value": "\"count\""
+              }
+            ]
+          },
+          {
+            "name": "s0",
+            "nullable": true,
+            "type": {
+              "name": "timestamp",
+              "unit": "MICROSECOND",
+              "timezone": "UTC"
+            },
+            "children": [],
+            "metadata": []
+          },
+          {
+            "name": "s7",
+            "nullable": true,
+            "type": {
+              "name": "timestamp",
+              "unit": "MICROSECOND",
+              "timezone": "UTC"
+            },
+            "children": [],
+            "metadata": []
+          },
+          {
+            "name": "tz6",
+            "nullable": true,
+            "type": {
+              "name": "timestamp",
+              "unit": "MICROSECOND",
+              "timezone": "UTC"
+            },
+            "children": [],
+            "metadata": []
+          }
+        ],
+        "metadata": [
+          {
+            "key": "atlas:profile",
+            "value": "conformance.handoff@v1#7eb5f96990408739"
+          },
+          {
+            "key": "atlas:protocol",
+            "value": "atlas/1.0"
+          }
+        ]
+      },
+      "source_schema": [
+        {
+          "name": "i",
+          "type": "FIXED",
+          "precision": 4,
+          "scale": 0,
+          "nullable": false
+        },
+        {
+          "name": "s0",
+          "type": "TIMESTAMP_NTZ",
+          "scale": 0,
+          "nullable": true
+        },
+        {
+          "name": "s7",
+          "type": "TIMESTAMP_NTZ",
+          "scale": 7,
+          "nullable": true
+        },
+        {
+          "name": "tz6",
+          "type": "TIMESTAMP_TZ",
+          "scale": 6,
+          "nullable": true
+        }
+      ],
+      "chunks": [
+        {
+          "file": "timestamp-scales/chunk-0.arrows",
+          "rows": 2,
+          "bytes": 1384,
+          "sha256": "c669f14d0a472be0e2f4f5b874bb83de524b2a63f98b5c2167c061292fbdf967"
+        }
+      ],
+      "handoff": {
+        "profile": "conformance.handoff@v1#7eb5f96990408739",
+        "format": "snowflake-arrow/1",
+        "source_schema": [
+          {
+            "name": "i",
+            "type": "FIXED",
+            "precision": 4,
+            "scale": 0,
+            "nullable": false
+          },
+          {
+            "name": "s0",
+            "type": "TIMESTAMP_NTZ",
+            "scale": 0,
+            "nullable": true
+          },
+          {
+            "name": "s7",
+            "type": "TIMESTAMP_NTZ",
+            "scale": 7,
+            "nullable": true
+          },
+          {
+            "name": "tz6",
+            "type": "TIMESTAMP_TZ",
+            "scale": 6,
+            "nullable": true
+          }
+        ],
+        "first_chunk": {
+          "rows": 2,
+          "data": "/////3ADAAAQAAAAAAAKAAwABgAFAAgACgAAAAABBAAMAAAACAAIAAAABAAIAAAABAAAAAQAAACAAgAA1AEAAEQBAAAEAAAAov3//wAAAQ0gAAAAhAAAAAgAAAAcAAAAAwAAAPAAAACoAAAAcAAAAAMAAAB0ejYAAgAAACgAAAAEAAAAVP3//xAAAAAEAAAAAQAAADYAAAAFAAAAc2NhbGUAAAB0/f//HAAAAAQAAAAMAAAAVElNRVNUQU1QX1RaAAAAAAsAAABsb2dpY2FsVHlwZQAEAAQABAAAAJj///8AAAECEAAAABwAAAAEAAAAAAAAAAgAAAB0aW1lem9uZQAAAACk/f//AAAAASAAAADM////AAABAhAAAAAcAAAABAAAAAAAAAAIAAAAZnJhY3Rpb24AAAAA2P3//wAAAAEgAAAAEAAUAAgABgAHAAwAAAAQABAAAAAAAAECEAAAABgAAAAEAAAAAAAAAAUAAABlcG9jaAAAABj+//8AAAABQAAAAN7+//8AAAECFAAAAHQAAAAIAAAAEAAAAAAAAAACAAAAczcAAAIAAAAoAAAABAAAAIT+//8QAAAABAAAAAEAAAA3AAAABQAAAHNjYWxlAAAApP7//xwAAAAEAAAADQAAAFRJTUVTVEFNUF9OVFoAAAALAAAAbG9naWNhbFR5cGUApP7//wAAAAFAAAAAav///wAAAQIUAAAAfAAAAAgAAAAQAAAAAAAAAAIAAABzMAAAAgAAACgAAAAEAAAAEP///xAAAAAEAAAAAQAAADAAAAAFAAAAc2NhbGUAAAAw////HAAAAAQAAAANAAAAVElNRVNUQU1QX05UWgAAAAsAAABsb2dpY2FsVHlwZQAIAA4ACAAHAAgAAAAAAAABQAAAAAAAEgAYAAgABgAHAAwAAAAQABQAEgAAAAAAAQIUAAAApAAAAAgAAAAQAAAAAAAAAAEAAABpAAAAAwAAAFgAAAAoAAAABAAAALz///8QAAAABAAAAAEAAAAwAAAABQAAAHNjYWxlAAAA3P///xAAAAAEAAAAAQAAADQAAAAJAAAAcHJlY2lzaW9uAAAACAAMAAQACAAIAAAAFAAAAAQAAAAFAAAARklYRUQAAAALAAAAbG9naWNhbFR5cGUACAAMAAgABwAIAAAAAAAAAQgAAAAAAAAA/////5gBAAAUAAAAAAAAAAwAFgAGAAUACAAMAAwAAAAAAwQAGAAAAEgAAAAAAAAAAAAKABgADAAEAAgACgAAAOwAAAAQAAAAAgAAAAAAAAAAAAAADQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAEAAAAAAAAAAYAAAAAAAAAAAAAAAAAAAAGAAAAAAAAAAQAAAAAAAAACgAAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAAAAAAAKAAAAAAAAAAQAAAAAAAAADgAAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAACAAAAAAAAAAAAAAABwAAAAIAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAABAgAAAAAAAGOj5GoAAAAA////////////SW5tmLY/AP//////////u/DkagAAAAD//////////+gDAAAYxpo76gYAANACAAD/////AAAAAA=="
+        },
+        "chunks": [],
+        "rows": 2,
+        "expires": "2026-11-01T12:00:00Z",
+        "operation": "operations/handoff-timestamp-scales"
+      },
+      "question": "Q-SNOW-3",
+      "expected": {
+        "batches": [
+          {
+            "rows": [
+              {
+                "i": 1,
+                "s0": "2026-10-30T14:02:11.000000Z",
+                "s7": "2026-10-30T14:02:11.999999Z",
+                "tz6": "2026-10-30T19:32:11.000001Z"
+              },
+              {
+                "i": 2,
+                "s0": "1969-12-31T23:59:59.000000Z",
+                "s7": "1969-12-31T23:59:59.999999Z",
+                "tz6": "1969-12-31T23:59:59.999999Z"
+              }
+            ]
+          }
+        ],
+        "file": "timestamp-scales/expected.arrows"
+      }
+    },
+    {
+      "name": "mismatch-type",
+      "note": "A TEXT column where the writer profile has an integer.",
+      "writer": "conformance.handoff@v1#989d23ce5bee527f",
+      "result_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "description": "The rows.",
+        "items": {
+          "type": "object",
+          "description": "Integers whose encoded width changes from chunk to chunk.",
+          "required": [
+            "i",
+            "price"
+          ],
+          "properties": {
+            "i": {
+              "description": "The key.",
+              "type": "integer",
+              "x-atlas-unit": "count",
+              "x-atlas-key": true
+            },
+            "price": {
+              "description": "A price.",
+              "type": "string",
+              "x-atlas-logical": "Decimal(10,2)"
+            }
+          }
+        }
+      },
+      "arrow_schema": {
+        "fields": [
+          {
+            "name": "i",
+            "nullable": false,
+            "type": {
+              "name": "int",
+              "bitWidth": 64,
+              "isSigned": true
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:key",
+                "value": "true"
+              },
+              {
+                "key": "atlas:unit",
+                "value": "\"count\""
+              }
+            ]
+          },
+          {
+            "name": "price",
+            "nullable": false,
+            "type": {
+              "name": "decimal",
+              "precision": 10,
+              "scale": 2,
+              "bitWidth": 128
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Decimal(10,2)\""
+              }
+            ]
+          }
+        ],
+        "metadata": [
+          {
+            "key": "atlas:profile",
+            "value": "conformance.handoff@v1#989d23ce5bee527f"
+          },
+          {
+            "key": "atlas:protocol",
+            "value": "atlas/1.0"
+          }
+        ]
+      },
+      "source_schema": [
+        {
+          "name": "i",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "price",
+          "type": "FIXED",
+          "precision": 10,
+          "scale": 2,
+          "nullable": false
+        }
+      ],
+      "chunks": [
+        {
+          "file": "mismatch-type/chunk-0.arrows",
+          "rows": 1,
+          "bytes": 608,
+          "sha256": "1078c136f6358e28a3a22ff0318391cf46b70159daec7a6cd8ffa9f34cafe22c"
+        }
+      ],
+      "handoff": {
+        "profile": "conformance.handoff@v1#989d23ce5bee527f",
+        "format": "snowflake-arrow/1",
+        "source_schema": [
+          {
+            "name": "i",
+            "type": "TEXT",
+            "nullable": false
+          },
+          {
+            "name": "price",
+            "type": "FIXED",
+            "precision": 10,
+            "scale": 2,
+            "nullable": false
+          }
+        ],
+        "first_chunk": {
+          "rows": 1,
+          "data": "/////2gBAAAQAAAAAAAKAAwABgAFAAgACgAAAAABBAAMAAAACAAIAAAABAAIAAAABAAAAAIAAADUAAAABAAAAEb///8AAAECFAAAAKAAAAAIAAAAFAAAAAAAAAAFAAAAcHJpY2UAAAADAAAAUAAAACgAAAAEAAAAQP///xAAAAAEAAAAAQAAADIAAAAFAAAAc2NhbGUAAABg////EAAAAAQAAAACAAAAMTAAAAkAAABwcmVjaXNpb24AAACE////FAAAAAQAAAAFAAAARklYRUQAAAALAAAAbG9naWNhbFR5cGUACAAOAAgABwAIAAAAAAAAAQgAAAAAABIAGAAIAAYABwAMAAAAEAAUABIAAAAAAAEFFAAAAFQAAAAIAAAAEAAAAAAAAAABAAAAaQAAAAEAAAAMAAAACAAMAAQACAAIAAAAFAAAAAQAAAAEAAAAVEVYVAAAAAALAAAAbG9naWNhbFR5cGUABAAEAAQAAAD/////yAAAABQAAAAAAAAADAAWAAYABQAIAAwADAAAAAADBAAYAAAAGAAAAAAAAAAAAAoAGAAMAAQACAAKAAAAbAAAABAAAAABAAAAAAAAAAAAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAIAAAAAAAAAAEAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAQAAAAAAAAAAAAAAAgAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAxAAAAAAAAAGQAAAAAAAAA/////wAAAAA="
+        },
+        "chunks": [],
+        "rows": 1,
+        "expires": "2026-11-01T12:00:00Z",
+        "operation": "operations/handoff-mismatch-type"
+      },
+      "problem": {
+        "code": "invalid_document"
+      },
+      "why": "i: a TEXT column (string) does not decode to {'name': 'int', 'bitWidth': 64, 'isSigned': True}"
+    },
+    {
+      "name": "mismatch-name",
+      "note": "A column named otherwise than the writer profile names it.",
+      "writer": "conformance.handoff@v1#989d23ce5bee527f",
+      "result_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "description": "The rows.",
+        "items": {
+          "type": "object",
+          "description": "Integers whose encoded width changes from chunk to chunk.",
+          "required": [
+            "i",
+            "price"
+          ],
+          "properties": {
+            "i": {
+              "description": "The key.",
+              "type": "integer",
+              "x-atlas-unit": "count",
+              "x-atlas-key": true
+            },
+            "price": {
+              "description": "A price.",
+              "type": "string",
+              "x-atlas-logical": "Decimal(10,2)"
+            }
+          }
+        }
+      },
+      "arrow_schema": {
+        "fields": [
+          {
+            "name": "i",
+            "nullable": false,
+            "type": {
+              "name": "int",
+              "bitWidth": 64,
+              "isSigned": true
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:key",
+                "value": "true"
+              },
+              {
+                "key": "atlas:unit",
+                "value": "\"count\""
+              }
+            ]
+          },
+          {
+            "name": "price",
+            "nullable": false,
+            "type": {
+              "name": "decimal",
+              "precision": 10,
+              "scale": 2,
+              "bitWidth": 128
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Decimal(10,2)\""
+              }
+            ]
+          }
+        ],
+        "metadata": [
+          {
+            "key": "atlas:profile",
+            "value": "conformance.handoff@v1#989d23ce5bee527f"
+          },
+          {
+            "key": "atlas:protocol",
+            "value": "atlas/1.0"
+          }
+        ]
+      },
+      "source_schema": [
+        {
+          "name": "id",
+          "type": "FIXED",
+          "precision": 18,
+          "scale": 0,
+          "nullable": false
+        },
+        {
+          "name": "price",
+          "type": "FIXED",
+          "precision": 10,
+          "scale": 2,
+          "nullable": false
+        }
+      ],
+      "chunks": [
+        {
+          "file": "mismatch-name/chunk-0.arrows",
+          "rows": 1,
+          "bytes": 672,
+          "sha256": "1dafc0f5783566e1aa8337cc6d265b8948f9cdef566fc8c71686e880dde45aea"
+        }
+      ],
+      "handoff": {
+        "profile": "conformance.handoff@v1#989d23ce5bee527f",
+        "format": "snowflake-arrow/1",
+        "source_schema": [
+          {
+            "name": "id",
+            "type": "FIXED",
+            "precision": 18,
+            "scale": 0,
+            "nullable": false
+          },
+          {
+            "name": "price",
+            "type": "FIXED",
+            "precision": 10,
+            "scale": 2,
+            "nullable": false
+          }
+        ],
+        "first_chunk": {
+          "rows": 1,
+          "data": "/////8ABAAAQAAAAAAAKAAwABgAFAAgACgAAAAABBAAMAAAACAAIAAAABAAIAAAABAAAAAIAAADUAAAABAAAAEb///8AAAECFAAAAKAAAAAIAAAAFAAAAAAAAAAFAAAAcHJpY2UAAAADAAAAUAAAACgAAAAEAAAA9P7//xAAAAAEAAAAAQAAADIAAAAFAAAAc2NhbGUAAAAU////EAAAAAQAAAACAAAAMTAAAAkAAABwcmVjaXNpb24AAAA4////FAAAAAQAAAAFAAAARklYRUQAAAALAAAAbG9naWNhbFR5cGUACAAOAAgABwAIAAAAAAAAAQgAAAAAABIAGAAIAAYABwAMAAAAEAAUABIAAAAAAAECFAAAAKQAAAAIAAAAEAAAAAAAAAACAAAAaWQAAAMAAABYAAAAKAAAAAQAAAC8////EAAAAAQAAAABAAAAMAAAAAUAAABzY2FsZQAAANz///8QAAAABAAAAAIAAAAxOAAACQAAAHByZWNpc2lvbgAAAAgADAAEAAgACAAAABQAAAAEAAAABQAAAEZJWEVEAAAACwAAAGxvZ2ljYWxUeXBlAAgADAAIAAcACAAAAAAAAAEIAAAA/////7gAAAAUAAAAAAAAAAwAFgAGAAUACAAMAAwAAAAAAwQAGAAAABAAAAAAAAAAAAAKABgADAAEAAgACgAAAFwAAAAQAAAAAQAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAQAAAAAAAAAAAAAAAgAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAABkAAAAAAAAAP////8AAAAA"
+        },
+        "chunks": [],
+        "rows": 1,
+        "expires": "2026-11-01T12:00:00Z",
+        "operation": "operations/handoff-mismatch-name"
+      },
+      "problem": {
+        "code": "invalid_document"
+      },
+      "why": "columns ['id', 'price'], the writer profile has ['i', 'price']"
+    },
+    {
+      "name": "mismatch-missing-column",
+      "note": "A chunk missing a column.",
+      "writer": "conformance.handoff@v1#989d23ce5bee527f",
+      "result_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "description": "The rows.",
+        "items": {
+          "type": "object",
+          "description": "Integers whose encoded width changes from chunk to chunk.",
+          "required": [
+            "i",
+            "price"
+          ],
+          "properties": {
+            "i": {
+              "description": "The key.",
+              "type": "integer",
+              "x-atlas-unit": "count",
+              "x-atlas-key": true
+            },
+            "price": {
+              "description": "A price.",
+              "type": "string",
+              "x-atlas-logical": "Decimal(10,2)"
+            }
+          }
+        }
+      },
+      "arrow_schema": {
+        "fields": [
+          {
+            "name": "i",
+            "nullable": false,
+            "type": {
+              "name": "int",
+              "bitWidth": 64,
+              "isSigned": true
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:key",
+                "value": "true"
+              },
+              {
+                "key": "atlas:unit",
+                "value": "\"count\""
+              }
+            ]
+          },
+          {
+            "name": "price",
+            "nullable": false,
+            "type": {
+              "name": "decimal",
+              "precision": 10,
+              "scale": 2,
+              "bitWidth": 128
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Decimal(10,2)\""
+              }
+            ]
+          }
+        ],
+        "metadata": [
+          {
+            "key": "atlas:profile",
+            "value": "conformance.handoff@v1#989d23ce5bee527f"
+          },
+          {
+            "key": "atlas:protocol",
+            "value": "atlas/1.0"
+          }
+        ]
+      },
+      "source_schema": [
+        {
+          "name": "i",
+          "type": "FIXED",
+          "precision": 18,
+          "scale": 0,
+          "nullable": false
+        }
+      ],
+      "chunks": [
+        {
+          "file": "mismatch-missing-column/chunk-0.arrows",
+          "rows": 1,
+          "bytes": 432,
+          "sha256": "113c5af85b816d008d043b8fd28ce24def33dd7481e0889ff94cf9b100eacbdd"
+        }
+      ],
+      "handoff": {
+        "profile": "conformance.handoff@v1#989d23ce5bee527f",
+        "format": "snowflake-arrow/1",
+        "source_schema": [
+          {
+            "name": "i",
+            "type": "FIXED",
+            "precision": 18,
+            "scale": 0,
+            "nullable": false
+          }
+        ],
+        "first_chunk": {
+          "rows": 1,
+          "data": "/////wgBAAAQAAAAAAAKAAwABgAFAAgACgAAAAABBAAMAAAACAAIAAAABAAIAAAABAAAAAEAAAAYAAAAAAASABgACAAGAAcADAAAABAAFAASAAAAAAABAhQAAACkAAAACAAAABAAAAAAAAAAAQAAAGkAAAADAAAAWAAAACgAAAAEAAAAvP///xAAAAAEAAAAAQAAADAAAAAFAAAAc2NhbGUAAADc////EAAAAAQAAAACAAAAMTgAAAkAAABwcmVjaXNpb24AAAAIAAwABAAIAAgAAAAUAAAABAAAAAUAAABGSVhFRAAAAAsAAABsb2dpY2FsVHlwZQAIAAwACAAHAAgAAAAAAAABCAAAAAAAAAD/////iAAAABQAAAAAAAAADAAWAAYABQAIAAwADAAAAAADBAAYAAAACAAAAAAAAAAAAAoAGAAMAAQACAAKAAAAPAAAABAAAAABAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAP////8AAAAA"
+        },
+        "chunks": [],
+        "rows": 1,
+        "expires": "2026-11-01T12:00:00Z",
+        "operation": "operations/handoff-mismatch-missing-column"
+      },
+      "problem": {
+        "code": "invalid_document"
+      },
+      "why": "columns ['i'], the writer profile has ['i', 'price']"
+    },
+    {
+      "name": "mismatch-number-38-0",
+      "note": "NUMBER(38,0) where the writer profile has an integer: §2.2.1.6 maps NUMBER(p,0), p > 18, to Decimal(p,0), not to an integer.",
+      "writer": "conformance.handoff@v1#989d23ce5bee527f",
+      "result_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "description": "The rows.",
+        "items": {
+          "type": "object",
+          "description": "Integers whose encoded width changes from chunk to chunk.",
+          "required": [
+            "i",
+            "price"
+          ],
+          "properties": {
+            "i": {
+              "description": "The key.",
+              "type": "integer",
+              "x-atlas-unit": "count",
+              "x-atlas-key": true
+            },
+            "price": {
+              "description": "A price.",
+              "type": "string",
+              "x-atlas-logical": "Decimal(10,2)"
+            }
+          }
+        }
+      },
+      "arrow_schema": {
+        "fields": [
+          {
+            "name": "i",
+            "nullable": false,
+            "type": {
+              "name": "int",
+              "bitWidth": 64,
+              "isSigned": true
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:key",
+                "value": "true"
+              },
+              {
+                "key": "atlas:unit",
+                "value": "\"count\""
+              }
+            ]
+          },
+          {
+            "name": "price",
+            "nullable": false,
+            "type": {
+              "name": "decimal",
+              "precision": 10,
+              "scale": 2,
+              "bitWidth": 128
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Decimal(10,2)\""
+              }
+            ]
+          }
+        ],
+        "metadata": [
+          {
+            "key": "atlas:profile",
+            "value": "conformance.handoff@v1#989d23ce5bee527f"
+          },
+          {
+            "key": "atlas:protocol",
+            "value": "atlas/1.0"
+          }
+        ]
+      },
+      "source_schema": [
+        {
+          "name": "i",
+          "type": "FIXED",
+          "precision": 38,
+          "scale": 0,
+          "nullable": false
+        },
+        {
+          "name": "price",
+          "type": "FIXED",
+          "precision": 10,
+          "scale": 2,
+          "nullable": false
+        }
+      ],
+      "chunks": [
+        {
+          "file": "mismatch-number-38-0/chunk-0.arrows",
+          "rows": 1,
+          "bytes": 680,
+          "sha256": "e5bfb6abd913fa8f29965d99d2774050d79e16d4469cdb3133f618393dc6a37a"
+        }
+      ],
+      "handoff": {
+        "profile": "conformance.handoff@v1#989d23ce5bee527f",
+        "format": "snowflake-arrow/1",
+        "source_schema": [
+          {
+            "name": "i",
+            "type": "FIXED",
+            "precision": 38,
+            "scale": 0,
+            "nullable": false
+          },
+          {
+            "name": "price",
+            "type": "FIXED",
+            "precision": 10,
+            "scale": 2,
+            "nullable": false
+          }
+        ],
+        "first_chunk": {
+          "rows": 1,
+          "data": "/////8ABAAAQAAAAAAAKAAwABgAFAAgACgAAAAABBAAMAAAACAAIAAAABAAIAAAABAAAAAIAAADUAAAABAAAAEb///8AAAECFAAAAKAAAAAIAAAAFAAAAAAAAAAFAAAAcHJpY2UAAAADAAAAUAAAACgAAAAEAAAA9P7//xAAAAAEAAAAAQAAADIAAAAFAAAAc2NhbGUAAAAU////EAAAAAQAAAACAAAAMTAAAAkAAABwcmVjaXNpb24AAAA4////FAAAAAQAAAAFAAAARklYRUQAAAALAAAAbG9naWNhbFR5cGUACAAOAAgABwAIAAAAAAAAAQgAAAAAABIAGAAIAAYABwAMAAAAEAAUABIAAAAAAAEHFAAAAKQAAAAIAAAAEAAAAAAAAAABAAAAaQAAAAMAAABYAAAAKAAAAAQAAAC8////EAAAAAQAAAABAAAAMAAAAAUAAABzY2FsZQAAANz///8QAAAABAAAAAIAAAAzOAAACQAAAHByZWNpc2lvbgAAAAgADAAEAAgACAAAABQAAAAEAAAABQAAAEZJWEVEAAAACwAAAGxvZ2ljYWxUeXBlAAAABgAIAAQABgAAACYAAAAAAAAA/////7gAAAAUAAAAAAAAAAwAFgAGAAUACAAMAAwAAAAAAwQAGAAAABgAAAAAAAAAAAAKABgADAAEAAgACgAAAFwAAAAQAAAAAQAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAQAAAAAAAAAAAAAAAgAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAGQAAAAAAAAA/////wAAAAA="
+        },
+        "chunks": [],
+        "rows": 1,
+        "expires": "2026-11-01T12:00:00Z",
+        "operation": "operations/handoff-mismatch-number-38-0"
+      },
+      "question": "Q-SNOW-4",
+      "problem": {
+        "code": "invalid_document"
+      },
+      "why": "i: NUMBER(38,0) does not decode to {'name': 'int', 'bitWidth': 64, 'isSigned': True}"
+    },
+    {
+      "name": "mismatch-scale",
+      "note": "NUMBER(10,4) where the writer profile has Decimal(10,2).",
+      "writer": "conformance.handoff@v1#989d23ce5bee527f",
+      "result_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "description": "The rows.",
+        "items": {
+          "type": "object",
+          "description": "Integers whose encoded width changes from chunk to chunk.",
+          "required": [
+            "i",
+            "price"
+          ],
+          "properties": {
+            "i": {
+              "description": "The key.",
+              "type": "integer",
+              "x-atlas-unit": "count",
+              "x-atlas-key": true
+            },
+            "price": {
+              "description": "A price.",
+              "type": "string",
+              "x-atlas-logical": "Decimal(10,2)"
+            }
+          }
+        }
+      },
+      "arrow_schema": {
+        "fields": [
+          {
+            "name": "i",
+            "nullable": false,
+            "type": {
+              "name": "int",
+              "bitWidth": 64,
+              "isSigned": true
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:key",
+                "value": "true"
+              },
+              {
+                "key": "atlas:unit",
+                "value": "\"count\""
+              }
+            ]
+          },
+          {
+            "name": "price",
+            "nullable": false,
+            "type": {
+              "name": "decimal",
+              "precision": 10,
+              "scale": 2,
+              "bitWidth": 128
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Decimal(10,2)\""
+              }
+            ]
+          }
+        ],
+        "metadata": [
+          {
+            "key": "atlas:profile",
+            "value": "conformance.handoff@v1#989d23ce5bee527f"
+          },
+          {
+            "key": "atlas:protocol",
+            "value": "atlas/1.0"
+          }
+        ]
+      },
+      "source_schema": [
+        {
+          "name": "i",
+          "type": "FIXED",
+          "precision": 18,
+          "scale": 0,
+          "nullable": false
+        },
+        {
+          "name": "price",
+          "type": "FIXED",
+          "precision": 10,
+          "scale": 4,
+          "nullable": false
+        }
+      ],
+      "chunks": [
+        {
+          "file": "mismatch-scale/chunk-0.arrows",
+          "rows": 1,
+          "bytes": 672,
+          "sha256": "691f460b0b7e3dad240948559aa91e459ed8fbb4b5ead5a388d26b44e195ec2e"
+        }
+      ],
+      "handoff": {
+        "profile": "conformance.handoff@v1#989d23ce5bee527f",
+        "format": "snowflake-arrow/1",
+        "source_schema": [
+          {
+            "name": "i",
+            "type": "FIXED",
+            "precision": 18,
+            "scale": 0,
+            "nullable": false
+          },
+          {
+            "name": "price",
+            "type": "FIXED",
+            "precision": 10,
+            "scale": 4,
+            "nullable": false
+          }
+        ],
+        "first_chunk": {
+          "rows": 1,
+          "data": "/////8ABAAAQAAAAAAAKAAwABgAFAAgACgAAAAABBAAMAAAACAAIAAAABAAIAAAABAAAAAIAAADUAAAABAAAAEb///8AAAECFAAAAKAAAAAIAAAAFAAAAAAAAAAFAAAAcHJpY2UAAAADAAAAUAAAACgAAAAEAAAA9P7//xAAAAAEAAAAAQAAADQAAAAFAAAAc2NhbGUAAAAU////EAAAAAQAAAACAAAAMTAAAAkAAABwcmVjaXNpb24AAAA4////FAAAAAQAAAAFAAAARklYRUQAAAALAAAAbG9naWNhbFR5cGUACAAOAAgABwAIAAAAAAAAARAAAAAAABIAGAAIAAYABwAMAAAAEAAUABIAAAAAAAECFAAAAKQAAAAIAAAAEAAAAAAAAAABAAAAaQAAAAMAAABYAAAAKAAAAAQAAAC8////EAAAAAQAAAABAAAAMAAAAAUAAABzY2FsZQAAANz///8QAAAABAAAAAIAAAAxOAAACQAAAHByZWNpc2lvbgAAAAgADAAEAAgACAAAABQAAAAEAAAABQAAAEZJWEVEAAAACwAAAGxvZ2ljYWxUeXBlAAgADAAIAAcACAAAAAAAAAEIAAAA/////7gAAAAUAAAAAAAAAAwAFgAGAAUACAAMAAwAAAAAAwQAGAAAABAAAAAAAAAAAAAKABgADAAEAAgACgAAAFwAAAAQAAAAAQAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAgAAAAAAAAAAAAAAAgAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAQJwAAAAAAAP////8AAAAA"
+        },
+        "chunks": [],
+        "rows": 1,
+        "expires": "2026-11-01T12:00:00Z",
+        "operation": "operations/handoff-mismatch-scale"
+      },
+      "problem": {
+        "code": "invalid_document"
+      },
+      "why": "price: NUMBER(10,4) does not decode to {'name': 'decimal', 'precision': 10, 'scale': 2, 'bitWidth': 128}"
+    },
+    {
+      "name": "mismatch-null",
+      "note": "A null in a column the writer profile says is never null.",
+      "writer": "conformance.handoff@v1#989d23ce5bee527f",
+      "result_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "description": "The rows.",
+        "items": {
+          "type": "object",
+          "description": "Integers whose encoded width changes from chunk to chunk.",
+          "required": [
+            "i",
+            "price"
+          ],
+          "properties": {
+            "i": {
+              "description": "The key.",
+              "type": "integer",
+              "x-atlas-unit": "count",
+              "x-atlas-key": true
+            },
+            "price": {
+              "description": "A price.",
+              "type": "string",
+              "x-atlas-logical": "Decimal(10,2)"
+            }
+          }
+        }
+      },
+      "arrow_schema": {
+        "fields": [
+          {
+            "name": "i",
+            "nullable": false,
+            "type": {
+              "name": "int",
+              "bitWidth": 64,
+              "isSigned": true
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:key",
+                "value": "true"
+              },
+              {
+                "key": "atlas:unit",
+                "value": "\"count\""
+              }
+            ]
+          },
+          {
+            "name": "price",
+            "nullable": false,
+            "type": {
+              "name": "decimal",
+              "precision": 10,
+              "scale": 2,
+              "bitWidth": 128
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Decimal(10,2)\""
+              }
+            ]
+          }
+        ],
+        "metadata": [
+          {
+            "key": "atlas:profile",
+            "value": "conformance.handoff@v1#989d23ce5bee527f"
+          },
+          {
+            "key": "atlas:protocol",
+            "value": "atlas/1.0"
+          }
+        ]
+      },
+      "source_schema": [
+        {
+          "name": "i",
+          "type": "FIXED",
+          "precision": 18,
+          "scale": 0,
+          "nullable": false
+        },
+        {
+          "name": "price",
+          "type": "FIXED",
+          "precision": 10,
+          "scale": 2,
+          "nullable": false
+        }
+      ],
+      "chunks": [
+        {
+          "file": "mismatch-null/chunk-0.arrows",
+          "rows": 1,
+          "bytes": 680,
+          "sha256": "f4e10a229e44d1d85bac5c83f049af382405f2ed3f8d4f3feb19ef657ceff18f"
+        }
+      ],
+      "handoff": {
+        "profile": "conformance.handoff@v1#989d23ce5bee527f",
+        "format": "snowflake-arrow/1",
+        "source_schema": [
+          {
+            "name": "i",
+            "type": "FIXED",
+            "precision": 18,
+            "scale": 0,
+            "nullable": false
+          },
+          {
+            "name": "price",
+            "type": "FIXED",
+            "precision": 10,
+            "scale": 2,
+            "nullable": false
+          }
+        ],
+        "first_chunk": {
+          "rows": 1,
+          "data": "/////8ABAAAQAAAAAAAKAAwABgAFAAgACgAAAAABBAAMAAAACAAIAAAABAAIAAAABAAAAAIAAADUAAAABAAAAEb///8AAAECFAAAAKAAAAAIAAAAFAAAAAAAAAAFAAAAcHJpY2UAAAADAAAAUAAAACgAAAAEAAAA9P7//xAAAAAEAAAAAQAAADIAAAAFAAAAc2NhbGUAAAAU////EAAAAAQAAAACAAAAMTAAAAkAAABwcmVjaXNpb24AAAA4////FAAAAAQAAAAFAAAARklYRUQAAAALAAAAbG9naWNhbFR5cGUACAAOAAgABwAIAAAAAAAAAQgAAAAAABIAGAAIAAYABwAMAAAAEAAUABIAAAAAAAECFAAAAKQAAAAIAAAAEAAAAAAAAAABAAAAaQAAAAMAAABYAAAAKAAAAAQAAAC8////EAAAAAQAAAABAAAAMAAAAAUAAABzY2FsZQAAANz///8QAAAABAAAAAIAAAAxOAAACQAAAHByZWNpc2lvbgAAAAgADAAEAAgACAAAABQAAAAEAAAABQAAAEZJWEVEAAAACwAAAGxvZ2ljYWxUeXBlAAgADAAIAAcACAAAAAAAAAEIAAAA/////7gAAAAUAAAAAAAAAAwAFgAGAAUACAAMAAwAAAAAAwQAGAAAABgAAAAAAAAAAAAKABgADAAEAAgACgAAAFwAAAAQAAAAAQAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAACAAAAAAAAAABAAAAAAAAABAAAAAAAAAAAQAAAAAAAAAAAAAAAgAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/////wAAAAA="
+        },
+        "chunks": [],
+        "rows": 1,
+        "expires": "2026-11-01T12:00:00Z",
+        "operation": "operations/handoff-mismatch-null"
+      },
+      "problem": {
+        "code": "invalid_document"
+      },
+      "why": "price: a null in a column the writer profile says is never null"
+    },
+    {
+      "name": "mismatch-source-schema",
+      "note": "A chunk whose metadata differs from the handoff document's source_schema.",
+      "writer": "conformance.handoff@v1#989d23ce5bee527f",
+      "result_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "description": "The rows.",
+        "items": {
+          "type": "object",
+          "description": "Integers whose encoded width changes from chunk to chunk.",
+          "required": [
+            "i",
+            "price"
+          ],
+          "properties": {
+            "i": {
+              "description": "The key.",
+              "type": "integer",
+              "x-atlas-unit": "count",
+              "x-atlas-key": true
+            },
+            "price": {
+              "description": "A price.",
+              "type": "string",
+              "x-atlas-logical": "Decimal(10,2)"
+            }
+          }
+        }
+      },
+      "arrow_schema": {
+        "fields": [
+          {
+            "name": "i",
+            "nullable": false,
+            "type": {
+              "name": "int",
+              "bitWidth": 64,
+              "isSigned": true
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:key",
+                "value": "true"
+              },
+              {
+                "key": "atlas:unit",
+                "value": "\"count\""
+              }
+            ]
+          },
+          {
+            "name": "price",
+            "nullable": false,
+            "type": {
+              "name": "decimal",
+              "precision": 10,
+              "scale": 2,
+              "bitWidth": 128
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Decimal(10,2)\""
+              }
+            ]
+          }
+        ],
+        "metadata": [
+          {
+            "key": "atlas:profile",
+            "value": "conformance.handoff@v1#989d23ce5bee527f"
+          },
+          {
+            "key": "atlas:protocol",
+            "value": "atlas/1.0"
+          }
+        ]
+      },
+      "source_schema": [
+        {
+          "name": "i",
+          "type": "FIXED",
+          "precision": 18,
+          "scale": 0,
+          "nullable": false
+        },
+        {
+          "name": "price",
+          "type": "FIXED",
+          "precision": 12,
+          "scale": 2,
+          "nullable": false
+        }
+      ],
+      "chunks": [
+        {
+          "file": "mismatch-source-schema/chunk-0.arrows",
+          "rows": 1,
+          "bytes": 672,
+          "sha256": "0ba67aae4d2c8f18aa9e8364af20dd5fcc551519cbb6013f78838933a68f6f6d"
+        }
+      ],
+      "handoff": {
+        "profile": "conformance.handoff@v1#989d23ce5bee527f",
+        "format": "snowflake-arrow/1",
+        "source_schema": [
+          {
+            "name": "i",
+            "type": "FIXED",
+            "precision": 18,
+            "scale": 0,
+            "nullable": false
+          },
+          {
+            "name": "price",
+            "type": "FIXED",
+            "precision": 12,
+            "scale": 2,
+            "nullable": false
+          }
+        ],
+        "first_chunk": {
+          "rows": 1,
+          "data": "/////8ABAAAQAAAAAAAKAAwABgAFAAgACgAAAAABBAAMAAAACAAIAAAABAAIAAAABAAAAAIAAADUAAAABAAAAEb///8AAAECFAAAAKAAAAAIAAAAFAAAAAAAAAAFAAAAcHJpY2UAAAADAAAAUAAAACgAAAAEAAAA9P7//xAAAAAEAAAAAQAAADIAAAAFAAAAc2NhbGUAAAAU////EAAAAAQAAAACAAAAMTAAAAkAAABwcmVjaXNpb24AAAA4////FAAAAAQAAAAFAAAARklYRUQAAAALAAAAbG9naWNhbFR5cGUACAAOAAgABwAIAAAAAAAAAQgAAAAAABIAGAAIAAYABwAMAAAAEAAUABIAAAAAAAECFAAAAKQAAAAIAAAAEAAAAAAAAAABAAAAaQAAAAMAAABYAAAAKAAAAAQAAAC8////EAAAAAQAAAABAAAAMAAAAAUAAABzY2FsZQAAANz///8QAAAABAAAAAIAAAAxOAAACQAAAHByZWNpc2lvbgAAAAgADAAEAAgACAAAABQAAAAEAAAABQAAAEZJWEVEAAAACwAAAGxvZ2ljYWxUeXBlAAgADAAIAAcACAAAAAAAAAEIAAAA/////7gAAAAUAAAAAAAAAAwAFgAGAAUACAAMAAwAAAAAAwQAGAAAABAAAAAAAAAAAAAKABgADAAEAAgACgAAAFwAAAAQAAAAAQAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAQAAAAAAAAAAAAAAAgAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAABkAAAAAAAAAP////8AAAAA"
+        },
+        "chunks": [],
+        "rows": 1,
+        "expires": "2026-11-01T12:00:00Z",
+        "operation": "operations/handoff-mismatch-source-schema"
+      },
+      "problem": {
+        "code": "invalid_document"
+      },
+      "why": "price: the chunk's {'logicalType': 'FIXED', 'precision': '10', 'scale': '2'} differs from the handoff's source schema"
+    },
+    {
+      "name": "mismatch-second-chunk",
+      "note": "A second chunk whose schema differs from the first (HAND-003).",
+      "writer": "conformance.handoff@v1#989d23ce5bee527f",
+      "result_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$vocabulary": {
+          "https://json-schema.org/draft/2020-12/vocab/core": true,
+          "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+          "https://json-schema.org/draft/2020-12/vocab/validation": true,
+          "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+          "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+          "https://atlas.jhg.com/vocab/2026-10": false
+        },
+        "type": "array",
+        "description": "The rows.",
+        "items": {
+          "type": "object",
+          "description": "Integers whose encoded width changes from chunk to chunk.",
+          "required": [
+            "i",
+            "price"
+          ],
+          "properties": {
+            "i": {
+              "description": "The key.",
+              "type": "integer",
+              "x-atlas-unit": "count",
+              "x-atlas-key": true
+            },
+            "price": {
+              "description": "A price.",
+              "type": "string",
+              "x-atlas-logical": "Decimal(10,2)"
+            }
+          }
+        }
+      },
+      "arrow_schema": {
+        "fields": [
+          {
+            "name": "i",
+            "nullable": false,
+            "type": {
+              "name": "int",
+              "bitWidth": 64,
+              "isSigned": true
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:key",
+                "value": "true"
+              },
+              {
+                "key": "atlas:unit",
+                "value": "\"count\""
+              }
+            ]
+          },
+          {
+            "name": "price",
+            "nullable": false,
+            "type": {
+              "name": "decimal",
+              "precision": 10,
+              "scale": 2,
+              "bitWidth": 128
+            },
+            "children": [],
+            "metadata": [
+              {
+                "key": "atlas:logical",
+                "value": "\"Decimal(10,2)\""
+              }
+            ]
+          }
+        ],
+        "metadata": [
+          {
+            "key": "atlas:profile",
+            "value": "conformance.handoff@v1#989d23ce5bee527f"
+          },
+          {
+            "key": "atlas:protocol",
+            "value": "atlas/1.0"
+          }
+        ]
+      },
+      "source_schema": [
+        {
+          "name": "i",
+          "type": "FIXED",
+          "precision": 18,
+          "scale": 0,
+          "nullable": false
+        },
+        {
+          "name": "price",
+          "type": "FIXED",
+          "precision": 10,
+          "scale": 2,
+          "nullable": false
+        }
+      ],
+      "chunks": [
+        {
+          "file": "mismatch-second-chunk/chunk-0.arrows",
+          "rows": 1,
+          "bytes": 672,
+          "sha256": "0ba67aae4d2c8f18aa9e8364af20dd5fcc551519cbb6013f78838933a68f6f6d"
+        },
+        {
+          "file": "mismatch-second-chunk/chunk-1.arrows",
+          "rows": 1,
+          "bytes": 608,
+          "sha256": "a4c4c084750ef8c1bcc3ec61e4a3b7797e5e374c690b48008a20d9dbd2bcbfaf"
+        }
+      ],
+      "handoff": {
+        "profile": "conformance.handoff@v1#989d23ce5bee527f",
+        "format": "snowflake-arrow/1",
+        "source_schema": [
+          {
+            "name": "i",
+            "type": "FIXED",
+            "precision": 18,
+            "scale": 0,
+            "nullable": false
+          },
+          {
+            "name": "price",
+            "type": "FIXED",
+            "precision": 10,
+            "scale": 2,
+            "nullable": false
+          }
+        ],
+        "first_chunk": {
+          "rows": 1,
+          "data": "/////8ABAAAQAAAAAAAKAAwABgAFAAgACgAAAAABBAAMAAAACAAIAAAABAAIAAAABAAAAAIAAADUAAAABAAAAEb///8AAAECFAAAAKAAAAAIAAAAFAAAAAAAAAAFAAAAcHJpY2UAAAADAAAAUAAAACgAAAAEAAAA9P7//xAAAAAEAAAAAQAAADIAAAAFAAAAc2NhbGUAAAAU////EAAAAAQAAAACAAAAMTAAAAkAAABwcmVjaXNpb24AAAA4////FAAAAAQAAAAFAAAARklYRUQAAAALAAAAbG9naWNhbFR5cGUACAAOAAgABwAIAAAAAAAAAQgAAAAAABIAGAAIAAYABwAMAAAAEAAUABIAAAAAAAECFAAAAKQAAAAIAAAAEAAAAAAAAAABAAAAaQAAAAMAAABYAAAAKAAAAAQAAAC8////EAAAAAQAAAABAAAAMAAAAAUAAABzY2FsZQAAANz///8QAAAABAAAAAIAAAAxOAAACQAAAHByZWNpc2lvbgAAAAgADAAEAAgACAAAABQAAAAEAAAABQAAAEZJWEVEAAAACwAAAGxvZ2ljYWxUeXBlAAgADAAIAAcACAAAAAAAAAEIAAAA/////7gAAAAUAAAAAAAAAAwAFgAGAAUACAAMAAwAAAAAAwQAGAAAABAAAAAAAAAAAAAKABgADAAEAAgACgAAAFwAAAAQAAAAAQAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAQAAAAAAAAAAAAAAAgAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAABkAAAAAAAAAP////8AAAAA"
+        },
+        "chunks": [
+          {
+            "url": "https://results.conformance.test/synthetic/mismatch-second-chunk/chunk-1.arrows",
+            "rows": 1,
+            "bytes": 608,
+            "headers": {
+              "x-ms-encryption-key-sha256": "b3cc0475bb78a5026098858e9889acf666d31062d513d303314eca31d36e72f2"
+            }
+          }
+        ],
+        "rows": 2,
+        "expires": "2026-11-01T12:00:00Z",
+        "operation": "operations/handoff-mismatch-second-chunk"
+      },
+      "problem": {
+        "code": "invalid_document"
+      },
+      "why": "i: the chunk's {'logicalType': 'TEXT'} differs from the handoff's source schema"
+    }
+  ]
+}

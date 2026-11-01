@@ -1,0 +1,311 @@
+{
+  "id": "CORE-RETRY-001",
+  "level": "Core",
+  "description": "429 and 503 with Retry-After: at most three retries, each no sooner than Retry-After, never past the deadline; a problem that is not retryable is not retried.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "nth": 1,
+          "body_contains": {
+            "text": "x"
+          }
+        },
+        "respond": {
+          "status": 429,
+          "problem": {
+            "code": "limit_exceeded",
+            "retryable": true,
+            "retry_after": 1
+          },
+          "headers": {
+            "Retry-After": "1"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "nth": 2,
+          "body_contains": {
+            "text": "x"
+          }
+        },
+        "respond": {
+          "status": 503,
+          "problem": {
+            "code": "unavailable",
+            "retryable": true,
+            "retry_after": 2
+          },
+          "headers": {
+            "Retry-After": "2"
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "y"
+          }
+        },
+        "respond": {
+          "status": 503,
+          "problem": {
+            "code": "unavailable",
+            "retryable": true,
+            "retry_after": 0
+          },
+          "headers": {
+            "Retry-After": "0"
+          }
+        },
+        "times": 10
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "z"
+          }
+        },
+        "respond": {
+          "status": 503,
+          "problem": {
+            "code": "unavailable",
+            "retryable": true,
+            "retry_after": 2
+          },
+          "headers": {
+            "Retry-After": "2"
+          }
+        },
+        "times": 10
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "w"
+          }
+        },
+        "respond": {
+          "status": 403,
+          "problem": {
+            "code": "denied",
+            "retryable": false
+          }
+        },
+        "times": 10
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "x"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "y"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "z"
+        },
+        "options": {
+          "deadline_ms": 3000
+        }
+      }
+    },
+    {
+      "id": 5,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "w"
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value_contains": {
+        "text": "x"
+      }
+    },
+    {
+      "id": 3,
+      "ok": false,
+      "problem": {
+        "code": "unavailable"
+      }
+    },
+    {
+      "id": 4,
+      "ok": false,
+      "problem": {
+        "code": "unavailable"
+      }
+    },
+    {
+      "id": 5,
+      "ok": false,
+      "problem": {
+        "code": "denied"
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "x"
+        }
+      },
+      "equals": 3
+    },
+    {
+      "assert": "interval",
+      "from": {
+        "address": "conformance.echo@v1:fetch",
+        "nth": 1,
+        "body_contains": {
+          "text": "x"
+        }
+      },
+      "to": {
+        "address": "conformance.echo@v1:fetch",
+        "nth": 2,
+        "body_contains": {
+          "text": "x"
+        }
+      },
+      "min_ms": 1000
+    },
+    {
+      "assert": "interval",
+      "from": {
+        "address": "conformance.echo@v1:fetch",
+        "nth": 2,
+        "body_contains": {
+          "text": "x"
+        }
+      },
+      "to": {
+        "address": "conformance.echo@v1:fetch",
+        "nth": 3,
+        "body_contains": {
+          "text": "x"
+        }
+      },
+      "min_ms": 2000
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "y"
+        }
+      },
+      "equals": 4
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "z"
+        }
+      },
+      "equals": 2
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "w"
+        }
+      },
+      "equals": 1
+    },
+    {
+      "assert": "same_header",
+      "name": "Atlas-Deadline",
+      "selects": [
+        {
+          "address": "conformance.echo@v1:fetch",
+          "nth": 1,
+          "body_contains": {
+            "text": "z"
+          }
+        },
+        {
+          "address": "conformance.echo@v1:fetch",
+          "nth": 2,
+          "body_contains": {
+            "text": "z"
+          }
+        }
+      ]
+    }
+  ],
+  "note": "z: the deadline is 3 s away; the first retry is at 2 s, a second would be at 4 s, past it, so the client raises the problem it holds. A retry keeps the call's deadline."
+}

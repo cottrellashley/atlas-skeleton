@@ -1,0 +1,190 @@
+{
+  "id": "CORE-BOOT-002",
+  "level": "Core",
+  "description": "The gateway is chosen in 9.7.2's order: the connect argument, ATLAS_URL, ATLAS_ENV, config.toml. Four listeners of one conformance gateway stand for four gateways.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway2}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      },
+      {
+        "path": "{ATLAS_HOME}/config.toml",
+        "mode": "0600",
+        "text": "env = \"cfg\"\n\n[environments.cfg]\nurl = \"{gateway4}\"\n\n[environments.envc]\nurl = \"{gateway3}\"\n"
+      }
+    ]
+  },
+  "gateway": {},
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {
+        "url": "{gateway}"
+      }
+    },
+    {
+      "id": 2,
+      "op": "whoami",
+      "args": {}
+    },
+    {
+      "id": 3,
+      "op": "suite.restart",
+      "args": {
+        "env": {
+          "ATLAS_URL": "{gateway2}",
+          "ATLAS_ENV": "envc"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 5,
+      "op": "whoami",
+      "args": {}
+    },
+    {
+      "id": 6,
+      "op": "suite.restart",
+      "args": {
+        "env": {
+          "ATLAS_URL": null,
+          "ATLAS_ENV": "envc"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 8,
+      "op": "whoami",
+      "args": {}
+    },
+    {
+      "id": 9,
+      "op": "suite.restart",
+      "args": {
+        "env": {
+          "ATLAS_URL": null,
+          "ATLAS_ENV": null
+        }
+      }
+    },
+    {
+      "id": 10,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 11,
+      "op": "whoami",
+      "args": {}
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true
+    },
+    {
+      "id": 3,
+      "ok": true
+    },
+    {
+      "id": 4,
+      "ok": true
+    },
+    {
+      "id": 5,
+      "ok": true
+    },
+    {
+      "id": 6,
+      "ok": true
+    },
+    {
+      "id": 7,
+      "ok": true
+    },
+    {
+      "id": 8,
+      "ok": true
+    },
+    {
+      "id": 9,
+      "ok": true
+    },
+    {
+      "id": 10,
+      "ok": true
+    },
+    {
+      "id": 11,
+      "ok": true
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "atlas.whoami:fetch",
+        "listener": "gateway"
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "atlas.whoami:fetch",
+        "listener": "gateway2"
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "atlas.whoami:fetch",
+        "listener": "gateway3"
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "atlas.whoami:fetch",
+        "listener": "gateway4"
+      },
+      "equals": 1
+    }
+  ],
+  "note": "The connect argument wins over ATLAS_URL; with ATLAS_URL unset, ATLAS_ENV (envc, named in config.toml) wins over config.toml's env (cfg). Each listener serves its own bootstrap, whose environment is conformance, so one token file serves all four.",
+  "questions": [
+    "Q-CLI-1"
+  ]
+}

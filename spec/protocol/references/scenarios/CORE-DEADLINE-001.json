@@ -1,0 +1,146 @@
+{
+  "id": "CORE-DEADLINE-001",
+  "level": "Core",
+  "description": "Atlas-Deadline is the interaction's default when the call names none, capped at its maximum; a call still running at its deadline ends deadline_exceeded.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "slow"
+          }
+        },
+        "respond": {
+          "delay_ms": 5000,
+          "serve": true
+        },
+        "times": 1
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "a"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "b"
+        },
+        "options": {
+          "deadline_ms": 600000
+        }
+      }
+    },
+    {
+      "id": 4,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "slow"
+        },
+        "options": {
+          "deadline_ms": 1000
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true
+    },
+    {
+      "id": 3,
+      "ok": true
+    },
+    {
+      "id": 4,
+      "ok": false,
+      "problem": {
+        "code": "deadline_exceeded"
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "deadline",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "a"
+        }
+      },
+      "min_s": 28,
+      "max_s": 31
+    },
+    {
+      "assert": "deadline",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "b"
+        }
+      },
+      "min_s": 118,
+      "max_s": 121
+    },
+    {
+      "assert": "deadline",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "slow"
+        }
+      },
+      "min_s": 0,
+      "max_s": 2
+    }
+  ],
+  "note": "conformance.echo@v1:fetch has deadline default PT30S and max PT2M; Atlas-Deadline is in whole seconds, rounded down (Q-HDR-2).",
+  "questions": [
+    "Q-HDR-2"
+  ]
+}

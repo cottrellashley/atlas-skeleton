@@ -1,0 +1,2186 @@
+{
+  "description": "§9.1.3–§9.1.5 (AP-CONV-002): strings each grammar accepts and rejects. `valid` is the grammar with the sentences its section adds (a segment never ends with - or holds --, the length limits, P alone, -0, real dates and times); `why` names what rejects a string: \"abnf\" (grammar.abnf itself), or the sentence of the text. Cases marked with a question follow the reading recorded in QUESTIONS.md. The last rules are the strings §9 defines outside §9.1 (grammar.abnf's last section).",
+  "rules": [
+    "segment",
+    "capability-id",
+    "domain",
+    "version",
+    "nz-digits",
+    "interaction",
+    "fingerprint",
+    "pinned-id",
+    "exact-id",
+    "address",
+    "protocol-ver",
+    "property-name",
+    "problem-code",
+    "date",
+    "date-time",
+    "duration",
+    "decimal",
+    "integer-str",
+    "idempotency-key",
+    "problem-type",
+    "dataschema",
+    "event-type",
+    "resource-name",
+    "resource-id",
+    "operation-name",
+    "entity-tag"
+  ],
+  "cases": [
+    {
+      "name": "segment: 'a'",
+      "rule": "segment",
+      "input": "a",
+      "expected": {
+        "valid": true
+      },
+      "note": "one letter"
+    },
+    {
+      "name": "segment: 'fetch'",
+      "rule": "segment",
+      "input": "fetch",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "segment: 'reference-values'",
+      "rule": "segment",
+      "input": "reference-values",
+      "expected": {
+        "valid": true
+      },
+      "note": "a hyphen between letters"
+    },
+    {
+      "name": "segment: 'a1-b2'",
+      "rule": "segment",
+      "input": "a1-b2",
+      "expected": {
+        "valid": true
+      },
+      "note": "digits after the first letter"
+    },
+    {
+      "name": "segment: 'x9'",
+      "rule": "segment",
+      "input": "x9",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "segment: ''",
+      "rule": "segment",
+      "input": "",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "empty"
+    },
+    {
+      "name": "segment: '1a'",
+      "rule": "segment",
+      "input": "1a",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a digit first"
+    },
+    {
+      "name": "segment: '-a'",
+      "rule": "segment",
+      "input": "-a",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a hyphen first"
+    },
+    {
+      "name": "segment: 'a-'",
+      "rule": "segment",
+      "input": "a-",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "ends with - (§9.1.3)"
+    },
+    {
+      "name": "segment: 'a--b'",
+      "rule": "segment",
+      "input": "a--b",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "contains -- (§9.1.3)"
+    },
+    {
+      "name": "segment: 'A'",
+      "rule": "segment",
+      "input": "A",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "upper case: every grammar is case-sensitive"
+    },
+    {
+      "name": "segment: 'aB'",
+      "rule": "segment",
+      "input": "aB",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "upper case"
+    },
+    {
+      "name": "segment: 'a_b'",
+      "rule": "segment",
+      "input": "a_b",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "_ is not in a segment"
+    },
+    {
+      "name": "segment: 'a.b'",
+      "rule": "segment",
+      "input": "a.b",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": ". separates segments"
+    },
+    {
+      "name": "segment: 'café'",
+      "rule": "segment",
+      "input": "café",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "non-ASCII letter"
+    },
+    {
+      "name": "segment: 'a '",
+      "rule": "segment",
+      "input": "a ",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "trailing space"
+    },
+    {
+      "name": "capability-id: 'portfolio.holdings'",
+      "rule": "capability-id",
+      "input": "portfolio.holdings",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "capability-id: 'atlas.whoami'",
+      "rule": "capability-id",
+      "input": "atlas.whoami",
+      "expected": {
+        "valid": true
+      },
+      "note": "a built-in's domain is atlas"
+    },
+    {
+      "name": "capability-id: 'atlas.catalog.changed'",
+      "rule": "capability-id",
+      "input": "atlas.catalog.changed",
+      "expected": {
+        "valid": true
+      },
+      "note": "three segments"
+    },
+    {
+      "name": "capability-id: 'portfolio.reference-values'",
+      "rule": "capability-id",
+      "input": "portfolio.reference-values",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "capability-id: 'a.b'",
+      "rule": "capability-id",
+      "input": "a.b",
+      "expected": {
+        "valid": true
+      },
+      "note": "the shortest"
+    },
+    {
+      "name": "capability-id: 128 characters",
+      "rule": "capability-id",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "expected": {
+        "valid": true
+      },
+      "note": "128 characters"
+    },
+    {
+      "name": "capability-id: 129 characters",
+      "rule": "capability-id",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "expected": {
+        "valid": false,
+        "why": "length: a capability id is at most 128 characters"
+      },
+      "note": "129 characters: at most 128 (§9.1.3)"
+    },
+    {
+      "name": "capability-id: 'portfolio'",
+      "rule": "capability-id",
+      "input": "portfolio",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "one segment"
+    },
+    {
+      "name": "capability-id: 'portfolio.'",
+      "rule": "capability-id",
+      "input": "portfolio.",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "an empty segment"
+    },
+    {
+      "name": "capability-id: '.holdings'",
+      "rule": "capability-id",
+      "input": ".holdings",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "an empty first segment"
+    },
+    {
+      "name": "capability-id: 'a..b'",
+      "rule": "capability-id",
+      "input": "a..b",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "an empty segment"
+    },
+    {
+      "name": "capability-id: 'portfolio.holdings-'",
+      "rule": "capability-id",
+      "input": "portfolio.holdings-",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a segment ends with -"
+    },
+    {
+      "name": "capability-id: 'portfolio.hold--ings'",
+      "rule": "capability-id",
+      "input": "portfolio.hold--ings",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a segment contains --"
+    },
+    {
+      "name": "capability-id: 'Portfolio.holdings'",
+      "rule": "capability-id",
+      "input": "Portfolio.holdings",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "upper case"
+    },
+    {
+      "name": "capability-id: 'portfolio.1holdings'",
+      "rule": "capability-id",
+      "input": "portfolio.1holdings",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a segment starts with a digit"
+    },
+    {
+      "name": "capability-id: 'portfolio.holdings@v1'",
+      "rule": "capability-id",
+      "input": "portfolio.holdings@v1",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a pinned-id is not a capability-id"
+    },
+    {
+      "name": "domain: 'portfolio'",
+      "rule": "domain",
+      "input": "portfolio",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "domain: 'model-portfolio'",
+      "rule": "domain",
+      "input": "model-portfolio",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "domain: 'portfolio.holdings'",
+      "rule": "domain",
+      "input": "portfolio.holdings",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a domain is one segment"
+    },
+    {
+      "name": "interaction: 'fetch'",
+      "rule": "interaction",
+      "input": "fetch",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "interaction: 'alias-value'",
+      "rule": "interaction",
+      "input": "alias-value",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "interaction: 'Fetch'",
+      "rule": "interaction",
+      "input": "Fetch",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "upper case"
+    },
+    {
+      "name": "interaction: 'alias_value'",
+      "rule": "interaction",
+      "input": "alias_value",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "_ is not in a segment"
+    },
+    {
+      "name": "version: 'v1'",
+      "rule": "version",
+      "input": "v1",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "version: 'v12'",
+      "rule": "version",
+      "input": "v12",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "version: 'v100'",
+      "rule": "version",
+      "input": "v100",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "version: 'v0'",
+      "rule": "version",
+      "input": "v0",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "zero"
+    },
+    {
+      "name": "version: 'v01'",
+      "rule": "version",
+      "input": "v01",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a leading zero"
+    },
+    {
+      "name": "version: 'V1'",
+      "rule": "version",
+      "input": "V1",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "upper case V: %s\"v\""
+    },
+    {
+      "name": "version: '1'",
+      "rule": "version",
+      "input": "1",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no v"
+    },
+    {
+      "name": "version: 'v'",
+      "rule": "version",
+      "input": "v",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no digits"
+    },
+    {
+      "name": "version: 'v1.0'",
+      "rule": "version",
+      "input": "v1.0",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "not semver"
+    },
+    {
+      "name": "version: 'v١'",
+      "rule": "version",
+      "input": "v١",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a non-ASCII digit"
+    },
+    {
+      "name": "nz-digits: '7'",
+      "rule": "nz-digits",
+      "input": "7",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "nz-digits: '10'",
+      "rule": "nz-digits",
+      "input": "10",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "nz-digits: '0'",
+      "rule": "nz-digits",
+      "input": "0",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "zero"
+    },
+    {
+      "name": "nz-digits: '07'",
+      "rule": "nz-digits",
+      "input": "07",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a leading zero"
+    },
+    {
+      "name": "fingerprint: '3f9a1c0b7d2e4a65'",
+      "rule": "fingerprint",
+      "input": "3f9a1c0b7d2e4a65",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "fingerprint: '0000000000000000'",
+      "rule": "fingerprint",
+      "input": "0000000000000000",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "fingerprint: '3F9A1C0B7D2E4A65'",
+      "rule": "fingerprint",
+      "input": "3F9A1C0B7D2E4A65",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "upper-case hexadecimal"
+    },
+    {
+      "name": "fingerprint: '3f9a1c0b7d2e4a6'",
+      "rule": "fingerprint",
+      "input": "3f9a1c0b7d2e4a6",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "15 characters"
+    },
+    {
+      "name": "fingerprint: '3f9a1c0b7d2e4a650'",
+      "rule": "fingerprint",
+      "input": "3f9a1c0b7d2e4a650",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "17 characters"
+    },
+    {
+      "name": "fingerprint: '3f9a1c0b7d2e4a6g'",
+      "rule": "fingerprint",
+      "input": "3f9a1c0b7d2e4a6g",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "not hexadecimal"
+    },
+    {
+      "name": "pinned-id: 'portfolio.holdings@v1'",
+      "rule": "pinned-id",
+      "input": "portfolio.holdings@v1",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "pinned-id: 'atlas.whoami@v1'",
+      "rule": "pinned-id",
+      "input": "atlas.whoami@v1",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "pinned-id: 'portfolio.holdings@v0'",
+      "rule": "pinned-id",
+      "input": "portfolio.holdings@v0",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "version zero"
+    },
+    {
+      "name": "pinned-id: 'portfolio.holdings'",
+      "rule": "pinned-id",
+      "input": "portfolio.holdings",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no version"
+    },
+    {
+      "name": "pinned-id: 'portfolio.holdings@1'",
+      "rule": "pinned-id",
+      "input": "portfolio.holdings@1",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no v"
+    },
+    {
+      "name": "pinned-id: 'portfolio.holdings @v1'",
+      "rule": "pinned-id",
+      "input": "portfolio.holdings @v1",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a space"
+    },
+    {
+      "name": "pinned-id: 131 characters",
+      "rule": "pinned-id",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb@v1",
+      "expected": {
+        "valid": true
+      },
+      "note": "a 128-character capability id"
+    },
+    {
+      "name": "pinned-id: 132 characters",
+      "rule": "pinned-id",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb@v1",
+      "expected": {
+        "valid": false,
+        "why": "length: a capability id is at most 128 characters"
+      },
+      "note": "a 129-character capability id"
+    },
+    {
+      "name": "exact-id: 'portfolio.holdings@v1#3f9a1c0b7d2e4a65'",
+      "rule": "exact-id",
+      "input": "portfolio.holdings@v1#3f9a1c0b7d2e4a65",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "exact-id: 'portfolio.holdings#3f9a1c0b7d2e4a65'",
+      "rule": "exact-id",
+      "input": "portfolio.holdings#3f9a1c0b7d2e4a65",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no version"
+    },
+    {
+      "name": "exact-id: 'portfolio.holdings@v1#3F9A1C0B7D2E4A65'",
+      "rule": "exact-id",
+      "input": "portfolio.holdings@v1#3F9A1C0B7D2E4A65",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "upper-case fingerprint"
+    },
+    {
+      "name": "exact-id: 'portfolio.holdings@v1#'",
+      "rule": "exact-id",
+      "input": "portfolio.holdings@v1#",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no fingerprint"
+    },
+    {
+      "name": "exact-id: 'portfolio.holdings@v1#A'",
+      "rule": "exact-id",
+      "input": "portfolio.holdings@v1#A",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "the spec's own shorthand #A is not an exact-id"
+    },
+    {
+      "name": "address: 'portfolio.holdings@v1:fetch'",
+      "rule": "address",
+      "input": "portfolio.holdings@v1:fetch",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "address: 'portfolio.holdings:fetch'",
+      "rule": "address",
+      "input": "portfolio.holdings:fetch",
+      "expected": {
+        "valid": true
+      },
+      "note": "a bare id: allowed at a terminal (§9.7.1)"
+    },
+    {
+      "name": "address: 'atlas.whoami:fetch'",
+      "rule": "address",
+      "input": "atlas.whoami:fetch",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "address: 'astronomer.deployment@v1:restart'",
+      "rule": "address",
+      "input": "astronomer.deployment@v1:restart",
+      "expected": {
+        "valid": true
+      },
+      "note": "an action's own verb"
+    },
+    {
+      "name": "address: 160 characters",
+      "rule": "address",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb@v1:cccccccccccccccccccccccccccc",
+      "expected": {
+        "valid": true
+      },
+      "note": "160 characters"
+    },
+    {
+      "name": "address: 161 characters",
+      "rule": "address",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb@v1:ccccccccccccccccccccccccccccc",
+      "expected": {
+        "valid": false,
+        "why": "length: an address is at most 160 characters"
+      },
+      "note": "161 characters: at most 160 (§9.1.3)"
+    },
+    {
+      "name": "address: 'portfolio.holdings@v1#3f9a1c0b7d2e4a65:fetch'",
+      "rule": "address",
+      "input": "portfolio.holdings@v1#3f9a1c0b7d2e4a65:fetch",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "an exact-id is not addressed"
+    },
+    {
+      "name": "address: 'portfolio.holdings@v1'",
+      "rule": "address",
+      "input": "portfolio.holdings@v1",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no interaction"
+    },
+    {
+      "name": "address: 'portfolio.holdings@v1:'",
+      "rule": "address",
+      "input": "portfolio.holdings@v1:",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "an empty interaction"
+    },
+    {
+      "name": "address: 'portfolio.holdings@v1:Fetch'",
+      "rule": "address",
+      "input": "portfolio.holdings@v1:Fetch",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "upper case"
+    },
+    {
+      "name": "address: 'portfolio.holdings@v1::fetch'",
+      "rule": "address",
+      "input": "portfolio.holdings@v1::fetch",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "two colons"
+    },
+    {
+      "name": "address: '/v1/data/portfolio.holdings@v1:fetch'",
+      "rule": "address",
+      "input": "/v1/data/portfolio.holdings@v1:fetch",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a binding's path is not an address"
+    },
+    {
+      "name": "protocol-ver: 'atlas/1.0'",
+      "rule": "protocol-ver",
+      "input": "atlas/1.0",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "protocol-ver: 'atlas/1.12'",
+      "rule": "protocol-ver",
+      "input": "atlas/1.12",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "protocol-ver: 'atlas/10.0'",
+      "rule": "protocol-ver",
+      "input": "atlas/10.0",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "protocol-ver: 'atlas/01.00'",
+      "rule": "protocol-ver",
+      "input": "atlas/01.00",
+      "expected": {
+        "valid": true
+      },
+      "note": "1*DIGIT allows leading zeros",
+      "question": "Q-GRAM-2"
+    },
+    {
+      "name": "protocol-ver: 'Atlas/1.0'",
+      "rule": "protocol-ver",
+      "input": "Atlas/1.0",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "upper case: %s\"atlas/\""
+    },
+    {
+      "name": "protocol-ver: 'atlas/1'",
+      "rule": "protocol-ver",
+      "input": "atlas/1",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no minor"
+    },
+    {
+      "name": "protocol-ver: 'atlas/1.0.0'",
+      "rule": "protocol-ver",
+      "input": "atlas/1.0.0",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "three numbers"
+    },
+    {
+      "name": "protocol-ver: 'atlas/v1.0'",
+      "rule": "protocol-ver",
+      "input": "atlas/v1.0",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a v"
+    },
+    {
+      "name": "protocol-ver: 'atlas 1.0'",
+      "rule": "protocol-ver",
+      "input": "atlas 1.0",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a space"
+    },
+    {
+      "name": "property-name: 'market_value'",
+      "rule": "property-name",
+      "input": "market_value",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "property-name: 'as_of'",
+      "rule": "property-name",
+      "input": "as_of",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "property-name: 'a'",
+      "rule": "property-name",
+      "input": "a",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "property-name: 'a__b'",
+      "rule": "property-name",
+      "input": "a__b",
+      "expected": {
+        "valid": true
+      },
+      "note": "the grammar allows __"
+    },
+    {
+      "name": "property-name: 'oas_'",
+      "rule": "property-name",
+      "input": "oas_",
+      "expected": {
+        "valid": true
+      },
+      "note": "the grammar allows a trailing _"
+    },
+    {
+      "name": "property-name: '_a'",
+      "rule": "property-name",
+      "input": "_a",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "_ first"
+    },
+    {
+      "name": "property-name: 'Market_value'",
+      "rule": "property-name",
+      "input": "Market_value",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "upper case"
+    },
+    {
+      "name": "property-name: 'market-value'",
+      "rule": "property-name",
+      "input": "market-value",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "- is not in a property name"
+    },
+    {
+      "name": "property-name: '1st'",
+      "rule": "property-name",
+      "input": "1st",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a digit first"
+    },
+    {
+      "name": "problem-code: 'not_found'",
+      "rule": "problem-code",
+      "input": "not_found",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "problem-code: 'limit_exceeded'",
+      "rule": "problem-code",
+      "input": "limit_exceeded",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "problem-code: 'warehouse_suspended'",
+      "rule": "problem-code",
+      "input": "warehouse_suspended",
+      "expected": {
+        "valid": true
+      },
+      "note": "a capability's own code"
+    },
+    {
+      "name": "problem-code: 'NotFound'",
+      "rule": "problem-code",
+      "input": "NotFound",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "upper case"
+    },
+    {
+      "name": "problem-code: 'not-found'",
+      "rule": "problem-code",
+      "input": "not-found",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "- is not in a code"
+    },
+    {
+      "name": "date: '2026-10-31'",
+      "rule": "date",
+      "input": "2026-10-31",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "date: '2024-02-29'",
+      "rule": "date",
+      "input": "2024-02-29",
+      "expected": {
+        "valid": true
+      },
+      "note": "a leap day"
+    },
+    {
+      "name": "date: '2000-02-29'",
+      "rule": "date",
+      "input": "2000-02-29",
+      "expected": {
+        "valid": true
+      },
+      "note": "a leap day in a year divisible by 400"
+    },
+    {
+      "name": "date: '1970-01-01'",
+      "rule": "date",
+      "input": "1970-01-01",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "date: '0001-01-01'",
+      "rule": "date",
+      "input": "0001-01-01",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "date: '9999-12-31'",
+      "rule": "date",
+      "input": "9999-12-31",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "date: '2023-02-29'",
+      "rule": "date",
+      "input": "2023-02-29",
+      "expected": {
+        "valid": false,
+        "why": "calendar: not a real calendar date"
+      },
+      "note": "not a real date: 2023 is not a leap year"
+    },
+    {
+      "name": "date: '1900-02-29'",
+      "rule": "date",
+      "input": "1900-02-29",
+      "expected": {
+        "valid": false,
+        "why": "calendar: not a real calendar date"
+      },
+      "note": "not a real date: 1900 is not a leap year"
+    },
+    {
+      "name": "date: '2026-04-31'",
+      "rule": "date",
+      "input": "2026-04-31",
+      "expected": {
+        "valid": false,
+        "why": "calendar: not a real calendar date"
+      },
+      "note": "not a real date"
+    },
+    {
+      "name": "date: '2026-13-01'",
+      "rule": "date",
+      "input": "2026-13-01",
+      "expected": {
+        "valid": false,
+        "why": "calendar: not a real calendar date"
+      },
+      "note": "month 13"
+    },
+    {
+      "name": "date: '2026-00-10'",
+      "rule": "date",
+      "input": "2026-00-10",
+      "expected": {
+        "valid": false,
+        "why": "calendar: not a real calendar date"
+      },
+      "note": "month 0"
+    },
+    {
+      "name": "date: '2026-10-00'",
+      "rule": "date",
+      "input": "2026-10-00",
+      "expected": {
+        "valid": false,
+        "why": "calendar: not a real calendar date"
+      },
+      "note": "day 0"
+    },
+    {
+      "name": "date: '2026-1-31'",
+      "rule": "date",
+      "input": "2026-1-31",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a one-digit month"
+    },
+    {
+      "name": "date: '20261031'",
+      "rule": "date",
+      "input": "20261031",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no hyphens"
+    },
+    {
+      "name": "date: '2026-10-31Z'",
+      "rule": "date",
+      "input": "2026-10-31Z",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a date has no zone"
+    },
+    {
+      "name": "date: '+2026-10-31'",
+      "rule": "date",
+      "input": "+2026-10-31",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a sign"
+    },
+    {
+      "name": "date: '2026-10-3١'",
+      "rule": "date",
+      "input": "2026-10-3١",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a non-ASCII digit"
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11Z'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11Z",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11.5Z'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11.5Z",
+      "expected": {
+        "valid": true
+      },
+      "note": "one fractional digit"
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11.123456789Z'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11.123456789Z",
+      "expected": {
+        "valid": true
+      },
+      "note": "nine fractional digits"
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11+01:00'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11+01:00",
+      "expected": {
+        "valid": true
+      },
+      "note": "an offset (the gateway sends Z)"
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11-05:30'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11-05:30",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11-00:00'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11-00:00",
+      "expected": {
+        "valid": true
+      },
+      "note": "RFC 3339's unknown-offset form"
+    },
+    {
+      "name": "date-time: '2026-10-30T23:59:59+23:59'",
+      "rule": "date-time",
+      "input": "2026-10-30T23:59:59+23:59",
+      "expected": {
+        "valid": true
+      },
+      "note": "the largest offset"
+    },
+    {
+      "name": "date-time: '2024-02-29T00:00:00Z'",
+      "rule": "date-time",
+      "input": "2024-02-29T00:00:00Z",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11.1234567891Z'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11.1234567891Z",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "ten fractional digits"
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11.Z'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11.Z",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a point with no digits"
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no offset: a date-time MUST carry one"
+    },
+    {
+      "name": "date-time: '2026-10-30t14:02:11Z'",
+      "rule": "date-time",
+      "input": "2026-10-30t14:02:11Z",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "lower-case t: %s\"T\""
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11z'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11z",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "lower-case z: %s\"Z\""
+    },
+    {
+      "name": "date-time: '2026-10-30 14:02:11Z'",
+      "rule": "date-time",
+      "input": "2026-10-30 14:02:11Z",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a space for T"
+    },
+    {
+      "name": "date-time: '2026-10-30T23:59:60Z'",
+      "rule": "date-time",
+      "input": "2026-10-30T23:59:60Z",
+      "expected": {
+        "valid": false,
+        "why": "clock: the leap second 60 is not allowed"
+      },
+      "note": "the leap second 60 is not allowed (§9.1.4)"
+    },
+    {
+      "name": "date-time: '2026-10-30T24:00:00Z'",
+      "rule": "date-time",
+      "input": "2026-10-30T24:00:00Z",
+      "expected": {
+        "valid": false,
+        "why": "clock: not a real time of day"
+      },
+      "note": "hour 24"
+    },
+    {
+      "name": "date-time: '2026-10-30T14:60:00Z'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:60:00Z",
+      "expected": {
+        "valid": false,
+        "why": "clock: not a real time of day"
+      },
+      "note": "minute 60"
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11+24:00'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11+24:00",
+      "expected": {
+        "valid": false,
+        "why": "clock: not a real offset"
+      },
+      "note": "offset hour 24"
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11+01:60'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11+01:60",
+      "expected": {
+        "valid": false,
+        "why": "clock: not a real offset"
+      },
+      "note": "offset minute 60"
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02:11+0100'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02:11+0100",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "an offset without a colon"
+    },
+    {
+      "name": "date-time: '2023-02-29T00:00:00Z'",
+      "rule": "date-time",
+      "input": "2023-02-29T00:00:00Z",
+      "expected": {
+        "valid": false,
+        "why": "calendar: not a real calendar date"
+      },
+      "note": "not a real date"
+    },
+    {
+      "name": "date-time: '2026-10-30T14:02Z'",
+      "rule": "date-time",
+      "input": "2026-10-30T14:02Z",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no seconds"
+    },
+    {
+      "name": "duration: 'P1D'",
+      "rule": "duration",
+      "input": "P1D",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "duration: 'PT2M'",
+      "rule": "duration",
+      "input": "PT2M",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "duration: 'PT30M'",
+      "rule": "duration",
+      "input": "PT30M",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "duration: 'PT1H'",
+      "rule": "duration",
+      "input": "PT1H",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "duration: 'PT30S'",
+      "rule": "duration",
+      "input": "PT30S",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "duration: 'PT0S'",
+      "rule": "duration",
+      "input": "PT0S",
+      "expected": {
+        "valid": true
+      },
+      "note": "zero is a component"
+    },
+    {
+      "name": "duration: 'PT1.5S'",
+      "rule": "duration",
+      "input": "PT1.5S",
+      "expected": {
+        "valid": true
+      },
+      "note": "a fraction of a second"
+    },
+    {
+      "name": "duration: 'PT0.000000001S'",
+      "rule": "duration",
+      "input": "PT0.000000001S",
+      "expected": {
+        "valid": true
+      },
+      "note": "nine fractional digits"
+    },
+    {
+      "name": "duration: 'P7DT12H30M15.25S'",
+      "rule": "duration",
+      "input": "P7DT12H30M15.25S",
+      "expected": {
+        "valid": true
+      },
+      "note": "every component"
+    },
+    {
+      "name": "duration: 'P1DT'",
+      "rule": "duration",
+      "input": "P1DT",
+      "expected": {
+        "valid": true
+      },
+      "note": "the text's grammar allows T with no time components after a day",
+      "question": "Q-GRAM-3"
+    },
+    {
+      "name": "duration: 'PT36H'",
+      "rule": "duration",
+      "input": "PT36H",
+      "expected": {
+        "valid": true
+      },
+      "note": "hours beyond a day"
+    },
+    {
+      "name": "duration: 'P01D'",
+      "rule": "duration",
+      "input": "P01D",
+      "expected": {
+        "valid": true
+      },
+      "note": "1*DIGIT allows a leading zero"
+    },
+    {
+      "name": "duration: 'P'",
+      "rule": "duration",
+      "input": "P",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "P alone is not allowed (§9.1.4)"
+    },
+    {
+      "name": "duration: 'PT'",
+      "rule": "duration",
+      "input": "PT",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no component"
+    },
+    {
+      "name": "duration: 'P1W'",
+      "rule": "duration",
+      "input": "P1W",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no weeks"
+    },
+    {
+      "name": "duration: 'P1Y'",
+      "rule": "duration",
+      "input": "P1Y",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no years"
+    },
+    {
+      "name": "duration: 'P1M'",
+      "rule": "duration",
+      "input": "P1M",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no months: M is minutes, after T"
+    },
+    {
+      "name": "duration: 'PT1.1234567890S'",
+      "rule": "duration",
+      "input": "PT1.1234567890S",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "ten fractional digits"
+    },
+    {
+      "name": "duration: 'PT1.S'",
+      "rule": "duration",
+      "input": "PT1.S",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a point with no digits"
+    },
+    {
+      "name": "duration: 'PT.5S'",
+      "rule": "duration",
+      "input": "PT.5S",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no whole seconds"
+    },
+    {
+      "name": "duration: 'PT1.5M'",
+      "rule": "duration",
+      "input": "PT1.5M",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a fraction only on seconds"
+    },
+    {
+      "name": "duration: 'PT1S1M'",
+      "rule": "duration",
+      "input": "PT1S1M",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "out of order"
+    },
+    {
+      "name": "duration: 'pt1h'",
+      "rule": "duration",
+      "input": "pt1h",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "lower case"
+    },
+    {
+      "name": "duration: '-PT1H'",
+      "rule": "duration",
+      "input": "-PT1H",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no sign"
+    },
+    {
+      "name": "duration: 'P1DT2H'",
+      "rule": "duration",
+      "input": "P1DT2H",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "decimal: '0'",
+      "rule": "decimal",
+      "input": "0",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "decimal: '1'",
+      "rule": "decimal",
+      "input": "1",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "decimal: '-1'",
+      "rule": "decimal",
+      "input": "-1",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "decimal: '1.5'",
+      "rule": "decimal",
+      "input": "1.5",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "decimal: '-12.250'",
+      "rule": "decimal",
+      "input": "-12.250",
+      "expected": {
+        "valid": true
+      },
+      "note": "trailing zeros are digits"
+    },
+    {
+      "name": "decimal: '0.000001'",
+      "rule": "decimal",
+      "input": "0.000001",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "decimal: '12345678901234567890123456789012.123456'",
+      "rule": "decimal",
+      "input": "12345678901234567890123456789012.123456",
+      "expected": {
+        "valid": true
+      },
+      "note": "38 digits"
+    },
+    {
+      "name": "decimal: '-0'",
+      "rule": "decimal",
+      "input": "-0",
+      "expected": {
+        "valid": false,
+        "why": "negative-zero: -0 is not allowed"
+      },
+      "note": "-0 is not allowed (§9.1.5)"
+    },
+    {
+      "name": "decimal: '-0.0'",
+      "rule": "decimal",
+      "input": "-0.0",
+      "expected": {
+        "valid": false,
+        "why": "negative-zero: -0 is not allowed"
+      },
+      "note": "negative zero (§9.1.5)",
+      "question": "Q-DEC-2"
+    },
+    {
+      "name": "decimal: '-0.000'",
+      "rule": "decimal",
+      "input": "-0.000",
+      "expected": {
+        "valid": false,
+        "why": "negative-zero: -0 is not allowed"
+      },
+      "note": "negative zero (§9.1.5)",
+      "question": "Q-DEC-2"
+    },
+    {
+      "name": "decimal: '-0.5'",
+      "rule": "decimal",
+      "input": "-0.5",
+      "expected": {
+        "valid": true
+      },
+      "note": "negative, not zero"
+    },
+    {
+      "name": "decimal: '01'",
+      "rule": "decimal",
+      "input": "01",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a leading zero"
+    },
+    {
+      "name": "decimal: '00.5'",
+      "rule": "decimal",
+      "input": "00.5",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a leading zero"
+    },
+    {
+      "name": "decimal: '1.'",
+      "rule": "decimal",
+      "input": "1.",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a point with no digits"
+    },
+    {
+      "name": "decimal: '.5'",
+      "rule": "decimal",
+      "input": ".5",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no integer part"
+    },
+    {
+      "name": "decimal: '+1'",
+      "rule": "decimal",
+      "input": "+1",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a plus sign"
+    },
+    {
+      "name": "decimal: '1e5'",
+      "rule": "decimal",
+      "input": "1e5",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no exponent"
+    },
+    {
+      "name": "decimal: '1,5'",
+      "rule": "decimal",
+      "input": "1,5",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a comma"
+    },
+    {
+      "name": "decimal: ' 1'",
+      "rule": "decimal",
+      "input": " 1",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a space"
+    },
+    {
+      "name": "decimal: '１'",
+      "rule": "decimal",
+      "input": "１",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a full-width digit"
+    },
+    {
+      "name": "integer-str: '0'",
+      "rule": "integer-str",
+      "input": "0",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "integer-str: '9007199254740993'",
+      "rule": "integer-str",
+      "input": "9007199254740993",
+      "expected": {
+        "valid": true
+      },
+      "note": "beyond I-JSON's integers: why it is a string"
+    },
+    {
+      "name": "integer-str: '-9223372036854775808'",
+      "rule": "integer-str",
+      "input": "-9223372036854775808",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "integer-str: '-0'",
+      "rule": "integer-str",
+      "input": "-0",
+      "expected": {
+        "valid": true
+      },
+      "note": "the text forbids -0 only for decimals",
+      "question": "Q-DEC-3"
+    },
+    {
+      "name": "integer-str: '007'",
+      "rule": "integer-str",
+      "input": "007",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "leading zeros"
+    },
+    {
+      "name": "integer-str: '1.0'",
+      "rule": "integer-str",
+      "input": "1.0",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a point"
+    },
+    {
+      "name": "integer-str: ''",
+      "rule": "integer-str",
+      "input": "",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "empty"
+    },
+    {
+      "name": "idempotency-key: '8e03978e-40d5-43e8-bc93-6894a57f9324'",
+      "rule": "idempotency-key",
+      "input": "8e03978e-40d5-43e8-bc93-6894a57f9324",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "idempotency-key: 'run_2026.10.31'",
+      "rule": "idempotency-key",
+      "input": "run_2026.10.31",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "idempotency-key: 255 characters",
+      "rule": "idempotency-key",
+      "input": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+      "expected": {
+        "valid": true
+      },
+      "note": "255 characters"
+    },
+    {
+      "name": "idempotency-key: 256 characters",
+      "rule": "idempotency-key",
+      "input": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "256 characters"
+    },
+    {
+      "name": "idempotency-key: ''",
+      "rule": "idempotency-key",
+      "input": "",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "empty"
+    },
+    {
+      "name": "idempotency-key: 'a b'",
+      "rule": "idempotency-key",
+      "input": "a b",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a space"
+    },
+    {
+      "name": "idempotency-key: 'a/b'",
+      "rule": "idempotency-key",
+      "input": "a/b",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "/ is not allowed (§9.6.3)"
+    },
+    {
+      "name": "problem-type: 'https://atlas.jhg.com/problems/not_found'",
+      "rule": "problem-type",
+      "input": "https://atlas.jhg.com/problems/not_found",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "problem-type: 'https://atlas.jhg.com/problems/'",
+      "rule": "problem-type",
+      "input": "https://atlas.jhg.com/problems/",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no code"
+    },
+    {
+      "name": "problem-type: 'http://atlas.jhg.com/problems/not_found'",
+      "rule": "problem-type",
+      "input": "http://atlas.jhg.com/problems/not_found",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "http"
+    },
+    {
+      "name": "dataschema: 'urn:atlas:profile:portfolio.holdings@v1:3f9a1c0b7d2e4a65'",
+      "rule": "dataschema",
+      "input": "urn:atlas:profile:portfolio.holdings@v1:3f9a1c0b7d2e4a65",
+      "expected": {
+        "valid": true
+      },
+      "note": "§9.4.3's example"
+    },
+    {
+      "name": "dataschema: 'urn:atlas:profile:portfolio.holdings@v1#3f9a1c0b7d2e4a65'",
+      "rule": "dataschema",
+      "input": "urn:atlas:profile:portfolio.holdings@v1#3f9a1c0b7d2e4a65",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "# for :"
+    },
+    {
+      "name": "event-type: 'com.jhg.fiquant.data.landed.v1'",
+      "rule": "event-type",
+      "input": "com.jhg.fiquant.data.landed.v1",
+      "expected": {
+        "valid": true
+      },
+      "note": "§2.5's example"
+    },
+    {
+      "name": "event-type: 'com.jhg.fiquant.atlas.catalog.changed.v1'",
+      "rule": "event-type",
+      "input": "com.jhg.fiquant.atlas.catalog.changed.v1",
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "name": "event-type: 'com.jhg.fiquant.data.landed'",
+      "rule": "event-type",
+      "input": "com.jhg.fiquant.data.landed",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no version"
+    },
+    {
+      "name": "event-type: 'com.jhg.fiquant.data.landed@v1'",
+      "rule": "event-type",
+      "input": "com.jhg.fiquant.data.landed@v1",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "@ for ."
+    },
+    {
+      "name": "resource-name: 'nautilus/dashboards/d1'",
+      "rule": "resource-name",
+      "input": "nautilus/dashboards/d1",
+      "expected": {
+        "valid": true
+      },
+      "note": "§9.3.4's example",
+      "question": "Q-GRAM-1"
+    },
+    {
+      "name": "resource-name: 'conformance/things/t-1'",
+      "rule": "resource-name",
+      "input": "conformance/things/t-1",
+      "expected": {
+        "valid": true
+      },
+      "question": "Q-GRAM-1"
+    },
+    {
+      "name": "resource-name: 'kb/bases/b1/documents/7f'",
+      "rule": "resource-name",
+      "input": "kb/bases/b1/documents/7f",
+      "expected": {
+        "valid": true
+      },
+      "note": "nested collections",
+      "question": "Q-GRAM-1"
+    },
+    {
+      "name": "resource-name: 'nautilus/dashboards'",
+      "rule": "resource-name",
+      "input": "nautilus/dashboards",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no id",
+      "question": "Q-GRAM-1"
+    },
+    {
+      "name": "resource-name: 'nautilus/dashboards/D1'",
+      "rule": "resource-name",
+      "input": "nautilus/dashboards/D1",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "upper case",
+      "question": "Q-GRAM-1"
+    },
+    {
+      "name": "resource-name: '/nautilus/dashboards/d1'",
+      "rule": "resource-name",
+      "input": "/nautilus/dashboards/d1",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a leading /",
+      "question": "Q-GRAM-1"
+    },
+    {
+      "name": "operation-name: 'operations/op-91'",
+      "rule": "operation-name",
+      "input": "operations/op-91",
+      "expected": {
+        "valid": true
+      },
+      "note": "§4.1's example",
+      "question": "Q-GRAM-1"
+    },
+    {
+      "name": "operation-name: 'operations/'",
+      "rule": "operation-name",
+      "input": "operations/",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no id",
+      "question": "Q-GRAM-1"
+    },
+    {
+      "name": "entity-tag: '\"e8\"'",
+      "rule": "entity-tag",
+      "input": "\"e8\"",
+      "expected": {
+        "valid": true
+      },
+      "note": "§2.3's example"
+    },
+    {
+      "name": "entity-tag: '\"3f9a1c0b7d2e4a65\"'",
+      "rule": "entity-tag",
+      "input": "\"3f9a1c0b7d2e4a65\"",
+      "expected": {
+        "valid": true
+      },
+      "note": "a profile's ETag"
+    },
+    {
+      "name": "entity-tag: 'W/\"e8\"'",
+      "rule": "entity-tag",
+      "input": "W/\"e8\"",
+      "expected": {
+        "valid": true
+      },
+      "note": "a weak ETag"
+    },
+    {
+      "name": "entity-tag: '\"\"'",
+      "rule": "entity-tag",
+      "input": "\"\"",
+      "expected": {
+        "valid": true
+      },
+      "note": "empty"
+    },
+    {
+      "name": "entity-tag: 'e8'",
+      "rule": "entity-tag",
+      "input": "e8",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "no quotes"
+    },
+    {
+      "name": "entity-tag: '\"e 8\"'",
+      "rule": "entity-tag",
+      "input": "\"e 8\"",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "a space"
+    },
+    {
+      "name": "entity-tag: '\"e8'",
+      "rule": "entity-tag",
+      "input": "\"e8",
+      "expected": {
+        "valid": false,
+        "why": "abnf"
+      },
+      "note": "unterminated"
+    }
+  ]
+}

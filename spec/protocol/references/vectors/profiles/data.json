@@ -1,0 +1,425 @@
+{
+  "description": "A complete, agent-ready data profile (§3.1.3, §3.1.4a), as the gateway serves it: valid against profile.schema.json, each of its schemas valid against atlas-schema.schema.json in its role (a request schema closed, every other open), with the fingerprint of §9.4.",
+  "cases": [
+    {
+      "name": "portfolio.holdings@v1#8e61efdf45779059",
+      "profile": {
+        "identity": {
+          "id": "portfolio.holdings",
+          "version": 1,
+          "title": "Portfolio holdings",
+          "summary": "Positions in one or more portfolios on a date.",
+          "domain": "portfolio",
+          "owner": "QFI"
+        },
+        "properties": {
+          "family": "data",
+          "stability": "official",
+          "lifecycle": "stable",
+          "visibility": "listed",
+          "traits": [
+            {
+              "name": "Projectable",
+              "critical": false
+            },
+            {
+              "name": "Filterable",
+              "critical": false
+            },
+            {
+              "name": "AsOf",
+              "critical": false
+            },
+            {
+              "name": "Keyed",
+              "critical": false
+            },
+            {
+              "name": "Handoff",
+              "critical": false
+            },
+            {
+              "name": "Licensed",
+              "critical": false
+            }
+          ]
+        },
+        "interactions": {
+          "fetch": {
+            "effect": "read",
+            "result": "table",
+            "delivery": "chunked",
+            "execution": [
+              "gateway",
+              "handoff"
+            ],
+            "takes": "request",
+            "returns": "result",
+            "deadline": {
+              "default": "PT2M",
+              "max": "PT30M"
+            },
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/data/portfolio.holdings@v1:fetch",
+                "encodings": [
+                  "arrow",
+                  "json",
+                  "ndjson",
+                  "csv"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          },
+          "explain": {
+            "effect": "read",
+            "result": "record",
+            "delivery": "single",
+            "execution": [
+              "gateway"
+            ],
+            "takes": "request",
+            "deadline": {
+              "default": "PT30S",
+              "max": "PT2M"
+            },
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/data/portfolio.holdings@v1:explain",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          },
+          "export": {
+            "effect": "read",
+            "result": "content",
+            "delivery": "transfer",
+            "execution": [
+              "gateway"
+            ],
+            "takes": "request",
+            "deadline": {
+              "default": "PT10M",
+              "max": "PT2H"
+            },
+            "encodings": [
+              "parquet",
+              "arrow"
+            ],
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/data/portfolio.holdings@v1:export",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        },
+        "schemas": {
+          "request": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$vocabulary": {
+              "https://json-schema.org/draft/2020-12/vocab/core": true,
+              "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+              "https://json-schema.org/draft/2020-12/vocab/validation": true,
+              "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+              "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+              "https://atlas.jhg.com/vocab/2026-10": false
+            },
+            "type": "object",
+            "description": "Which portfolios, on which date, and which columns.",
+            "additionalProperties": false,
+            "required": [
+              "portfolios"
+            ],
+            "properties": {
+              "portfolios": {
+                "type": "array",
+                "description": "Portfolio codes, as portfolio.list names them.",
+                "minItems": 1,
+                "maxItems": 500,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "description": "A portfolio code.",
+                  "x-atlas-logical": "PortfolioCode",
+                  "x-atlas-reference": "portfolio.list@v1"
+                }
+              },
+              "as_of": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The valuation date; the latest when null.",
+                "format": "date",
+                "default": null
+              },
+              "asset_class": {
+                "description": "Only this asset class; every class when null.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "credit",
+                  "rates",
+                  null
+                ],
+                "x-atlas-enum": [
+                  {
+                    "value": "credit",
+                    "description": "Credit instruments."
+                  },
+                  {
+                    "value": "rates",
+                    "description": "Rates instruments."
+                  }
+                ],
+                "default": null
+              },
+              "columns": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "description": "The columns to return, as the reader names them; every column when null (Projectable).",
+                "items": {
+                  "type": "string",
+                  "description": "A column name.",
+                  "minLength": 1
+                },
+                "uniqueItems": true,
+                "default": null
+              }
+            }
+          },
+          "result": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$vocabulary": {
+              "https://json-schema.org/draft/2020-12/vocab/core": true,
+              "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+              "https://json-schema.org/draft/2020-12/vocab/validation": true,
+              "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+              "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+              "https://atlas.jhg.com/vocab/2026-10": false
+            },
+            "type": "array",
+            "description": "The holdings, one row per position.",
+            "items": {
+              "type": "object",
+              "description": "One position: a security held in a portfolio on a date.",
+              "required": [
+                "portfolio",
+                "as_of",
+                "title",
+                "market_value",
+                "weight",
+                "status"
+              ],
+              "properties": {
+                "portfolio": {
+                  "type": "string",
+                  "description": "The portfolio's code.",
+                  "x-atlas-logical": "PortfolioCode",
+                  "x-atlas-key": true
+                },
+                "isin": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "The security's ISIN; null for cash and instruments without one.",
+                  "x-atlas-logical": "Isin",
+                  "x-atlas-key": true
+                },
+                "as_of": {
+                  "type": "string",
+                  "description": "The valuation date.",
+                  "format": "date",
+                  "x-atlas-key": true
+                },
+                "title": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "The security's name, as Harbour holds it."
+                },
+                "market_value": {
+                  "type": "object",
+                  "description": "The position's market value, in its currency.",
+                  "x-atlas-logical": "Money",
+                  "x-atlas-aliases": [
+                    "mv"
+                  ]
+                },
+                "weight": {
+                  "type": "number",
+                  "description": "Its share of the portfolio's market value.",
+                  "x-atlas-logical": "Fraction"
+                },
+                "oas": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "description": "Option-adjusted spread over the government curve.",
+                  "x-atlas-logical": "Bp",
+                  "x-atlas-aliases": [
+                    "oas_bp"
+                  ],
+                  "x-atlas-deprecated": null
+                },
+                "status": {
+                  "description": "Whether the position is still held.",
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "closed",
+                    "UNKNOWN"
+                  ],
+                  "x-atlas-enum": [
+                    {
+                      "value": "open",
+                      "description": "Held at the as-of date."
+                    },
+                    {
+                      "value": "closed",
+                      "description": "Sold that day, kept for the day.",
+                      "aliases": [
+                        "sold"
+                      ]
+                    },
+                    {
+                      "value": "UNKNOWN",
+                      "description": "A value this reader does not know (§9.5.5)."
+                    }
+                  ]
+                },
+                "duration": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "description": "Modified duration.",
+                  "x-atlas-logical": "Years",
+                  "x-atlas-deprecated": {
+                    "reason": "Use risk.duration@v1, which states its curve.",
+                    "since": "2026-09-01",
+                    "sunset": "2027-03-01",
+                    "replaced_by": null
+                  }
+                }
+              }
+            }
+          }
+        },
+        "errors": [
+          {
+            "code": "portfolio_not_found",
+            "status": 404,
+            "retryable": false,
+            "description": "No portfolio has one of the codes asked for.",
+            "next": "Call portfolio.list@v1:fetch for the codes you may use."
+          },
+          {
+            "code": "warehouse_suspended",
+            "status": 503,
+            "retryable": true,
+            "description": "The warehouse that serves the holdings is suspended.",
+            "next": "Wait retry_after seconds, then repeat the call."
+          }
+        ],
+        "meaning": {
+          "grain": "portfolio × security × date",
+          "keys": [
+            "portfolio",
+            "isin",
+            "as_of"
+          ],
+          "as_of": "the portfolio's last valuation on or before as_of",
+          "source": "Harbour's portfolio holdings view"
+        },
+        "compatibility": {
+          "request": "BACKWARD_TRANSITIVE",
+          "result": "FULL_TRANSITIVE"
+        },
+        "usage": {
+          "when": "You need the positions of named portfolios on a date.",
+          "when_not": "You need an index's constituents: use index.constituents@v1.",
+          "examples": [
+            {
+              "title": "Global credit, latest",
+              "interaction": "fetch",
+              "request": {
+                "portfolios": [
+                  "GLOBAL-CREDIT"
+                ]
+              }
+            },
+            {
+              "title": "Weights on a date",
+              "interaction": "fetch",
+              "request": {
+                "portfolios": [
+                  "147HYC"
+                ],
+                "as_of": "2026-10-30",
+                "columns": [
+                  "portfolio",
+                  "isin",
+                  "weight"
+                ]
+              }
+            }
+          ],
+          "related": [
+            "portfolio.list@v1",
+            "index.constituents@v1"
+          ],
+          "cost": "One warehouse query; large results are handed off."
+        },
+        "evolution": {
+          "previous_profile": "portfolio.holdings@v1#2b71c0d4e9a35f18",
+          "lens": [
+            {
+              "op": "rename",
+              "from": "mv",
+              "to": "market_value"
+            }
+          ],
+          "changelog": [
+            {
+              "date": "2026-10-01",
+              "change": "Renamed mv to market_value."
+            }
+          ]
+        },
+        "revision": 7,
+        "fingerprint": "8e61efdf45779059"
+      },
+      "expected": {
+        "fingerprint": "8e61efdf45779059",
+        "exact": "portfolio.holdings@v1#8e61efdf45779059",
+        "valid": true,
+        "agent_ready": true
+      }
+    }
+  ]
+}

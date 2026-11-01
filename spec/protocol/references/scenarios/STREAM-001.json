@@ -1,0 +1,133 @@
+{
+  "id": "STREAM-001",
+  "level": "Streaming",
+  "description": "NDJSON rows, then the end line: every row, then the end line's usage.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {},
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.rows@v1:fetch",
+        "request": {
+          "n": 7
+        },
+        "options": {
+          "accept": [
+            "application/x-ndjson"
+          ]
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value": [
+        {
+          "i": 0,
+          "label": "row-0",
+          "amount": "0.000000",
+          "at": "2026-01-01T00:00:00.000000Z",
+          "day": "2026-01-01",
+          "share": 0.0
+        },
+        {
+          "i": 1,
+          "label": "row-1",
+          "amount": "1.500000",
+          "at": "2026-01-01T00:00:01.000001Z",
+          "day": "2026-01-02",
+          "share": 0.01
+        },
+        {
+          "i": 2,
+          "label": "row-2",
+          "amount": "3.000000",
+          "at": "2026-01-01T00:00:02.000002Z",
+          "day": "2026-01-03",
+          "share": 0.02
+        },
+        {
+          "i": 3,
+          "label": "row-3",
+          "amount": "4.500000",
+          "at": "2026-01-01T00:00:03.000003Z",
+          "day": "2026-01-04",
+          "share": 0.03
+        },
+        {
+          "i": 4,
+          "label": "row-4",
+          "amount": "6.000000",
+          "at": "2026-01-01T00:00:04.000004Z",
+          "day": "2026-01-05",
+          "share": null
+        },
+        {
+          "i": 5,
+          "label": "row-5",
+          "amount": "7.500000",
+          "at": "2026-01-01T00:00:05.000005Z",
+          "day": "2026-01-06",
+          "share": 0.05
+        },
+        {
+          "i": 6,
+          "label": "row-6",
+          "amount": "9.000000",
+          "at": "2026-01-01T00:00:06.000006Z",
+          "day": "2026-01-07",
+          "share": 0.06
+        }
+      ],
+      "usage": {
+        "rows": 7
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.rows@v1:fetch"
+      },
+      "name": "Accept",
+      "contains": "application/x-ndjson"
+    }
+  ],
+  "questions": [
+    "Q-RUN-5"
+  ]
+}

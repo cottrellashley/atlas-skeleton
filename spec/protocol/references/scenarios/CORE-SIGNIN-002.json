@@ -1,0 +1,120 @@
+{
+  "id": "CORE-SIGNIN-002",
+  "level": "Core",
+  "description": "A token within 60 seconds of expiry is refreshed first, at the bootstrap's token endpoint; the file is rewritten atomically, mode 0600 in a 0700 directory.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-old",
+          "expires_at": {
+            "$now_plus_s": 30
+          },
+          "refresh_token": "rt-1"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "tokens": {
+      "access": [
+        "ct-new"
+      ],
+      "refresh": {
+        "rt-1": {
+          "access_token": "ct-new",
+          "refresh_token": "rt-2",
+          "expires_in": 3600
+        }
+      }
+    }
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "whoami",
+      "args": {}
+    },
+    {
+      "id": 3,
+      "op": "suite.expect_file",
+      "args": {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json_contains": {
+          "access_token": "ct-new",
+          "refresh_token": "rt-2"
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true
+    },
+    {
+      "id": 3,
+      "ok": true
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "order",
+      "selects": [
+        {
+          "path": "/oauth/token",
+          "method": "POST"
+        },
+        {
+          "address": "atlas.whoami:fetch"
+        }
+      ]
+    },
+    {
+      "assert": "body",
+      "select": {
+        "path": "/oauth/token"
+      },
+      "form_contains": {
+        "grant_type": "refresh_token",
+        "refresh_token": "rt-1"
+      }
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "atlas.whoami:fetch"
+      },
+      "name": "Authorization",
+      "equals": "Bearer ct-new"
+    },
+    {
+      "assert": "count",
+      "select": {
+        "header_equals": {
+          "Authorization": "Bearer ct-old"
+        }
+      },
+      "equals": 0
+    }
+  ]
+}

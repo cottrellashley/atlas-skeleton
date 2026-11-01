@@ -1,0 +1,106 @@
+{
+  "id": "CORE-RES-002",
+  "level": "Core",
+  "description": "Rows answering a request that named columns are valid against the result schema projected to those columns (§9.5.2 step 5).",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      },
+      {
+        "path": "{WORKDIR}/atlas.lock",
+        "mode": "0644",
+        "text": "[capabilities]\n\"conformance.evolving\" = { version = 1, fingerprint = \"73def445ee90c57a\" }\n"
+      }
+    ],
+    "cwd": "{WORKDIR}"
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "conformance.evolving@v1:fetch"
+        },
+        "respond": {
+          "status": 200,
+          "profile": "conformance.evolving@v1#73def445ee90c57a",
+          "body": [
+            {
+              "id": "p1",
+              "weight": 0.015
+            },
+            {
+              "id": "p2",
+              "weight": 0.25
+            }
+          ]
+        },
+        "times": 1
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.evolving@v1:fetch",
+        "request": {
+          "ids": [
+            "p1",
+            "p2"
+          ],
+          "columns": [
+            "id",
+            "weight"
+          ]
+        },
+        "options": {
+          "accept": [
+            "application/json"
+          ]
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value": [
+        {
+          "id": "p1",
+          "weight": 0.015
+        },
+        {
+          "id": "p2",
+          "weight": 0.25
+        }
+      ]
+    }
+  ],
+  "expected_requests": []
+}

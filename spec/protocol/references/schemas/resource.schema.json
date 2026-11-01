@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/resource.schema.json",
+  "title": "Resource envelope",
+  "description": "Every record of a resource-family capability carries this envelope beside its own fields (§9.3.4): `name`, `metadata`, and `status` for a resource the gateway converges. A resource profile's record schema declares name, metadata and (if it converges) status exactly as $defs here; its own fields sit at the top of the record.",
+  "type": "object",
+  "required": [
+    "name",
+    "metadata"
+  ],
+  "properties": {
+    "name": {
+      "$ref": "#/$defs/name"
+    },
+    "metadata": {
+      "$ref": "#/$defs/metadata"
+    },
+    "status": {
+      "$ref": "#/$defs/status"
+    }
+  },
+  "$defs": {
+    "name": {
+      "type": "string",
+      "description": "The resource name: its domain, then collection and id pairs, stable for its life (resource-name in grammar.abnf).",
+      "pattern": "^[a-z](-?[a-z0-9])*(/[a-z](-?[a-z0-9])*/[a-z0-9][a-z0-9-]*)+$",
+      "x-atlas-key": true
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Written by the gateway, except labels; ignored in a create or update body.",
+      "required": [
+        "uid",
+        "etag",
+        "generation",
+        "created",
+        "updated",
+        "owner",
+        "labels",
+        "deleting"
+      ],
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The resource's unique id, never reused.",
+          "minLength": 1
+        },
+        "etag": {
+          "type": "string",
+          "description": "As the ETag header: an entity-tag with its quotes. Moves with generation, never with status.",
+          "pattern": "^(W/)?\"[!#-~]*\"$"
+        },
+        "generation": {
+          "type": "integer",
+          "description": "Moves on every change to the record's own fields or labels, never on a status change.",
+          "minimum": 1,
+          "x-atlas-unit": "count"
+        },
+        "created": {
+          "type": "string",
+          "description": "When it was created.",
+          "format": "date-time"
+        },
+        "updated": {
+          "type": "string",
+          "description": "When its own fields or labels last changed.",
+          "format": "date-time"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Who owns it.",
+          "x-atlas-logical": "Principal"
+        },
+        "labels": {
+          "type": "object",
+          "description": "The caller's labels: the one member of metadata a caller writes.",
+          "additionalProperties": {
+            "type": "string",
+            "description": "A label's value."
+          }
+        },
+        "deleting": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "When a delete began that is still removing what the resource made; null otherwise.",
+          "format": "date-time"
+        }
+      }
+    },
+    "status": {
+      "type": "object",
+      "description": "Only on a resource the gateway converges; written by its controller only.",
+      "required": [
+        "observed_generation",
+        "conditions"
+      ],
+      "properties": {
+        "observed_generation": {
+          "type": "integer",
+          "description": "The generation the controller last acted on.",
+          "minimum": 0,
+          "x-atlas-unit": "count"
+        },
+        "conditions": {
+          "type": "array",
+          "description": "One per type; every converged resource has `ready`.",
+          "items": {
+            "type": "object",
+            "description": "A condition. Types and reasons are open sets: a client keeps one it does not know.",
+            "required": [
+              "type",
+              "status",
+              "reason",
+              "message",
+              "observed_generation",
+              "last_transition"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "The condition's type: ready, or one of the resource's own.",
+                "minLength": 1
+              },
+              "status": {
+                "type": "string",
+                "description": "Whether the condition holds.",
+                "enum": [
+                  "true",
+                  "false",
+                  "unknown",
+                  "UNKNOWN"
+                ],
+                "x-atlas-enum": [
+                  {
+                    "value": "true",
+                    "description": "It holds."
+                  },
+                  {
+                    "value": "false",
+                    "description": "It does not hold."
+                  },
+                  {
+                    "value": "unknown",
+                    "description": "The controller cannot tell."
+                  },
+                  {
+                    "value": "UNKNOWN",
+                    "description": "A status this reader does not know (§9.5.5)."
+                  }
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "description": "A reason code; an open set.",
+                "minLength": 1
+              },
+              "message": {
+                "type": "string",
+                "description": "In words; may be empty."
+              },
+              "observed_generation": {
+                "type": "integer",
+                "description": "The generation it was observed for; below metadata.generation it is out of date.",
+                "minimum": 0,
+                "x-atlas-unit": "count"
+              },
+              "last_transition": {
+                "type": "string",
+                "description": "When status last changed.",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

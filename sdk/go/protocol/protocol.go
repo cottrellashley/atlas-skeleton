@@ -1,35 +1,79 @@
-// Package protocol is the Go implementation of what crosses the wire between
-// an Atlas client and the Atlas Gateway (the spec's §9).
+// Package protocol is atlas/1.0, the wire between an Atlas client and the
+// Atlas Gateway (§9), in Go: the version and the words every other package
+// speaks (levels, deliveries, encodings, lens operations, executions), the
+// media types (§9.1.7), the headers and their Structured Field types (§9.6.3),
+// the problem registry (§9.3.3) and fingerprints (§9.4).
 //
-// This skeleton speaks a provisional version, atlas/0.1. It keeps the
-// invariants the architecture rests on: every answer names the exact profile
-// it was written under, clients learn everything from what the gateway
-// serves, readers resolve what a writer sent to the profile they know, and
-// every failure is one problem document. It does not yet implement §9's
-// exact documents, grammars or algorithms. Those are designed after the
-// proofs, from what the proofs turned out to need.
+// The grammars it rests on are its subpackages: ijson (I-JSON and RFC 8785),
+// grammar (the ABNF of §9.1) and sf (RFC 9651).
+//
+// The text of §9 is normative. This package is one implementation of it,
+// checked against the vectors in spec/protocol/references, which are written
+// from the text and never from this package's output (D22).
 package protocol
 
-import (
-	"fmt"
-	"strconv"
-	"strings"
-	"time"
+// Version is the protocol version this package speaks.
+const Version = "atlas/1.0"
+
+// WellKnownPath is the bootstrap's path (§9.6.1, RFC 8615).
+const WellKnownPath = "/.well-known/atlas"
+
+// Levels a client declares in Atlas-Client-Features (§9). Every client is at
+// least Core.
+const (
+	LevelCore      = "core"
+	LevelStreaming = "streaming"
+	LevelColumnar  = "columnar"
+	LevelBulk      = "bulk"
+	LevelEvents    = "events"
+	LevelHandoff   = "handoff"
+	LevelBroker    = "broker" // reserved until O54 closes; never offered
 )
 
-// Version is the protocol version this package speaks.
-const Version = "atlas/0.1"
-
-// Headers a call or an answer may carry (§4.1, §9.6.3).
+// Deliveries: how an interaction's answer travels (§4.1).
 const (
-	HeaderClient         = "Atlas-Client"
-	HeaderClientFeatures = "Atlas-Client-Features"
-	HeaderProfileExpect  = "Atlas-Profile-Expect"
-	HeaderProfile        = "Atlas-Profile"
-	HeaderDeadline       = "Atlas-Deadline"
-	HeaderExecution      = "Atlas-Execution"
-	HeaderErrorCode      = "Atlas-Error-Code"
-	HeaderRequestID      = "X-Request-Id"
+	DeliverySingle       = "single"
+	DeliveryChunked      = "chunked"
+	DeliverySubscription = "subscription"
+	DeliveryOperation    = "operation"
+	DeliveryTransfer     = "transfer"
+)
+
+// Encodings a binding serves and a client reads (§9.2).
+const (
+	EncodingJSON    = "json"
+	EncodingNDJSON  = "ndjson"
+	EncodingArrow   = "arrow"
+	EncodingCSV     = "csv"
+	EncodingParquet = "parquet"
+)
+
+// Lens operations (§9.5.3).
+const (
+	LensRename      = "rename"
+	LensAliasValue  = "alias_value"
+	LensConvertUnit = "convert_unit"
+	LensPromote     = "promote"
+	LensDefault     = "default"
+	LensDrop        = "drop"
+)
+
+// LensOperations are every lens operation of atlas/1.0, in the order §9.5.3
+// lists them.
+var LensOperations = []string{LensRename, LensAliasValue, LensConvertUnit, LensPromote, LensDefault, LensDrop}
+
+// Executions of a data result, as Atlas-Execution prefers them (§2.2).
+const (
+	ExecutionGateway = "gateway"
+	ExecutionHandoff = "handoff"
+	ExecutionClient  = "client"
+)
+
+// Handoff features: the chunk format a client decodes, and whether it can
+// reach Snowflake's result storage itself (§2.2.1).
+const (
+	HandoffSnowflakeArrow1 = "snowflake-arrow/1"
+	ReachSnowflake         = "reach-snowflake"
 )
 
 // Media types (§9.1.7).
@@ -38,96 +82,27 @@ const (
 	MediaProblem     = "application/problem+json"
 	MediaNDJSON      = "application/x-ndjson"
 	MediaArrowStream = "application/vnd.apache.arrow.stream"
+	MediaCSV         = "text/csv"
+	MediaParquet     = "application/vnd.apache.parquet"
+	MediaProfile     = "application/vnd.atlas.profile+json"
+	MediaCloudEvent  = "application/cloudevents+json"
 	MediaHandoff     = "application/vnd.atlas.handoff+json"
+	MediaConnect     = "application/vnd.atlas.connect+json"
 )
 
-// Executions of a data result (§2.2): who does the work and moves the bytes.
-const (
-	ExecutionGateway = "gateway"
-	ExecutionHandoff = "handoff"
-)
-
-// Levels a client may declare (§9.C). Broker is deferred and not offered.
-const (
-	LevelCore      = "core"
-	LevelStreaming = "streaming"
-	LevelColumnar  = "columnar"
-	LevelHandoff   = "handoff"
-)
-
-// Features is what a client declares it implements, sent as
-// Atlas-Client-Features so the gateway serves it the next way down where it
-// lacks something (§3.3.11).
-type Features struct {
-	Levels  []string // core, streaming, columnar, handoff
-	Handoff []string // chunk formats it decodes, such as snowflake-arrow/1
-}
-
-// Has reports whether the features include the level.
-func (f Features) Has(level string) bool { return contains(f.Levels, level) }
-
-// Decodes reports whether the client decodes the handoff format.
-func (f Features) Decodes(format string) bool { return contains(f.Handoff, format) }
-
-// String renders the features as a Structured Field dictionary of inner
-// lists: levels=(core columnar), handoff=(snowflake-arrow/1).
-func (f Features) String() string {
-	var parts []string
-	if len(f.Levels) > 0 {
-		parts = append(parts, "levels=("+strings.Join(f.Levels, " ")+")")
+// MediaFor returns the media type an encoding travels as.
+func MediaFor(encoding string) (string, bool) {
+	switch encoding {
+	case EncodingJSON:
+		return MediaJSON, true
+	case EncodingNDJSON:
+		return MediaNDJSON, true
+	case EncodingArrow:
+		return MediaArrowStream, true
+	case EncodingCSV:
+		return MediaCSV, true
+	case EncodingParquet:
+		return MediaParquet, true
 	}
-	if len(f.Handoff) > 0 {
-		parts = append(parts, "handoff=("+strings.Join(f.Handoff, " ")+")")
-	}
-	return strings.Join(parts, ", ")
-}
-
-// ParseFeatures reads Atlas-Client-Features. Members it does not know are
-// ignored, as the tolerant reader requires (§9.7.10); a client that declares
-// nothing is served at Core.
-func ParseFeatures(s string) Features {
-	var f Features
-	for _, member := range strings.Split(s, ",") {
-		key, value, ok := strings.Cut(strings.TrimSpace(member), "=")
-		if !ok {
-			continue
-		}
-		value = strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(value), "("), ")")
-		items := strings.Fields(value)
-		switch strings.TrimSpace(key) {
-		case "levels":
-			f.Levels = items
-		case "handoff":
-			f.Handoff = items
-		}
-	}
-	if !f.Has(LevelCore) {
-		f.Levels = append([]string{LevelCore}, f.Levels...)
-	}
-	return f
-}
-
-// FormatDeadline writes an absolute deadline as an RFC 9651 Date: @seconds.
-func FormatDeadline(t time.Time) string { return "@" + strconv.FormatInt(t.Unix(), 10) }
-
-// ParseDeadline reads an RFC 9651 Date.
-func ParseDeadline(s string) (time.Time, error) {
-	v, ok := strings.CutPrefix(strings.TrimSpace(s), "@")
-	if !ok {
-		return time.Time{}, fmt.Errorf("deadline %q is not an RFC 9651 date (@seconds)", s)
-	}
-	n, err := strconv.ParseInt(v, 10, 64)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("deadline %q is not an RFC 9651 date (@seconds)", s)
-	}
-	return time.Unix(n, 0), nil
-}
-
-func contains(list []string, s string) bool {
-	for _, v := range list {
-		if v == s {
-			return true
-		}
-	}
-	return false
+	return "", false
 }

@@ -1,0 +1,347 @@
+{
+  "id": "CORE-DISC-001",
+  "level": "Core",
+  "description": "Catalogue pages are followed by cursor; every profile's fingerprint is recomputed, and a wrong one is invalid_document.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "atlas.describe:fetch",
+          "body_contains": {
+            "id": "conformance.rows@v1"
+          }
+        },
+        "respond": {
+          "status": 200,
+          "describe_profile": {
+            "identity": {
+              "id": "conformance.rows",
+              "version": 1,
+              "title": "conformance.rows",
+              "summary": "Rows 0 to n-1, to prove framing, end lines, truncation, columns and encodings.",
+              "domain": "conformance",
+              "owner": "Atlas"
+            },
+            "properties": {
+              "family": "data",
+              "stability": "official",
+              "lifecycle": "stable",
+              "visibility": "listed",
+              "traits": [
+                {
+                  "name": "Projectable",
+                  "critical": false
+                }
+              ]
+            },
+            "interactions": {
+              "fetch": {
+                "effect": "read",
+                "result": "table",
+                "delivery": "chunked",
+                "execution": [
+                  "gateway"
+                ],
+                "takes": "request",
+                "returns": "result",
+                "deadline": {
+                  "default": "PT30S",
+                  "max": "PT2M"
+                },
+                "bindings": [
+                  {
+                    "protocol": "https",
+                    "server": "gateway",
+                    "method": "POST",
+                    "address": "/v1/data/conformance.rows@v1:fetch",
+                    "encodings": [
+                      "arrow",
+                      "ndjson",
+                      "json"
+                    ],
+                    "auth": "bearer"
+                  }
+                ]
+              },
+              "explain": {
+                "effect": "read",
+                "result": "record",
+                "delivery": "single",
+                "execution": [
+                  "gateway"
+                ],
+                "takes": "request",
+                "deadline": {
+                  "default": "PT30S",
+                  "max": "PT2M"
+                },
+                "bindings": [
+                  {
+                    "protocol": "https",
+                    "server": "gateway",
+                    "method": "POST",
+                    "address": "/v1/data/conformance.rows@v1:explain",
+                    "encodings": [
+                      "json"
+                    ],
+                    "auth": "bearer"
+                  }
+                ]
+              },
+              "export": {
+                "effect": "read",
+                "result": "content",
+                "delivery": "transfer",
+                "execution": [
+                  "gateway"
+                ],
+                "takes": "request",
+                "deadline": {
+                  "default": "PT5M",
+                  "max": "PT30M"
+                },
+                "encodings": [
+                  "parquet",
+                  "arrow"
+                ],
+                "bindings": [
+                  {
+                    "protocol": "https",
+                    "server": "gateway",
+                    "method": "POST",
+                    "address": "/v1/data/conformance.rows@v1:export",
+                    "encodings": [
+                      "json"
+                    ],
+                    "auth": "bearer"
+                  }
+                ]
+              }
+            },
+            "schemas": {
+              "request": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$vocabulary": {
+                  "https://json-schema.org/draft/2020-12/vocab/core": true,
+                  "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+                  "https://json-schema.org/draft/2020-12/vocab/validation": true,
+                  "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+                  "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+                  "https://atlas.jhg.com/vocab/2026-10": false
+                },
+                "type": "object",
+                "description": "How many rows, and which columns.",
+                "additionalProperties": false,
+                "required": [
+                  "n"
+                ],
+                "properties": {
+                  "n": {
+                    "type": "integer",
+                    "description": "How many rows.",
+                    "minimum": 0,
+                    "maximum": 1000000,
+                    "x-atlas-unit": "count"
+                  },
+                  "columns": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "description": "The columns to return, as the reader names them.",
+                    "items": {
+                      "type": "string",
+                      "description": "A column name.",
+                      "minLength": 1
+                    },
+                    "uniqueItems": true,
+                    "default": null
+                  }
+                }
+              },
+              "result": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$vocabulary": {
+                  "https://json-schema.org/draft/2020-12/vocab/core": true,
+                  "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+                  "https://json-schema.org/draft/2020-12/vocab/validation": true,
+                  "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+                  "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+                  "https://atlas.jhg.com/vocab/2026-10": false
+                },
+                "type": "array",
+                "description": "n rows.",
+                "items": {
+                  "type": "object",
+                  "description": "Row i of n.",
+                  "required": [
+                    "i",
+                    "label",
+                    "amount",
+                    "at",
+                    "day"
+                  ],
+                  "properties": {
+                    "i": {
+                      "type": "integer",
+                      "description": "The row's index.",
+                      "minimum": 0,
+                      "x-atlas-unit": "count",
+                      "x-atlas-key": true
+                    },
+                    "label": {
+                      "type": "string",
+                      "description": "row-<i>."
+                    },
+                    "amount": {
+                      "type": "string",
+                      "description": "i × 1.5, exactly.",
+                      "x-atlas-logical": "Decimal(18,6)"
+                    },
+                    "at": {
+                      "type": "string",
+                      "description": "2026-01-01T00:00:00Z plus i seconds and i microseconds.",
+                      "format": "date-time"
+                    },
+                    "day": {
+                      "type": "string",
+                      "description": "2026-01-01 plus i days.",
+                      "format": "date"
+                    },
+                    "share": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "description": "i / 100, or null when i % 5 = 4.",
+                      "x-atlas-logical": "Fraction"
+                    }
+                  }
+                }
+              }
+            },
+            "errors": [],
+            "meaning": {
+              "grain": "one row per i",
+              "keys": [
+                "i"
+              ],
+              "source": "the conformance gateway"
+            },
+            "usage": {
+              "when": "In the conformance suite only.",
+              "examples": [
+                {
+                  "title": "Three rows",
+                  "interaction": "fetch",
+                  "request": {
+                    "n": 3
+                  }
+                }
+              ]
+            },
+            "fingerprint": "0000000000000000"
+          }
+        },
+        "times": 1
+      }
+    ],
+    "state": {
+      "catalog_page_size": 4
+    }
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "catalog",
+      "args": {
+        "domain": "conformance"
+      }
+    },
+    {
+      "id": 3,
+      "op": "describe",
+      "args": {
+        "id": "conformance.echo@v1"
+      }
+    },
+    {
+      "id": 4,
+      "op": "describe",
+      "args": {
+        "id": "conformance.rows@v1"
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value_contains": {
+        "$count": 13
+      }
+    },
+    {
+      "id": 3,
+      "ok": true,
+      "value_contains": {
+        "profile": {
+          "fingerprint": "f17339273f0617c2"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "ok": false,
+      "problem": {
+        "code": "invalid_document"
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "atlas.catalog:fetch"
+      },
+      "equals": 4
+    },
+    {
+      "assert": "cursor_chain",
+      "select": {
+        "address": "atlas.catalog:fetch"
+      }
+    }
+  ],
+  "note": "13 of the 15 conformance capabilities are in the working view (retired@v1 is retired; critical@v1 has a critical trait no client supports, §2.6 rule 2), four to a page: four pages, each request carrying the previous page's next_cursor. `$count` in value_contains is the number of items the iterator yields."
+}

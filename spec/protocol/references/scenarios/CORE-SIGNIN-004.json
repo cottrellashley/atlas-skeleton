@@ -1,0 +1,96 @@
+{
+  "id": "CORE-SIGNIN-004",
+  "level": "Core",
+  "description": "A conditional-access claims challenge, with no person at the client: unauthenticated, with the challenge in details.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "atlas.whoami:fetch"
+        },
+        "respond": {
+          "status": 401,
+          "problem": {
+            "code": "unauthenticated",
+            "retryable": false
+          },
+          "headers": {
+            "WWW-Authenticate": "Bearer realm=\"atlas\", claims=\"eyJhY2Nlc3NfdG9rZW4iOnsiYWNycyI6eyJ2YWx1ZXMiOlsiYzEiXX19fQ\""
+          }
+        },
+        "times": 5
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "whoami",
+      "args": {}
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": false,
+      "problem": {
+        "code": "unauthenticated",
+        "details": [
+          {
+            "challenge": "Bearer realm=\"atlas\", claims=\"eyJhY2Nlc3NfdG9rZW4iOnsiYWNycyI6eyJ2YWx1ZXMiOlsiYzEiXX19fQ\""
+          }
+        ]
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "atlas.whoami:fetch"
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "path": "/oauth/token"
+      },
+      "equals": 0
+    }
+  ],
+  "note": "A refreshed token cannot satisfy a claims challenge; only a person signing in again can.",
+  "questions": [
+    "Q-DOC-9"
+  ]
+}

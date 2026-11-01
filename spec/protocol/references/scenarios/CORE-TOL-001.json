@@ -1,0 +1,102 @@
+{
+  "id": "CORE-TOL-001",
+  "level": "Core",
+  "description": "Unknown members, headers, enum values and traits are ignored; an unknown enum value reads UNKNOWN.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "serve": [
+      "conformance.echo@v1#4fe7738a97223902"
+    ],
+    "steps": [
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch"
+        },
+        "respond": {
+          "status": 200,
+          "profile": "conformance.echo@v1#4fe7738a97223902",
+          "headers": {
+            "Atlas-Future": "?1",
+            "X-Something-New": "1"
+          },
+          "body": {
+            "text": "hello",
+            "count": 1,
+            "ratio": null,
+            "when": null,
+            "kind": "whisper",
+            "tags": [],
+            "echoed_at": "2026-10-31T00:00:00Z",
+            "zzz": {
+              "nested": true
+            }
+          }
+        },
+        "times": 1
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "hello"
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value": {
+        "text": "hello",
+        "count": 1,
+        "ratio": null,
+        "when": null,
+        "kind": "UNKNOWN",
+        "tags": []
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "describe_exact",
+      "exact": "conformance.echo@v1#4fe7738a97223902",
+      "count": 1
+    }
+  ],
+  "note": "The answer is written under a newer profile of the version (its kind 'whisper', its member echoed_at, its trait FutureTrait); the client fetches it by exact and resolves it to the profile it called with: whisper reads UNKNOWN, echoed_at and zzz are dropped."
+}

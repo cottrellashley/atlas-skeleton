@@ -1,0 +1,115 @@
+{
+  "id": "CORE-CALL-004",
+  "level": "Core",
+  "description": "A write refused once with 503 (retryable) is retried with the same Idempotency-Key.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "conformance.thing@v1:create",
+          "nth": 1
+        },
+        "respond": {
+          "status": 503,
+          "problem": {
+            "code": "unavailable",
+            "retryable": true,
+            "retry_after": 1
+          },
+          "headers": {
+            "Retry-After": "1"
+          }
+        },
+        "times": 1
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.thing@v1:create",
+        "request": {
+          "name": "conformance/things/t1",
+          "colour": "red",
+          "size": 3
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value_contains": {
+        "name": "conformance/things/t1"
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.thing@v1:create"
+      },
+      "equals": 2
+    },
+    {
+      "assert": "same_header",
+      "name": "Idempotency-Key",
+      "selects": [
+        {
+          "address": "conformance.thing@v1:create",
+          "nth": 1
+        },
+        {
+          "address": "conformance.thing@v1:create",
+          "nth": 2
+        }
+      ]
+    },
+    {
+      "assert": "interval",
+      "from": {
+        "address": "conformance.thing@v1:create",
+        "nth": 1
+      },
+      "to": {
+        "address": "conformance.thing@v1:create",
+        "nth": 2
+      },
+      "min_ms": 1000
+    }
+  ]
+}

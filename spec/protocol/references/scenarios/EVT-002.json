@@ -1,0 +1,107 @@
+{
+  "id": "EVT-002",
+  "level": "Events",
+  "description": "publish validates the payload first, then sends a CloudEvent with 9.7.8's attributes over the handover.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {},
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "publish",
+      "args": {
+        "id": "conformance.tick@v1",
+        "payload": {
+          "seq": 1,
+          "n": "ten"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "publish",
+      "args": {
+        "id": "conformance.tick@v1",
+        "payload": {
+          "seq": 1,
+          "n": 10
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": false,
+      "problem": {
+        "code": "invalid_request",
+        "target": "/n"
+      }
+    },
+    {
+      "id": 3,
+      "ok": true,
+      "value_contains": {
+        "id": {
+          "$uuid": true
+        }
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.tick@v1:publish"
+      },
+      "equals": 1
+    },
+    {
+      "assert": "bus",
+      "count": 1,
+      "contains": {
+        "type": "com.jhg.fiquant.conformance.tick.v1",
+        "dataschema": "urn:atlas:profile:conformance.tick@v1:61948f2a0e7d7132",
+        "specversion": "1.0",
+        "data": {
+          "seq": 1,
+          "n": 10
+        }
+      },
+      "uuid": "/id",
+      "recent": "/time",
+      "equals_client_name": "/source"
+    }
+  ],
+  "questions": [
+    "Q-EVT-1"
+  ]
+}

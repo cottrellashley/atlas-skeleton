@@ -1,0 +1,27 @@
+[project]
+name = "atlasref"
+version = "1.0.0"
+description = "The Atlas Protocol's machine-readable references (schemas, grammar, vectors, scenarios), generated from the text of §9 with independent reference implementations"
+requires-python = ">=3.12"
+# Pinned exactly: the references regenerate byte-identically only on these.
+dependencies = [
+  "rfc8785==0.1.4",
+  "jsonschema==4.26.0",
+  "pyarrow==26.0.0",
+  "sqlglot==30.27.0",
+  "http-sf==1.5.0",
+]
+
+[dependency-groups]
+dev = ["pytest==9.2.0"]
+
+[build-system]
+requires = ["uv_build>=0.9,<0.10"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "atlasref"
+module-root = ""
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

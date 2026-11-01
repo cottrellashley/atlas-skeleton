@@ -1,0 +1,479 @@
+{
+  "id": "CORE-BOOT-001",
+  "level": "Core",
+  "description": "The bootstrap is fetched without a token and revalidated with If-None-Match; every URI is built from it (here atlas.whoami at an address the bootstrap moved).",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "bootstrap": {
+      "protocols": [
+        "atlas/1.0"
+      ],
+      "minimum_protocol": "atlas/1.0",
+      "environment": "conformance",
+      "servers": {
+        "gateway": {
+          "url": "{gateway}",
+          "description": "The conformance gateway."
+        }
+      },
+      "builtins": {
+        "atlas.whoami": {
+          "version": 1,
+          "interactions": {
+            "fetch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/bootstrapped/who-am-i",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.catalog": {
+          "version": 1,
+          "interactions": {
+            "fetch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.catalog:fetch",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.search": {
+          "version": 1,
+          "interactions": {
+            "fetch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.search:fetch",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.describe": {
+          "version": 1,
+          "interactions": {
+            "fetch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.describe:fetch",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.guide": {
+          "version": 1,
+          "interactions": {
+            "fetch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.guide:fetch",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.access": {
+          "version": 1,
+          "interactions": {
+            "fetch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.access:fetch",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.usage": {
+          "version": 1,
+          "interactions": {
+            "fetch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.usage:fetch",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.setup": {
+          "version": 1,
+          "interactions": {
+            "fetch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.setup:fetch",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.clients": {
+          "version": 1,
+          "interactions": {
+            "fetch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.clients:fetch",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.compare": {
+          "version": 1,
+          "interactions": {
+            "fetch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.compare:fetch",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.operation": {
+          "version": 1,
+          "interactions": {
+            "get": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.operation:get",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            },
+            "list": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.operation:list",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            },
+            "cancel": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.operation:cancel",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            },
+            "watch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.operation:watch",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.catalog.changed": {
+          "version": 1,
+          "interactions": {
+            "subscribe": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.catalog.changed:subscribe",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.settings": {
+          "version": 1,
+          "interactions": {
+            "get": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.settings:get",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            },
+            "update": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.settings:update",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.directory": {
+          "version": 1,
+          "interactions": {
+            "fetch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.directory:fetch",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        },
+        "atlas.audit": {
+          "version": 1,
+          "interactions": {
+            "fetch": {
+              "bindings": [
+                {
+                  "protocol": "https",
+                  "server": "gateway",
+                  "method": "POST",
+                  "address": "/v1/atlas/atlas.audit:fetch",
+                  "encodings": [
+                    "json"
+                  ],
+                  "auth": "bearer"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "sign_in": {
+        "authority": "{gateway}/oauth",
+        "client_id": "atlas-conformance",
+        "scopes": [
+          "{gateway}/.default"
+        ],
+        "token_endpoint": "{gateway}/oauth/token",
+        "authorization_endpoint": "{gateway}/oauth/authorize",
+        "device_authorization_endpoint": "{gateway}/oauth/device"
+      },
+      "catalog_etag": "\"catalog-1\""
+    },
+    "headers": {
+      "/.well-known/atlas": {
+        "ETag": "\"boot-1\""
+      }
+    }
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "whoami",
+      "args": {}
+    },
+    {
+      "id": 3,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 4,
+      "op": "whoami",
+      "args": {}
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value_contains": {
+        "environment": "conformance"
+      }
+    },
+    {
+      "id": 3,
+      "ok": true
+    },
+    {
+      "id": 4,
+      "ok": true
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "header",
+      "select": {
+        "nth": 1,
+        "path": "/.well-known/atlas"
+      },
+      "name": "Authorization",
+      "absent": true
+    },
+    {
+      "assert": "header",
+      "select": {
+        "nth": 2,
+        "path": "/.well-known/atlas"
+      },
+      "name": "If-None-Match",
+      "equals": "\"boot-1\""
+    },
+    {
+      "assert": "count",
+      "select": {
+        "path": "/bootstrapped/who-am-i",
+        "method": "POST"
+      },
+      "equals": 2
+    },
+    {
+      "assert": "count",
+      "select": {
+        "path": "/v1/atlas/atlas.whoami:fetch"
+      },
+      "equals": 0
+    }
+  ],
+  "note": "The gateway answers the second bootstrap 304 Not Modified to its If-None-Match."
+}

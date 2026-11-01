@@ -1,0 +1,91 @@
+{
+  "id": "CORE-RES-003",
+  "level": "Core",
+  "description": "A request written under an older, locked profile: Atlas-Profile-Expect names it, the body is written under it, and the gateway resolves it forward.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      },
+      {
+        "path": "{WORKDIR}/atlas.lock",
+        "mode": "0644",
+        "text": "[capabilities]\n\"conformance.evolving\" = { version = 1, fingerprint = \"bc7fde7c0bac077d\" }\n"
+      }
+    ],
+    "cwd": "{WORKDIR}"
+  },
+  "gateway": {},
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.evolving@v1:fetch",
+        "request": {
+          "ids": [
+            "p1"
+          ],
+          "region": "EU"
+        },
+        "options": {
+          "accept": [
+            "application/json"
+          ]
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.evolving@v1:fetch"
+      },
+      "name": "Atlas-Profile-Expect",
+      "equals": "conformance.evolving@v1#bc7fde7c0bac077d"
+    },
+    {
+      "assert": "body",
+      "select": {
+        "address": "conformance.evolving@v1:fetch"
+      },
+      "equals": {
+        "ids": [
+          "p1"
+        ],
+        "region": "EU"
+      }
+    }
+  ],
+  "note": "The conformance gateway resolves the request #A → #C (region becomes area) before validating it against #C, and answers under #C; the client resolves the rows back to #A."
+}

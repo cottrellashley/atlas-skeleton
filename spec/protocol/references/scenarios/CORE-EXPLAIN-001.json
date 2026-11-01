@@ -1,0 +1,153 @@
+{
+  "id": "CORE-EXPLAIN-001",
+  "level": "Core",
+  "description": "explain is validated as fetch is (an invalid request fails before anything is sent), and its answer is returned whole, the statement byte for byte.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "conformance.rows@v1:explain"
+        },
+        "respond": {
+          "status": 200,
+          "body": {
+            "address": "conformance.rows@v1:fetch",
+            "profile": "conformance.rows@v1#c121b005057331c7",
+            "plan": {
+              "language": "sql",
+              "dialect": "snowflake",
+              "statement": "SELECT\n  CAST(\"I\" AS NUMBER(18,0)) AS \"i\"  -- every column aliased and cast\nFROM\tTABLE(GENERATOR(ROWCOUNT => 3))\nWHERE 1 = 1 /* naïve */",
+              "query_tag": "atlas:x"
+            },
+            "result_schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "i": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "execution": "gateway",
+            "estimate": {
+              "rows": 3,
+              "bytes": 96,
+              "cost": null
+            }
+          }
+        },
+        "times": 1
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "explain",
+      "args": {
+        "id": "conformance.rows@v1",
+        "request": {
+          "n": -1
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "explain",
+      "args": {
+        "id": "conformance.rows@v1",
+        "request": {
+          "n": 3,
+          "columns": [
+            "i"
+          ]
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": false,
+      "problem": {
+        "code": "invalid_request",
+        "target": "/n"
+      }
+    },
+    {
+      "id": 3,
+      "ok": true,
+      "value": {
+        "address": "conformance.rows@v1:fetch",
+        "profile": "conformance.rows@v1#c121b005057331c7",
+        "plan": {
+          "language": "sql",
+          "dialect": "snowflake",
+          "statement": "SELECT\n  CAST(\"I\" AS NUMBER(18,0)) AS \"i\"  -- every column aliased and cast\nFROM\tTABLE(GENERATOR(ROWCOUNT => 3))\nWHERE 1 = 1 /* naïve */",
+          "query_tag": "atlas:x"
+        },
+        "result_schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "i": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "execution": "gateway",
+        "estimate": {
+          "rows": 3,
+          "bytes": 96,
+          "cost": null
+        }
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.rows@v1:explain"
+      },
+      "equals": 1
+    }
+  ],
+  "questions": [
+    "Q-RUN-1"
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "id": "CORE-DISC-002",
+  "level": "Core",
+  "description": "A profile is fetched once per exact-id, then served from the cache, in memory and, after a restart, from <ATLAS_HOME>/cache/profiles/.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {},
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "hello"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "hello"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "op": "suite.restart",
+      "args": {}
+    },
+    {
+      "id": 5,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 6,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "hello"
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value": {
+        "text": "hello",
+        "count": 1,
+        "ratio": null,
+        "when": null,
+        "kind": "plain",
+        "tags": []
+      }
+    },
+    {
+      "id": 3,
+      "ok": true,
+      "value": {
+        "text": "hello",
+        "count": 1,
+        "ratio": null,
+        "when": null,
+        "kind": "plain",
+        "tags": []
+      }
+    },
+    {
+      "id": 4,
+      "ok": true
+    },
+    {
+      "id": 5,
+      "ok": true
+    },
+    {
+      "id": 6,
+      "ok": true,
+      "value": {
+        "text": "hello",
+        "count": 1,
+        "ratio": null,
+        "when": null,
+        "kind": "plain",
+        "tags": []
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "atlas.describe:fetch"
+      },
+      "equals": 1
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch"
+      },
+      "equals": 3
+    }
+  ]
+}

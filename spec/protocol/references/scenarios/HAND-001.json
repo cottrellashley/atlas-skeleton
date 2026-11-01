@@ -1,0 +1,117 @@
+{
+  "id": "HAND-001",
+  "level": "Handoff",
+  "description": "A handoff document: the chunks are fetched in parallel with their headers, decoded, checked, and give the same rows as the gateway's own execution.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "state": {
+      "handoff_case": "every-type"
+    }
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.handoff@v1:fetch",
+        "request": {},
+        "options": {
+          "execution": "handoff",
+          "accept": [
+            "application/vnd.apache.arrow.stream"
+          ]
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "call",
+      "args": {
+        "address": "conformance.handoff@v1:fetch",
+        "request": {},
+        "options": {
+          "execution": "gateway",
+          "accept": [
+            "application/vnd.apache.arrow.stream"
+          ]
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value": "{vectors:handoff/snowflake-arrow-1/synthetic/cases.json#every-type}"
+    },
+    {
+      "id": 3,
+      "ok": true,
+      "value": "{vectors:handoff/snowflake-arrow-1/synthetic/cases.json#every-type}"
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.handoff@v1:fetch",
+        "nth": 1
+      },
+      "name": "Atlas-Execution",
+      "equals": "handoff"
+    },
+    {
+      "assert": "header",
+      "select": {
+        "storage_chunk": true
+      },
+      "name": "x-ms-encryption-key-sha256",
+      "present": true
+    },
+    {
+      "assert": "header_features",
+      "select": {
+        "address": "conformance.handoff@v1:fetch",
+        "nth": 1
+      },
+      "Atlas-Client-Features": {
+        "levels_contains": [
+          "handoff"
+        ],
+        "handoff_contains": [
+          "snowflake-arrow/1"
+        ]
+      }
+    }
+  ],
+  "note": "The value is the every-type case's expected rows, all batches concatenated."
+}

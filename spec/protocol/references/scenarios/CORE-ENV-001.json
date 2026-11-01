@@ -1,0 +1,248 @@
+{
+  "id": "CORE-ENV-001",
+  "level": "Core",
+  "description": "The resource envelope: an unknown condition kept; status changing without the ETag; an update built from the record sends its own fields and labels only, with If-Match from metadata.etag, and succeeds after the status change; a deleting record reads back.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "conformance.thing@v1:update"
+        },
+        "respond": {
+          "serve": true,
+          "before": {
+            "set_status": {
+              "name": "conformance/things/t1",
+              "observed_generation": 1,
+              "conditions": [
+                {
+                  "type": "ready",
+                  "status": "false",
+                  "reason": "reconverging"
+                }
+              ]
+            }
+          }
+        },
+        "times": 1
+      },
+      {
+        "match": {
+          "address": "conformance.thing@v1:delete"
+        },
+        "respond": {
+          "serve": true,
+          "deleting": true
+        },
+        "times": 1
+      }
+    ],
+    "state": {
+      "things": [
+        {
+          "name": "conformance/things/t1",
+          "colour": "red",
+          "size": 3,
+          "labels": {
+            "desk": "credit"
+          },
+          "etag": "\"e1\"",
+          "generation": 1,
+          "conditions": [
+            {
+              "type": "ready",
+              "status": "true",
+              "reason": "converged"
+            },
+            {
+              "type": "quantum",
+              "status": "unknown",
+              "reason": "entangled"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.thing@v1:get",
+        "request": {
+          "name": "conformance/things/t1"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "call",
+      "args": {
+        "address": "conformance.thing@v1:update",
+        "request": "{value:2}",
+        "options": {
+          "fields": [
+            "colour"
+          ],
+          "set": {
+            "colour": "blue"
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "op": "call",
+      "args": {
+        "address": "conformance.thing@v1:delete",
+        "request": {
+          "name": "conformance/things/t1"
+        },
+        "options": {
+          "if_match": "{value:3/metadata/etag}"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "op": "call",
+      "args": {
+        "address": "conformance.thing@v1:get",
+        "request": {
+          "name": "conformance/things/t1"
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value_contains": {
+        "metadata": {
+          "etag": "\"e1\"",
+          "generation": 1,
+          "labels": {
+            "desk": "credit"
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "type": "ready"
+            },
+            {
+              "type": "quantum",
+              "reason": "entangled"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 3,
+      "ok": true,
+      "value_contains": {
+        "colour": "blue",
+        "metadata": {
+          "generation": 2
+        }
+      }
+    },
+    {
+      "id": 4,
+      "ok": true,
+      "value_contains": {
+        "metadata": {
+          "deleting": {
+            "$present": true
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "ok": true,
+      "value_contains": {
+        "name": "conformance/things/t1",
+        "metadata": {
+          "deleting": {
+            "$present": true
+          }
+        }
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.thing@v1:update"
+      },
+      "name": "If-Match",
+      "equals": "\"e1\""
+    },
+    {
+      "assert": "body",
+      "select": {
+        "address": "conformance.thing@v1:update"
+      },
+      "equals": {
+        "name": "conformance/things/t1",
+        "fields": [
+          "colour"
+        ],
+        "colour": "blue",
+        "size": 3,
+        "metadata": {
+          "labels": {
+            "desk": "credit"
+          }
+        }
+      }
+    },
+    {
+      "assert": "header",
+      "select": {
+        "address": "conformance.thing@v1:delete"
+      },
+      "name": "If-Match",
+      "parses": true
+    }
+  ],
+  "note": "Command 3 passes the record command 2 returned ({value:2}) as the request, with options fields and set: the client builds the update from it, dropping status and every metadata member but labels, and sends If-Match from metadata.etag. The gateway's controller changed status (not the ETag) before the update arrived, so it succeeds.",
+  "questions": [
+    "Q-RUN-4"
+  ]
+}

@@ -1,0 +1,5611 @@
+{
+  "description": "What every scenario's conformance gateway serves unless its script says otherwise: every profile by exact-id (the conformance capabilities, the variants scenarios name, and the atlas.* built-ins), which profile is current for each pinned id, and the bootstrap, with {gateway} standing for the gateway's own URL.",
+  "current": {
+    "conformance.echo@v1": "conformance.echo@v1#f17339273f0617c2",
+    "conformance.rows@v1": "conformance.rows@v1#c121b005057331c7",
+    "conformance.items@v1": "conformance.items@v1#05354431b1d8a446",
+    "conformance.slow@v1": "conformance.slow@v1#739867d227780756",
+    "conformance.retired@v1": "conformance.retired@v1#6d24f084a2a2d7a5",
+    "conformance.critical@v1": "conformance.critical@v1#4274db333936328d",
+    "conformance.costly@v1": "conformance.costly@v1#bf862d27e2fe69aa",
+    "conformance.dynamic@v1": "conformance.dynamic@v1#e401fa5670a50d55",
+    "conformance.thing@v1": "conformance.thing@v1#677bf5325b4e72c3",
+    "conformance.file@v1": "conformance.file@v1#364cf4144dd8837e",
+    "conformance.change@v1": "conformance.change@v1#b04dbbdc02bb6ba4",
+    "conformance.evolving@v1": "conformance.evolving@v1#73def445ee90c57a",
+    "conformance.evolving@v2": "conformance.evolving@v2#eb84229aaeb7ca6b",
+    "conformance.handoff@v1": "conformance.handoff@v1#f06c3819d34aadf7",
+    "conformance.tick@v1": "conformance.tick@v1#61948f2a0e7d7132"
+  },
+  "bootstrap": {
+    "protocols": [
+      "atlas/1.0"
+    ],
+    "minimum_protocol": "atlas/1.0",
+    "environment": "conformance",
+    "servers": {
+      "gateway": {
+        "url": "{gateway}",
+        "description": "The conformance gateway."
+      }
+    },
+    "builtins": {
+      "atlas.whoami": {
+        "version": 1,
+        "interactions": {
+          "fetch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.whoami:fetch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.catalog": {
+        "version": 1,
+        "interactions": {
+          "fetch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.catalog:fetch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.search": {
+        "version": 1,
+        "interactions": {
+          "fetch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.search:fetch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.describe": {
+        "version": 1,
+        "interactions": {
+          "fetch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.describe:fetch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.guide": {
+        "version": 1,
+        "interactions": {
+          "fetch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.guide:fetch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.access": {
+        "version": 1,
+        "interactions": {
+          "fetch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.access:fetch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.usage": {
+        "version": 1,
+        "interactions": {
+          "fetch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.usage:fetch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.setup": {
+        "version": 1,
+        "interactions": {
+          "fetch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.setup:fetch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.clients": {
+        "version": 1,
+        "interactions": {
+          "fetch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.clients:fetch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.compare": {
+        "version": 1,
+        "interactions": {
+          "fetch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.compare:fetch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.operation": {
+        "version": 1,
+        "interactions": {
+          "get": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.operation:get",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          },
+          "list": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.operation:list",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          },
+          "cancel": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.operation:cancel",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          },
+          "watch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.operation:watch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.catalog.changed": {
+        "version": 1,
+        "interactions": {
+          "subscribe": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.catalog.changed:subscribe",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.settings": {
+        "version": 1,
+        "interactions": {
+          "get": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.settings:get",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          },
+          "update": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.settings:update",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.directory": {
+        "version": 1,
+        "interactions": {
+          "fetch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.directory:fetch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      },
+      "atlas.audit": {
+        "version": 1,
+        "interactions": {
+          "fetch": {
+            "bindings": [
+              {
+                "protocol": "https",
+                "server": "gateway",
+                "method": "POST",
+                "address": "/v1/atlas/atlas.audit:fetch",
+                "encodings": [
+                  "json"
+                ],
+                "auth": "bearer"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "sign_in": {
+      "authority": "{gateway}/oauth",
+      "client_id": "atlas-conformance",
+      "scopes": [
+        "{gateway}/.default"
+      ],
+      "token_endpoint": "{gateway}/oauth/token",
+      "authorization_endpoint": "{gateway}/oauth/authorize",
+      "device_authorization_endpoint": "{gateway}/oauth/device"
+    },
+    "catalog_etag": "\"catalog-1\""
+  },
+  "tokens": {
+    "access": [
+      "ct-valid",
+      "ct-refreshed"
+    ],
+    "refresh": {
+      "rt-valid": {
+        "access_token": "ct-refreshed",
+        "refresh_token": "rt-next",
+        "expires_in": 3600
+      }
+    }
+  },
+  "profiles": {
+    "conformance.echo@v1#f17339273f0617c2": {
+      "identity": {
+        "id": "conformance.echo",
+        "version": 1,
+        "title": "conformance.echo",
+        "summary": "Echo a request back, to prove validation, headers and resolution.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.echo@v1:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "What to echo.",
+          "additionalProperties": false,
+          "required": [
+            "text"
+          ],
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "The text to echo.",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "count": {
+              "type": "integer",
+              "description": "How many times.",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 1,
+              "x-atlas-unit": "count"
+            },
+            "ratio": {
+              "type": "number",
+              "description": "A ratio, echoed.",
+              "x-atlas-logical": "Fraction"
+            },
+            "when": {
+              "type": "string",
+              "description": "A date, echoed.",
+              "format": "date"
+            },
+            "kind": {
+              "description": "How to echo.",
+              "type": "string",
+              "enum": [
+                "plain",
+                "loud"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "plain",
+                  "description": "An ordinary echo."
+                },
+                {
+                  "value": "loud",
+                  "description": "An echo in capitals."
+                }
+              ]
+            },
+            "tags": {
+              "type": "array",
+              "description": "Tags, echoed.",
+              "maxItems": 10,
+              "items": {
+                "type": "string",
+                "description": "A tag.",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "The request, echoed.",
+          "required": [
+            "text",
+            "count",
+            "kind"
+          ],
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "The text."
+            },
+            "count": {
+              "type": "integer",
+              "description": "How many times.",
+              "x-atlas-unit": "count"
+            },
+            "ratio": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "The ratio.",
+              "x-atlas-logical": "Fraction"
+            },
+            "when": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "The date.",
+              "format": "date"
+            },
+            "kind": {
+              "description": "How it was echoed.",
+              "type": "string",
+              "enum": [
+                "plain",
+                "loud",
+                "UNKNOWN"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "plain",
+                  "description": "An ordinary echo."
+                },
+                {
+                  "value": "loud",
+                  "description": "An echo in capitals."
+                },
+                {
+                  "value": "UNKNOWN",
+                  "description": "A value this reader does not know (§9.5.5)."
+                }
+              ]
+            },
+            "tags": {
+              "type": "array",
+              "description": "The tags.",
+              "items": {
+                "type": "string",
+                "description": "A tag."
+              }
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one echo",
+        "source": "the conformance gateway"
+      },
+      "usage": {
+        "when": "In the conformance suite only.",
+        "examples": [
+          {
+            "title": "Echo",
+            "interaction": "fetch",
+            "request": {
+              "text": "hello"
+            }
+          }
+        ]
+      },
+      "fingerprint": "f17339273f0617c2"
+    },
+    "conformance.rows@v1#c121b005057331c7": {
+      "identity": {
+        "id": "conformance.rows",
+        "version": 1,
+        "title": "conformance.rows",
+        "summary": "Rows 0 to n-1, to prove framing, end lines, truncation, columns and encodings.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "Projectable",
+            "critical": false
+          }
+        ]
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "table",
+          "delivery": "chunked",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.rows@v1:fetch",
+              "encodings": [
+                "arrow",
+                "ndjson",
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "explain": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.rows@v1:explain",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "export": {
+          "effect": "read",
+          "result": "content",
+          "delivery": "transfer",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "deadline": {
+            "default": "PT5M",
+            "max": "PT30M"
+          },
+          "encodings": [
+            "parquet",
+            "arrow"
+          ],
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.rows@v1:export",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "How many rows, and which columns.",
+          "additionalProperties": false,
+          "required": [
+            "n"
+          ],
+          "properties": {
+            "n": {
+              "type": "integer",
+              "description": "How many rows.",
+              "minimum": 0,
+              "maximum": 1000000,
+              "x-atlas-unit": "count"
+            },
+            "columns": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "description": "The columns to return, as the reader names them.",
+              "items": {
+                "type": "string",
+                "description": "A column name.",
+                "minLength": 1
+              },
+              "uniqueItems": true,
+              "default": null
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "array",
+          "description": "n rows.",
+          "items": {
+            "type": "object",
+            "description": "Row i of n.",
+            "required": [
+              "i",
+              "label",
+              "amount",
+              "at",
+              "day"
+            ],
+            "properties": {
+              "i": {
+                "type": "integer",
+                "description": "The row's index.",
+                "minimum": 0,
+                "x-atlas-unit": "count",
+                "x-atlas-key": true
+              },
+              "label": {
+                "type": "string",
+                "description": "row-<i>."
+              },
+              "amount": {
+                "type": "string",
+                "description": "i × 1.5, exactly.",
+                "x-atlas-logical": "Decimal(18,6)"
+              },
+              "at": {
+                "type": "string",
+                "description": "2026-01-01T00:00:00Z plus i seconds and i microseconds.",
+                "format": "date-time"
+              },
+              "day": {
+                "type": "string",
+                "description": "2026-01-01 plus i days.",
+                "format": "date"
+              },
+              "share": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "i / 100, or null when i % 5 = 4.",
+                "x-atlas-logical": "Fraction"
+              }
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one row per i",
+        "keys": [
+          "i"
+        ],
+        "source": "the conformance gateway"
+      },
+      "usage": {
+        "when": "In the conformance suite only.",
+        "examples": [
+          {
+            "title": "Three rows",
+            "interaction": "fetch",
+            "request": {
+              "n": 3
+            }
+          }
+        ]
+      },
+      "fingerprint": "c121b005057331c7"
+    },
+    "conformance.items@v1#05354431b1d8a446": {
+      "identity": {
+        "id": "conformance.items",
+        "version": 1,
+        "title": "conformance.items",
+        "summary": "Items 0 to n-1 a page at a time, to prove cursor paging.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "Paged",
+            "critical": false
+          }
+        ]
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "collection",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "item",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.items@v1:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A page of items.",
+          "additionalProperties": false,
+          "required": [
+            "n"
+          ],
+          "properties": {
+            "n": {
+              "type": "integer",
+              "description": "How many items in all.",
+              "minimum": 0,
+              "maximum": 10000,
+              "x-atlas-unit": "count"
+            },
+            "page_size": {
+              "type": "integer",
+              "description": "Items per page.",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "x-atlas-unit": "count"
+            },
+            "cursor": {
+              "type": "string",
+              "description": "The page to read.",
+              "minLength": 1
+            }
+          }
+        },
+        "item": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "Item k.",
+          "required": [
+            "k",
+            "name"
+          ],
+          "properties": {
+            "k": {
+              "type": "integer",
+              "description": "The item's index.",
+              "x-atlas-unit": "count",
+              "x-atlas-key": true
+            },
+            "name": {
+              "type": "string",
+              "description": "item-<k>."
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one item per k",
+        "source": "the conformance gateway"
+      },
+      "fingerprint": "05354431b1d8a446"
+    },
+    "conformance.slow@v1#739867d227780756": {
+      "identity": {
+        "id": "conformance.slow",
+        "version": 1,
+        "title": "conformance.slow",
+        "summary": "Work that answers 202 and an operation, to prove polling and cancelling.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "operation",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT1M",
+            "max": "PT10M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.slow@v1:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "How long the work takes, and how large its result is.",
+          "additionalProperties": false,
+          "properties": {
+            "polls": {
+              "type": "integer",
+              "description": "How many polls before it succeeds.",
+              "minimum": 0,
+              "maximum": 20,
+              "default": 2,
+              "x-atlas-unit": "count"
+            },
+            "result_bytes": {
+              "type": "integer",
+              "description": "The result's size; above 1 MiB it is given by result_location.",
+              "minimum": 0,
+              "maximum": 4194304,
+              "default": 16,
+              "x-atlas-unit": "count"
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "The work's result.",
+          "required": [
+            "done",
+            "padding"
+          ],
+          "properties": {
+            "done": {
+              "type": "boolean",
+              "description": "Always true."
+            },
+            "padding": {
+              "type": "string",
+              "description": "result_bytes of x."
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one result",
+        "source": "the conformance gateway"
+      },
+      "fingerprint": "739867d227780756"
+    },
+    "conformance.retired@v1#6d24f084a2a2d7a5": {
+      "identity": {
+        "id": "conformance.retired",
+        "version": 1,
+        "title": "conformance.retired",
+        "summary": "A version retired at its sunset: every call is retired.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "retired",
+        "visibility": "listed",
+        "traits": [],
+        "deprecated": "2026-01-01",
+        "sunset": "2026-04-01",
+        "replaced_by": "conformance.echo@v1"
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.retired@v1:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A request.",
+          "additionalProperties": false,
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Anything.",
+              "minLength": 1
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "The answer.",
+          "required": [
+            "ok"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean",
+              "description": "Always true."
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one answer",
+        "source": "the conformance gateway"
+      },
+      "fingerprint": "6d24f084a2a2d7a5"
+    },
+    "conformance.critical@v1#4274db333936328d": {
+      "identity": {
+        "id": "conformance.critical",
+        "version": 1,
+        "title": "conformance.critical",
+        "summary": "A capability with a critical trait no client implements.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "ConformanceOnly",
+            "critical": true
+          }
+        ]
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.critical@v1:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A request.",
+          "additionalProperties": false,
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Anything.",
+              "minLength": 1
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "The answer.",
+          "required": [
+            "ok"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean",
+              "description": "Always true."
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one answer",
+        "source": "the conformance gateway"
+      },
+      "fingerprint": "4274db333936328d"
+    },
+    "conformance.costly@v1#bf862d27e2fe69aa": {
+      "identity": {
+        "id": "conformance.costly",
+        "version": 1,
+        "title": "conformance.costly",
+        "summary": "A metered call whose estimate needs a person's confirmation.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "Metered",
+            "critical": false
+          }
+        ]
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.costly@v1:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A request.",
+          "additionalProperties": false,
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Anything.",
+              "minLength": 1
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "The answer.",
+          "required": [
+            "ok"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean",
+              "description": "Always true."
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one answer",
+        "source": "the conformance gateway"
+      },
+      "usage": {
+        "when": "In the conformance suite only.",
+        "cost": {
+          "unit": "credits",
+          "price": "12.500"
+        }
+      },
+      "fingerprint": "bf862d27e2fe69aa"
+    },
+    "conformance.dynamic@v1#e401fa5670a50d55": {
+      "identity": {
+        "id": "conformance.dynamic",
+        "version": 1,
+        "title": "conformance.dynamic",
+        "summary": "Rows whose columns the caller's query chooses: no fixed schema, no resolution.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "upstream",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "DynamicSchema",
+            "critical": false
+          }
+        ]
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "table",
+          "delivery": "chunked",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.dynamic@v1:fetch",
+              "encodings": [
+                "arrow",
+                "ndjson",
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A query.",
+          "additionalProperties": false,
+          "required": [
+            "query"
+          ],
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "The caller's own query.",
+              "minLength": 1
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "array",
+          "description": "Rows whose columns the query chose.",
+          "items": {
+            "type": "object",
+            "description": "A row."
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "whatever the query returns",
+        "source": "the conformance gateway"
+      },
+      "fingerprint": "e401fa5670a50d55"
+    },
+    "conformance.thing@v1#677bf5325b4e72c3": {
+      "identity": {
+        "id": "conformance.thing",
+        "version": 1,
+        "title": "conformance.thing",
+        "summary": "Things the gateway keeps and converges, to prove the envelope, ETags and idempotency.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "resource",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "Paged",
+            "critical": false
+          },
+          {
+            "name": "Keyed",
+            "critical": false
+          }
+        ]
+      },
+      "interactions": {
+        "get": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "get_request",
+          "returns": "resource",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/resource/conformance.thing@v1:get",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "list": {
+          "effect": "read",
+          "result": "collection",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "list_request",
+          "returns": "resource",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/resource/conformance.thing@v1:list",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "create": {
+          "effect": "write",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "create_request",
+          "returns": "resource",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/resource/conformance.thing@v1:create",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "update": {
+          "effect": "write",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "update_request",
+          "returns": "resource",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/resource/conformance.thing@v1:update",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "delete": {
+          "effect": "write",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "get_request",
+          "returns": "resource",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/resource/conformance.thing@v1:delete",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "touch": {
+          "effect": "write",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "get_request",
+          "returns": "resource",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/resource/conformance.thing@v1:touch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "resource": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A thing: its envelope and its own fields.",
+          "required": [
+            "name",
+            "metadata",
+            "colour",
+            "size"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The resource name: its domain, then collection and id pairs, stable for its life (resource-name in grammar.abnf).",
+              "pattern": "^[a-z](-?[a-z0-9])*(/[a-z](-?[a-z0-9])*/[a-z0-9][a-z0-9-]*)+$",
+              "x-atlas-key": true
+            },
+            "metadata": {
+              "type": "object",
+              "description": "Written by the gateway, except labels; ignored in a create or update body.",
+              "required": [
+                "uid",
+                "etag",
+                "generation",
+                "created",
+                "updated",
+                "owner",
+                "labels",
+                "deleting"
+              ],
+              "properties": {
+                "uid": {
+                  "type": "string",
+                  "description": "The resource's unique id, never reused.",
+                  "minLength": 1
+                },
+                "etag": {
+                  "type": "string",
+                  "description": "As the ETag header: an entity-tag with its quotes. Moves with generation, never with status.",
+                  "pattern": "^(W/)?\"[!#-~]*\"$"
+                },
+                "generation": {
+                  "type": "integer",
+                  "description": "Moves on every change to the record's own fields or labels, never on a status change.",
+                  "minimum": 1,
+                  "x-atlas-unit": "count"
+                },
+                "created": {
+                  "type": "string",
+                  "description": "When it was created.",
+                  "format": "date-time"
+                },
+                "updated": {
+                  "type": "string",
+                  "description": "When its own fields or labels last changed.",
+                  "format": "date-time"
+                },
+                "owner": {
+                  "type": "string",
+                  "description": "Who owns it.",
+                  "x-atlas-logical": "Principal"
+                },
+                "labels": {
+                  "type": "object",
+                  "description": "The caller's labels: the one member of metadata a caller writes.",
+                  "additionalProperties": {
+                    "type": "string",
+                    "description": "A label's value."
+                  }
+                },
+                "deleting": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "When a delete began that is still removing what the resource made; null otherwise.",
+                  "format": "date-time"
+                }
+              }
+            },
+            "colour": {
+              "description": "Its colour.",
+              "type": "string",
+              "enum": [
+                "red",
+                "blue",
+                "UNKNOWN"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "red",
+                  "description": "Red."
+                },
+                {
+                  "value": "blue",
+                  "description": "Blue."
+                },
+                {
+                  "value": "UNKNOWN",
+                  "description": "A value this reader does not know (§9.5.5)."
+                }
+              ]
+            },
+            "size": {
+              "type": "integer",
+              "description": "Its size.",
+              "minimum": 0,
+              "x-atlas-unit": "count"
+            },
+            "status": {
+              "type": "object",
+              "description": "Only on a resource the gateway converges; written by its controller only.",
+              "required": [
+                "observed_generation",
+                "conditions"
+              ],
+              "properties": {
+                "observed_generation": {
+                  "type": "integer",
+                  "description": "The generation the controller last acted on.",
+                  "minimum": 0,
+                  "x-atlas-unit": "count"
+                },
+                "conditions": {
+                  "type": "array",
+                  "description": "One per type; every converged resource has `ready`.",
+                  "items": {
+                    "type": "object",
+                    "description": "A condition. Types and reasons are open sets: a client keeps one it does not know.",
+                    "required": [
+                      "type",
+                      "status",
+                      "reason",
+                      "message",
+                      "observed_generation",
+                      "last_transition"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "The condition's type: ready, or one of the resource's own.",
+                        "minLength": 1
+                      },
+                      "status": {
+                        "type": "string",
+                        "description": "Whether the condition holds.",
+                        "enum": [
+                          "true",
+                          "false",
+                          "unknown",
+                          "UNKNOWN"
+                        ],
+                        "x-atlas-enum": [
+                          {
+                            "value": "true",
+                            "description": "It holds."
+                          },
+                          {
+                            "value": "false",
+                            "description": "It does not hold."
+                          },
+                          {
+                            "value": "unknown",
+                            "description": "The controller cannot tell."
+                          },
+                          {
+                            "value": "UNKNOWN",
+                            "description": "A status this reader does not know (§9.5.5)."
+                          }
+                        ]
+                      },
+                      "reason": {
+                        "type": "string",
+                        "description": "A reason code; an open set.",
+                        "minLength": 1
+                      },
+                      "message": {
+                        "type": "string",
+                        "description": "In words; may be empty."
+                      },
+                      "observed_generation": {
+                        "type": "integer",
+                        "description": "The generation it was observed for; below metadata.generation it is out of date.",
+                        "minimum": 0,
+                        "x-atlas-unit": "count"
+                      },
+                      "last_transition": {
+                        "type": "string",
+                        "description": "When status last changed.",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "get_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "One thing, by name.",
+          "additionalProperties": false,
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The thing's name.",
+              "pattern": "^[a-z](-?[a-z0-9])*(/[a-z](-?[a-z0-9])*/[a-z0-9][a-z0-9-]*)+$"
+            }
+          }
+        },
+        "list_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A page of things.",
+          "additionalProperties": false,
+          "properties": {
+            "cursor": {
+              "type": "string",
+              "description": "The page.",
+              "minLength": 1
+            }
+          }
+        },
+        "create_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A new thing.",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "colour",
+            "size"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The thing's name.",
+              "pattern": "^[a-z](-?[a-z0-9])*(/[a-z](-?[a-z0-9])*/[a-z0-9][a-z0-9-]*)+$"
+            },
+            "colour": {
+              "description": "Its colour.",
+              "type": "string",
+              "enum": [
+                "red",
+                "blue"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "red",
+                  "description": "Red."
+                },
+                {
+                  "value": "blue",
+                  "description": "Blue."
+                }
+              ]
+            },
+            "size": {
+              "type": "integer",
+              "description": "Its size.",
+              "minimum": 0,
+              "x-atlas-unit": "count"
+            },
+            "metadata": {
+              "type": "object",
+              "description": "Of metadata, a caller writes only labels.",
+              "additionalProperties": false,
+              "properties": {
+                "labels": {
+                  "type": "object",
+                  "description": "The caller's labels.",
+                  "additionalProperties": {
+                    "type": "string",
+                    "description": "A value."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "update_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A change to the fields the mask names, with If-Match.",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "fields"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The thing's name.",
+              "pattern": "^[a-z](-?[a-z0-9])*(/[a-z](-?[a-z0-9])*/[a-z0-9][a-z0-9-]*)+$"
+            },
+            "fields": {
+              "type": "array",
+              "description": "The field mask: colour, size, metadata.labels.",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "description": "A field path.",
+                "minLength": 1
+              }
+            },
+            "colour": {
+              "description": "Its colour.",
+              "type": "string",
+              "enum": [
+                "red",
+                "blue"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "red",
+                  "description": "Red."
+                },
+                {
+                  "value": "blue",
+                  "description": "Blue."
+                }
+              ]
+            },
+            "size": {
+              "type": "integer",
+              "description": "Its size.",
+              "minimum": 0,
+              "x-atlas-unit": "count"
+            },
+            "metadata": {
+              "type": "object",
+              "description": "Of metadata, a caller writes only labels.",
+              "additionalProperties": false,
+              "properties": {
+                "labels": {
+                  "type": "object",
+                  "description": "The caller's labels.",
+                  "additionalProperties": {
+                    "type": "string",
+                    "description": "A value."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "name": "conformance/things/{id}",
+        "immutable": [
+          "name"
+        ],
+        "stored_version": 1,
+        "converges": "a fake controller sets the ready condition"
+      },
+      "fingerprint": "677bf5325b4e72c3"
+    },
+    "conformance.file@v1#364cf4144dd8837e": {
+      "identity": {
+        "id": "conformance.file",
+        "version": 1,
+        "title": "conformance.file",
+        "summary": "Files moved by transfer, to prove parts, checksums, commit and expired links.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "resource",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "publish": {
+          "effect": "write",
+          "result": "record",
+          "delivery": "transfer",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "publish_request",
+          "returns": "record",
+          "deadline": {
+            "default": "PT5M",
+            "max": "PT30M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/resource/conformance.file@v1:publish",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "get": {
+          "effect": "read",
+          "result": "content",
+          "delivery": "transfer",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "get_request",
+          "returns": "record",
+          "deadline": {
+            "default": "PT5M",
+            "max": "PT30M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/resource/conformance.file@v1:get",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "record": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A file's metadata record.",
+          "required": [
+            "name",
+            "media_type",
+            "bytes",
+            "sha256"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The file's name.",
+              "minLength": 1
+            },
+            "media_type": {
+              "type": "string",
+              "description": "Its media type.",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "description": "Its size.",
+              "minimum": 0,
+              "x-atlas-unit": "count"
+            },
+            "sha256": {
+              "type": "string",
+              "description": "Its SHA-256.",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "get_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A file to download, by name.",
+          "additionalProperties": false,
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The file's name.",
+              "minLength": 1
+            }
+          }
+        },
+        "publish_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A file to upload.",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "media_type",
+            "bytes",
+            "sha256"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The file's name.",
+              "minLength": 1
+            },
+            "media_type": {
+              "type": "string",
+              "description": "Its media type.",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "description": "Its size.",
+              "minimum": 0,
+              "maximum": 1073741824,
+              "x-atlas-unit": "count"
+            },
+            "sha256": {
+              "type": "string",
+              "description": "Its SHA-256.",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "name": "files by name",
+        "immutable": [
+          "name"
+        ],
+        "stored_version": 1
+      },
+      "fingerprint": "364cf4144dd8837e"
+    },
+    "conformance.change@v1#b04dbbdc02bb6ba4": {
+      "identity": {
+        "id": "conformance.change",
+        "version": 1,
+        "title": "conformance.change",
+        "summary": "An action whose run needs another principal's approval.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "action",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "DryRunnable",
+            "critical": false
+          },
+          {
+            "name": "NeedsApproval",
+            "critical": false
+          }
+        ]
+      },
+      "interactions": {
+        "plan": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "plan",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/action/conformance.change@v1:plan",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "approve": {
+          "effect": "write",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "by_plan",
+          "returns": "approval",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/action/conformance.change@v1:approve",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "run": {
+          "effect": "external",
+          "result": "record",
+          "delivery": "operation",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "by_plan",
+          "returns": "receipt",
+          "deadline": {
+            "default": "PT1M",
+            "max": "PT10M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/action/conformance.change@v1:run",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "The change to make.",
+          "additionalProperties": false,
+          "required": [
+            "target"
+          ],
+          "properties": {
+            "target": {
+              "type": "string",
+              "description": "What to change.",
+              "minLength": 1
+            }
+          }
+        },
+        "plan": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "What run will do.",
+          "required": [
+            "plan",
+            "will"
+          ],
+          "properties": {
+            "plan": {
+              "type": "string",
+              "description": "The plan's id."
+            },
+            "will": {
+              "type": "array",
+              "description": "The steps.",
+              "items": {
+                "type": "string",
+                "description": "A step."
+              }
+            }
+          }
+        },
+        "by_plan": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A plan, by id.",
+          "additionalProperties": false,
+          "required": [
+            "plan"
+          ],
+          "properties": {
+            "plan": {
+              "type": "string",
+              "description": "The plan's id.",
+              "minLength": 1
+            }
+          }
+        },
+        "approval": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "An approval.",
+          "required": [
+            "plan",
+            "approved"
+          ],
+          "properties": {
+            "plan": {
+              "type": "string",
+              "description": "The plan."
+            },
+            "approved": {
+              "type": "boolean",
+              "description": "True."
+            }
+          }
+        },
+        "receipt": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "What happened.",
+          "required": [
+            "plan",
+            "changed"
+          ],
+          "properties": {
+            "plan": {
+              "type": "string",
+              "description": "The plan run."
+            },
+            "changed": {
+              "type": "boolean",
+              "description": "Whether anything changed."
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "effects": {
+          "system": "the conformance gateway",
+          "changes": "nothing outside it",
+          "reversible": true
+        },
+        "policy": {
+          "approval": [
+            "conformance"
+          ]
+        }
+      },
+      "fingerprint": "b04dbbdc02bb6ba4"
+    },
+    "conformance.evolving@v1#bc7fde7c0bac077d": {
+      "identity": {
+        "id": "conformance.evolving",
+        "version": 1,
+        "title": "conformance.evolving",
+        "summary": "Positions whose contract evolves within @v1, to prove resolution.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "deprecated",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "Projectable",
+            "critical": false
+          }
+        ],
+        "deprecated": "2026-10-01",
+        "sunset": "2027-01-31",
+        "replaced_by": "conformance.evolving@v2"
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "table",
+          "delivery": "chunked",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.evolving@v1:fetch",
+              "encodings": [
+                "arrow",
+                "ndjson",
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "Which ids, and which columns.",
+          "additionalProperties": false,
+          "required": [
+            "ids"
+          ],
+          "properties": {
+            "ids": {
+              "type": "array",
+              "description": "The ids to read.",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "description": "An id.",
+                "minLength": 1
+              }
+            },
+            "region": {
+              "type": "string",
+              "description": "Only this region.",
+              "minLength": 1
+            },
+            "columns": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "description": "The columns to return, as the reader names them.",
+              "items": {
+                "type": "string",
+                "description": "A column name.",
+                "minLength": 1
+              },
+              "uniqueItems": true,
+              "default": null
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "array",
+          "description": "Positions.",
+          "items": {
+            "type": "object",
+            "description": "One position.",
+            "required": [
+              "id",
+              "mv",
+              "weight",
+              "status",
+              "count"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The id.",
+                "x-atlas-key": true
+              },
+              "mv": {
+                "type": "number",
+                "description": "Market value.",
+                "x-atlas-unit": "currency_unit"
+              },
+              "weight": {
+                "type": "number",
+                "description": "Weight.",
+                "x-atlas-logical": "Percent"
+              },
+              "status": {
+                "description": "Status.",
+                "type": "string",
+                "enum": [
+                  "open",
+                  "sold",
+                  "UNKNOWN"
+                ],
+                "x-atlas-enum": [
+                  {
+                    "value": "open",
+                    "description": "Held."
+                  },
+                  {
+                    "value": "sold",
+                    "description": "Sold that day."
+                  },
+                  {
+                    "value": "UNKNOWN",
+                    "description": "A value this reader does not know (§9.5.5)."
+                  }
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "description": "Lots.",
+                "x-atlas-unit": "count"
+              },
+              "legacy": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "A field later dropped."
+              }
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one position per id",
+        "keys": [
+          "id"
+        ],
+        "source": "the conformance gateway"
+      },
+      "fingerprint": "bc7fde7c0bac077d"
+    },
+    "conformance.evolving@v1#5f4ce7e7661ebd4c": {
+      "identity": {
+        "id": "conformance.evolving",
+        "version": 1,
+        "title": "conformance.evolving",
+        "summary": "Positions whose contract evolves within @v1, to prove resolution.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "deprecated",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "Projectable",
+            "critical": false
+          }
+        ],
+        "deprecated": "2026-10-01",
+        "sunset": "2027-01-31",
+        "replaced_by": "conformance.evolving@v2"
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "table",
+          "delivery": "chunked",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.evolving@v1:fetch",
+              "encodings": [
+                "arrow",
+                "ndjson",
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "Which ids, and which columns.",
+          "additionalProperties": false,
+          "required": [
+            "ids"
+          ],
+          "properties": {
+            "ids": {
+              "type": "array",
+              "description": "The ids to read.",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "description": "An id.",
+                "minLength": 1
+              }
+            },
+            "area": {
+              "type": "string",
+              "description": "Only this area.",
+              "minLength": 1,
+              "x-atlas-aliases": [
+                "region"
+              ]
+            },
+            "columns": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "description": "The columns to return, as the reader names them.",
+              "items": {
+                "type": "string",
+                "description": "A column name.",
+                "minLength": 1
+              },
+              "uniqueItems": true,
+              "default": null
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "array",
+          "description": "Positions.",
+          "items": {
+            "type": "object",
+            "description": "One position.",
+            "required": [
+              "id",
+              "market_value",
+              "weight",
+              "currency",
+              "status",
+              "count"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The id.",
+                "x-atlas-key": true
+              },
+              "market_value": {
+                "type": "number",
+                "description": "Market value.",
+                "x-atlas-unit": "currency_unit",
+                "x-atlas-aliases": [
+                  "mv"
+                ]
+              },
+              "weight": {
+                "type": "number",
+                "description": "Weight.",
+                "x-atlas-logical": "Fraction"
+              },
+              "currency": {
+                "type": "string",
+                "description": "The value's currency.",
+                "x-atlas-logical": "Currency"
+              },
+              "status": {
+                "description": "Status.",
+                "type": "string",
+                "enum": [
+                  "open",
+                  "sold",
+                  "UNKNOWN"
+                ],
+                "x-atlas-enum": [
+                  {
+                    "value": "open",
+                    "description": "Held."
+                  },
+                  {
+                    "value": "sold",
+                    "description": "Sold that day."
+                  },
+                  {
+                    "value": "UNKNOWN",
+                    "description": "A value this reader does not know (§9.5.5)."
+                  }
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "description": "Lots.",
+                "x-atlas-unit": "count"
+              },
+              "legacy": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "A field later dropped.",
+                "x-atlas-deprecated": {
+                  "reason": "No reader needs it.",
+                  "since": "2026-07-01",
+                  "sunset": "2026-10-01",
+                  "replaced_by": null
+                }
+              }
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one position per id",
+        "keys": [
+          "id"
+        ],
+        "source": "the conformance gateway"
+      },
+      "evolution": {
+        "previous_profile": "conformance.evolving@v1#bc7fde7c0bac077d",
+        "lens": [
+          {
+            "op": "rename",
+            "from": "mv",
+            "to": "market_value"
+          },
+          {
+            "op": "convert_unit",
+            "field": "weight",
+            "from": "Percent",
+            "to": "Fraction"
+          },
+          {
+            "op": "default",
+            "field": "currency",
+            "value": "USD"
+          },
+          {
+            "op": "rename",
+            "from": "region",
+            "to": "area"
+          }
+        ],
+        "changelog": [
+          {
+            "change": "Profile #B."
+          }
+        ]
+      },
+      "fingerprint": "5f4ce7e7661ebd4c"
+    },
+    "conformance.evolving@v1#73def445ee90c57a": {
+      "identity": {
+        "id": "conformance.evolving",
+        "version": 1,
+        "title": "conformance.evolving",
+        "summary": "Positions whose contract evolves within @v1, to prove resolution.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "deprecated",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "Projectable",
+            "critical": false
+          }
+        ],
+        "deprecated": "2026-10-01",
+        "sunset": "2027-01-31",
+        "replaced_by": "conformance.evolving@v2"
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "table",
+          "delivery": "chunked",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.evolving@v1:fetch",
+              "encodings": [
+                "arrow",
+                "ndjson",
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "Which ids, and which columns.",
+          "additionalProperties": false,
+          "required": [
+            "ids"
+          ],
+          "properties": {
+            "ids": {
+              "type": "array",
+              "description": "The ids to read.",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "description": "An id.",
+                "minLength": 1
+              }
+            },
+            "area": {
+              "type": "string",
+              "description": "Only this area.",
+              "minLength": 1,
+              "x-atlas-aliases": [
+                "region"
+              ]
+            },
+            "columns": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "description": "The columns to return, as the reader names them.",
+              "items": {
+                "type": "string",
+                "description": "A column name.",
+                "minLength": 1
+              },
+              "uniqueItems": true,
+              "default": null
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "array",
+          "description": "Positions.",
+          "items": {
+            "type": "object",
+            "description": "One position.",
+            "required": [
+              "id",
+              "market_value",
+              "weight",
+              "currency",
+              "status",
+              "count",
+              "note"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The id.",
+                "x-atlas-key": true
+              },
+              "market_value": {
+                "type": "number",
+                "description": "Market value.",
+                "x-atlas-unit": "currency_unit",
+                "x-atlas-aliases": [
+                  "mv"
+                ]
+              },
+              "weight": {
+                "type": "number",
+                "description": "Weight.",
+                "x-atlas-logical": "Fraction"
+              },
+              "currency": {
+                "type": "string",
+                "description": "The value's currency.",
+                "x-atlas-logical": "Currency"
+              },
+              "status": {
+                "description": "Status.",
+                "type": "string",
+                "enum": [
+                  "open",
+                  "closed",
+                  "UNKNOWN"
+                ],
+                "x-atlas-enum": [
+                  {
+                    "value": "open",
+                    "description": "Held."
+                  },
+                  {
+                    "value": "closed",
+                    "description": "Sold that day.",
+                    "aliases": [
+                      "sold"
+                    ]
+                  },
+                  {
+                    "value": "UNKNOWN",
+                    "description": "A value this reader does not know (§9.5.5)."
+                  }
+                ]
+              },
+              "count": {
+                "type": "number",
+                "description": "Lots, now fractional.",
+                "x-atlas-unit": "count"
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "A note; null when there is none."
+              }
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one position per id",
+        "keys": [
+          "id"
+        ],
+        "source": "the conformance gateway"
+      },
+      "evolution": {
+        "previous_profile": "conformance.evolving@v1#5f4ce7e7661ebd4c",
+        "lens": [
+          {
+            "op": "alias_value",
+            "field": "status",
+            "from": "sold",
+            "to": "closed"
+          },
+          {
+            "op": "promote",
+            "field": "count",
+            "from": "integer",
+            "to": "number"
+          },
+          {
+            "op": "drop",
+            "field": "legacy"
+          }
+        ],
+        "changelog": [
+          {
+            "change": "Profile #C."
+          }
+        ]
+      },
+      "fingerprint": "73def445ee90c57a"
+    },
+    "conformance.evolving@v2#eb84229aaeb7ca6b": {
+      "identity": {
+        "id": "conformance.evolving",
+        "version": 2,
+        "title": "conformance.evolving",
+        "summary": "Positions intraday: a new meaning, so a new version.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "Projectable",
+            "critical": false
+          }
+        ]
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "table",
+          "delivery": "chunked",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.evolving@v2:fetch",
+              "encodings": [
+                "arrow",
+                "ndjson",
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "Which ids.",
+          "additionalProperties": false,
+          "required": [
+            "ids"
+          ],
+          "properties": {
+            "ids": {
+              "type": "array",
+              "description": "The ids to read.",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "description": "An id.",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "array",
+          "description": "Positions.",
+          "items": {
+            "type": "object",
+            "description": "One position, intraday.",
+            "required": [
+              "id",
+              "value",
+              "at"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The id.",
+                "x-atlas-key": true
+              },
+              "value": {
+                "type": "object",
+                "description": "Market value.",
+                "x-atlas-logical": "Money"
+              },
+              "at": {
+                "type": "string",
+                "description": "When.",
+                "format": "date-time",
+                "x-atlas-key": true
+              }
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one position per id and instant",
+        "keys": [
+          "id",
+          "at"
+        ],
+        "source": "the conformance gateway"
+      },
+      "evolution": {
+        "previous_version": "conformance.evolving@v1"
+      },
+      "fingerprint": "eb84229aaeb7ca6b"
+    },
+    "conformance.handoff@v1#f06c3819d34aadf7": {
+      "identity": {
+        "id": "conformance.handoff",
+        "version": 1,
+        "title": "Handed-off rows: every-type",
+        "summary": "Handed-off rows: every-type.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "Handoff",
+            "critical": false
+          }
+        ]
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "table",
+          "delivery": "chunked",
+          "execution": [
+            "gateway",
+            "handoff"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.handoff@v1:fetch",
+              "encodings": [
+                "arrow",
+                "ndjson",
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "No parameters.",
+          "additionalProperties": false,
+          "properties": {}
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "array",
+          "description": "The rows.",
+          "items": {
+            "type": "object",
+            "description": "One row of every type.",
+            "required": [
+              "i"
+            ],
+            "properties": {
+              "i": {
+                "description": "The row's key.",
+                "type": "integer",
+                "x-atlas-unit": "count",
+                "x-atlas-key": true
+              },
+              "amount": {
+                "description": "An exact amount.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "x-atlas-logical": "Decimal(18,6)"
+              },
+              "notional": {
+                "description": "A wide exact amount.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "x-atlas-logical": "Decimal(38,6)"
+              },
+              "spread": {
+                "description": "A spread, as a float.",
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "x-atlas-logical": "Bp"
+              },
+              "ratio": {
+                "description": "A ratio.",
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "x-atlas-logical": "Fraction"
+              },
+              "label": {
+                "description": "A label.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "open": {
+                "description": "Whether it is open.",
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "day": {
+                "description": "A date.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date"
+              },
+              "at_ntz": {
+                "description": "TIMESTAMP_NTZ(6), converted to UTC in the SQL.",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "at_ltz": {
+                "description": "TIMESTAMP_LTZ(3).",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "at_tz": {
+                "description": "TIMESTAMP_TZ(3).",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "at_ntz9": {
+                "description": "TIMESTAMP_NTZ(9).",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "at_tz9": {
+                "description": "TIMESTAMP_TZ(9).",
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one row per key",
+        "keys": [],
+        "source": "the reference vectors"
+      },
+      "fingerprint": "f06c3819d34aadf7"
+    },
+    "conformance.tick@v1#1acba4963d7b5097": {
+      "identity": {
+        "id": "conformance.tick",
+        "version": 1,
+        "title": "conformance.tick",
+        "summary": "Ticks through the Service Bus emulator, to prove the Events level.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "event",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "subscribe": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "subscription",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "subscribe_request",
+          "returns": "payload",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/event/conformance.tick@v1:subscribe",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "publish": {
+          "effect": "external",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "publish_request",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/event/conformance.tick@v1:publish",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "payload": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A tick.",
+          "required": [
+            "seq",
+            "count"
+          ],
+          "properties": {
+            "seq": {
+              "type": "integer",
+              "description": "Its sequence.",
+              "minimum": 0,
+              "x-atlas-unit": "count"
+            },
+            "count": {
+              "type": "integer",
+              "description": "A count.",
+              "x-atlas-unit": "count"
+            }
+          }
+        },
+        "attributes": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "Attributes.",
+          "required": [
+            "subject"
+          ],
+          "properties": {
+            "subject": {
+              "type": "string",
+              "description": "The ticker.",
+              "minLength": 1
+            }
+          }
+        },
+        "subscribe_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "Which ticks.",
+          "additionalProperties": false,
+          "properties": {
+            "durable": {
+              "type": "string",
+              "description": "A durable name.",
+              "pattern": "^[a-z][a-z0-9-]{0,49}$"
+            }
+          }
+        },
+        "publish_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "The tick to publish.",
+          "required": [
+            "seq",
+            "count"
+          ],
+          "properties": {
+            "seq": {
+              "type": "integer",
+              "description": "Its sequence.",
+              "minimum": 0,
+              "x-atlas-unit": "count"
+            },
+            "count": {
+              "type": "integer",
+              "description": "A count.",
+              "x-atlas-unit": "count"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "emitted": "on the conformance gateway's command",
+        "subject": "the ticker",
+        "ordering": "none",
+        "retention": "P1D",
+        "history": "conformance.rows@v1"
+      },
+      "fingerprint": "1acba4963d7b5097"
+    },
+    "conformance.tick@v1#61948f2a0e7d7132": {
+      "identity": {
+        "id": "conformance.tick",
+        "version": 1,
+        "title": "conformance.tick",
+        "summary": "Ticks through the Service Bus emulator, to prove the Events level.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "event",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "subscribe": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "subscription",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "subscribe_request",
+          "returns": "payload",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/event/conformance.tick@v1:subscribe",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "publish": {
+          "effect": "external",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "publish_request",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/event/conformance.tick@v1:publish",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "payload": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "A tick.",
+          "required": [
+            "seq",
+            "n"
+          ],
+          "properties": {
+            "seq": {
+              "type": "integer",
+              "description": "Its sequence.",
+              "minimum": 0,
+              "x-atlas-unit": "count"
+            },
+            "n": {
+              "type": "integer",
+              "description": "A count.",
+              "x-atlas-unit": "count",
+              "x-atlas-aliases": [
+                "count"
+              ]
+            }
+          }
+        },
+        "attributes": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "Attributes.",
+          "required": [
+            "subject"
+          ],
+          "properties": {
+            "subject": {
+              "type": "string",
+              "description": "The ticker.",
+              "minLength": 1
+            }
+          }
+        },
+        "subscribe_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "Which ticks.",
+          "additionalProperties": false,
+          "properties": {
+            "durable": {
+              "type": "string",
+              "description": "A durable name.",
+              "pattern": "^[a-z][a-z0-9-]{0,49}$"
+            }
+          }
+        },
+        "publish_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "The tick to publish.",
+          "required": [
+            "seq",
+            "n"
+          ],
+          "properties": {
+            "seq": {
+              "type": "integer",
+              "description": "Its sequence.",
+              "minimum": 0,
+              "x-atlas-unit": "count"
+            },
+            "n": {
+              "type": "integer",
+              "description": "A count.",
+              "x-atlas-unit": "count",
+              "x-atlas-aliases": [
+                "count"
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "emitted": "on the conformance gateway's command",
+        "subject": "the ticker",
+        "ordering": "none",
+        "retention": "P1D",
+        "history": "conformance.rows@v1"
+      },
+      "evolution": {
+        "previous_profile": "conformance.tick@v1#1acba4963d7b5097",
+        "lens": [
+          {
+            "op": "rename",
+            "from": "count",
+            "to": "n"
+          }
+        ]
+      },
+      "fingerprint": "61948f2a0e7d7132"
+    },
+    "atlas.whoami@v1#76e4cb9bb2dc565d": {
+      "identity": {
+        "id": "atlas.whoami",
+        "version": 1,
+        "title": "atlas.whoami",
+        "summary": "The built-in atlas.whoami (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "whoami_request",
+          "returns": "whoami_result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.whoami:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "whoami_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/whoami_request"
+        },
+        "whoami_result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/whoami_result"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "fixed by atlas/1.0",
+        "source": "the gateway"
+      },
+      "fingerprint": "76e4cb9bb2dc565d"
+    },
+    "atlas.catalog@v1#9f65e429000acafd": {
+      "identity": {
+        "id": "atlas.catalog",
+        "version": 1,
+        "title": "atlas.catalog",
+        "summary": "The built-in atlas.catalog (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "collection",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "catalog_request",
+          "returns": "catalog_page",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.catalog:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "catalog_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/catalog_request"
+        },
+        "catalog_page": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/catalog-page.schema.json"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "fixed by atlas/1.0",
+        "source": "the gateway"
+      },
+      "fingerprint": "9f65e429000acafd"
+    },
+    "atlas.search@v1#2443a0bd8f2e7eb0": {
+      "identity": {
+        "id": "atlas.search",
+        "version": 1,
+        "title": "atlas.search",
+        "summary": "The built-in atlas.search (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "collection",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "search_request",
+          "returns": "catalog_page",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.search:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "search_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/search_request"
+        },
+        "catalog_page": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/catalog-page.schema.json"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "fixed by atlas/1.0",
+        "source": "the gateway"
+      },
+      "fingerprint": "2443a0bd8f2e7eb0"
+    },
+    "atlas.describe@v1#ff036976dde88885": {
+      "identity": {
+        "id": "atlas.describe",
+        "version": 1,
+        "title": "atlas.describe",
+        "summary": "The built-in atlas.describe (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "describe_request",
+          "returns": "describe",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.describe:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "describe_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/describe_request"
+        },
+        "describe": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/describe.schema.json"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "fixed by atlas/1.0",
+        "source": "the gateway"
+      },
+      "fingerprint": "ff036976dde88885"
+    },
+    "atlas.guide@v1#75b4df7b1f716f29": {
+      "identity": {
+        "id": "atlas.guide",
+        "version": 1,
+        "title": "atlas.guide",
+        "summary": "The built-in atlas.guide (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "guide_request",
+          "returns": "guide_result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.guide:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "guide_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/guide_request"
+        },
+        "guide_result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/guide_result"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "fixed by atlas/1.0",
+        "source": "the gateway"
+      },
+      "fingerprint": "75b4df7b1f716f29"
+    },
+    "atlas.access@v1#2eb8103a0126e827": {
+      "identity": {
+        "id": "atlas.access",
+        "version": 1,
+        "title": "atlas.access",
+        "summary": "The built-in atlas.access (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "collection",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "access_request",
+          "returns": "access_entry",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.access:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "access_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/access_request"
+        },
+        "access_entry": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/access_entry"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "fixed by atlas/1.0",
+        "source": "the gateway"
+      },
+      "fingerprint": "2eb8103a0126e827"
+    },
+    "atlas.usage@v1#b26ce11aa113a4cd": {
+      "identity": {
+        "id": "atlas.usage",
+        "version": 1,
+        "title": "atlas.usage",
+        "summary": "The built-in atlas.usage (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "collection",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "usage_request",
+          "returns": "usage_entry",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.usage:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "usage_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/usage_request"
+        },
+        "usage_entry": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/usage_entry"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "fixed by atlas/1.0",
+        "source": "the gateway"
+      },
+      "fingerprint": "b26ce11aa113a4cd"
+    },
+    "atlas.setup@v1#43c899648a357c51": {
+      "identity": {
+        "id": "atlas.setup",
+        "version": 1,
+        "title": "atlas.setup",
+        "summary": "The built-in atlas.setup (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "setup_request",
+          "returns": "setup_result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.setup:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "setup_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/setup_request"
+        },
+        "setup_result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/setup_result"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "fixed by atlas/1.0",
+        "source": "the gateway"
+      },
+      "fingerprint": "43c899648a357c51"
+    },
+    "atlas.clients@v1#9be2fe1c3dfb3c45": {
+      "identity": {
+        "id": "atlas.clients",
+        "version": 1,
+        "title": "atlas.clients",
+        "summary": "The built-in atlas.clients (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "collection",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "clients_request",
+          "returns": "client_entry",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.clients:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "clients_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/clients_request"
+        },
+        "client_entry": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/client_entry"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "fixed by atlas/1.0",
+        "source": "the gateway"
+      },
+      "fingerprint": "9be2fe1c3dfb3c45"
+    },
+    "atlas.compare@v1#7f42197359868c95": {
+      "identity": {
+        "id": "atlas.compare",
+        "version": 1,
+        "title": "atlas.compare",
+        "summary": "The built-in atlas.compare (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "table",
+          "delivery": "chunked",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "compare_request",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.compare:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "compare_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/compare_request"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "fixed by atlas/1.0",
+        "source": "the gateway"
+      },
+      "fingerprint": "7f42197359868c95"
+    },
+    "atlas.operation@v1#554cc68c9eafdb0a": {
+      "identity": {
+        "id": "atlas.operation",
+        "version": 1,
+        "title": "atlas.operation",
+        "summary": "The built-in atlas.operation (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "resource",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "get": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "operation_get_request",
+          "returns": "operation",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.operation:get",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "list": {
+          "effect": "read",
+          "result": "collection",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "operation_list_request",
+          "returns": "operation",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.operation:list",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "cancel": {
+          "effect": "write",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "operation_get_request",
+          "returns": "operation",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.operation:cancel",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "watch": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "subscription",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "operation_get_request",
+          "returns": "operation",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.operation:watch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "operation_get_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/operation_get_request"
+        },
+        "operation": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/operation.schema.json"
+        },
+        "operation_list_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/operation_list_request"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "name": "fixed by atlas/1.0"
+      },
+      "fingerprint": "554cc68c9eafdb0a"
+    },
+    "atlas.catalog.changed@v1#846839fbe8181da1": {
+      "identity": {
+        "id": "atlas.catalog.changed",
+        "version": 1,
+        "title": "atlas.catalog.changed",
+        "summary": "The built-in atlas.catalog.changed (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "event",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "subscribe": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "subscription",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "whoami_request",
+          "returns": "catalog_changed_payload",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.catalog.changed:subscribe",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "whoami_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/whoami_request"
+        },
+        "catalog_changed_payload": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/catalog_changed_payload"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "emitted": "when the caller's working view may have changed",
+        "subject": "the caller",
+        "ordering": "none",
+        "retention": "PT1H",
+        "history": "atlas.catalog@v1"
+      },
+      "fingerprint": "846839fbe8181da1"
+    },
+    "atlas.settings@v1#702da574e3c4210f": {
+      "identity": {
+        "id": "atlas.settings",
+        "version": 1,
+        "title": "atlas.settings",
+        "summary": "The built-in atlas.settings (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "resource",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "get": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "settings_get_request",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.settings:get",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        },
+        "update": {
+          "effect": "write",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "settings_update_request",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.settings:update",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "settings_get_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/settings_get_request"
+        },
+        "settings_update_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/settings_update_request"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "name": "fixed by atlas/1.0"
+      },
+      "fingerprint": "702da574e3c4210f"
+    },
+    "atlas.directory@v1#f8b2b83fb6a9a756": {
+      "identity": {
+        "id": "atlas.directory",
+        "version": 1,
+        "title": "atlas.directory",
+        "summary": "The built-in atlas.directory (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "collection",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "directory_request",
+          "returns": "directory_entry",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.directory:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "directory_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/directory_request"
+        },
+        "directory_entry": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/directory_entry"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "fixed by atlas/1.0",
+        "source": "the gateway"
+      },
+      "fingerprint": "f8b2b83fb6a9a756"
+    },
+    "atlas.audit@v1#cbab892faa6bfca3": {
+      "identity": {
+        "id": "atlas.audit",
+        "version": 1,
+        "title": "atlas.audit",
+        "summary": "The built-in atlas.audit (§9.3.2).",
+        "domain": "atlas",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "collection",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "audit_request",
+          "returns": "audit_record",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/atlas/atlas.audit:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "audit_request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/audit_request"
+        },
+        "audit_record": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/audit_record"
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "fixed by atlas/1.0",
+        "source": "the gateway"
+      },
+      "fingerprint": "cbab892faa6bfca3"
+    },
+    "conformance.echo@v1#d0a02ef751a8d8e7": {
+      "identity": {
+        "id": "conformance.echo",
+        "version": 1,
+        "title": "conformance.echo",
+        "summary": "Echo a request back, to prove validation, headers and resolution.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": []
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/elsewhere/7/echo;v=1",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "What to echo.",
+          "additionalProperties": false,
+          "required": [
+            "text"
+          ],
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "The text to echo.",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "count": {
+              "type": "integer",
+              "description": "How many times.",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 1,
+              "x-atlas-unit": "count"
+            },
+            "ratio": {
+              "type": "number",
+              "description": "A ratio, echoed.",
+              "x-atlas-logical": "Fraction"
+            },
+            "when": {
+              "type": "string",
+              "description": "A date, echoed.",
+              "format": "date"
+            },
+            "kind": {
+              "description": "How to echo.",
+              "type": "string",
+              "enum": [
+                "plain",
+                "loud"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "plain",
+                  "description": "An ordinary echo."
+                },
+                {
+                  "value": "loud",
+                  "description": "An echo in capitals."
+                }
+              ]
+            },
+            "tags": {
+              "type": "array",
+              "description": "Tags, echoed.",
+              "maxItems": 10,
+              "items": {
+                "type": "string",
+                "description": "A tag.",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "The request, echoed.",
+          "required": [
+            "text",
+            "count",
+            "kind"
+          ],
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "The text."
+            },
+            "count": {
+              "type": "integer",
+              "description": "How many times.",
+              "x-atlas-unit": "count"
+            },
+            "ratio": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "The ratio.",
+              "x-atlas-logical": "Fraction"
+            },
+            "when": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "The date.",
+              "format": "date"
+            },
+            "kind": {
+              "description": "How it was echoed.",
+              "type": "string",
+              "enum": [
+                "plain",
+                "loud",
+                "UNKNOWN"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "plain",
+                  "description": "An ordinary echo."
+                },
+                {
+                  "value": "loud",
+                  "description": "An echo in capitals."
+                },
+                {
+                  "value": "UNKNOWN",
+                  "description": "A value this reader does not know (§9.5.5)."
+                }
+              ]
+            },
+            "tags": {
+              "type": "array",
+              "description": "The tags.",
+              "items": {
+                "type": "string",
+                "description": "A tag."
+              }
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one echo",
+        "source": "the conformance gateway"
+      },
+      "usage": {
+        "when": "In the conformance suite only.",
+        "examples": [
+          {
+            "title": "Echo",
+            "interaction": "fetch",
+            "request": {
+              "text": "hello"
+            }
+          }
+        ]
+      },
+      "fingerprint": "d0a02ef751a8d8e7"
+    },
+    "conformance.echo@v1#4fe7738a97223902": {
+      "identity": {
+        "id": "conformance.echo",
+        "version": 1,
+        "title": "conformance.echo",
+        "summary": "Echo a request back, to prove validation, headers and resolution.",
+        "domain": "conformance",
+        "owner": "Atlas"
+      },
+      "properties": {
+        "family": "data",
+        "stability": "official",
+        "lifecycle": "stable",
+        "visibility": "listed",
+        "traits": [
+          {
+            "name": "FutureTrait",
+            "critical": false
+          }
+        ]
+      },
+      "interactions": {
+        "fetch": {
+          "effect": "read",
+          "result": "record",
+          "delivery": "single",
+          "execution": [
+            "gateway"
+          ],
+          "takes": "request",
+          "returns": "result",
+          "deadline": {
+            "default": "PT30S",
+            "max": "PT2M"
+          },
+          "bindings": [
+            {
+              "protocol": "https",
+              "server": "gateway",
+              "method": "POST",
+              "address": "/v1/data/conformance.echo@v1:fetch",
+              "encodings": [
+                "json"
+              ],
+              "auth": "bearer"
+            }
+          ]
+        }
+      },
+      "schemas": {
+        "request": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "What to echo.",
+          "additionalProperties": false,
+          "required": [
+            "text"
+          ],
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "The text to echo.",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "count": {
+              "type": "integer",
+              "description": "How many times.",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 1,
+              "x-atlas-unit": "count"
+            },
+            "ratio": {
+              "type": "number",
+              "description": "A ratio, echoed.",
+              "x-atlas-logical": "Fraction"
+            },
+            "when": {
+              "type": "string",
+              "description": "A date, echoed.",
+              "format": "date"
+            },
+            "kind": {
+              "description": "How to echo.",
+              "type": "string",
+              "enum": [
+                "plain",
+                "loud"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "plain",
+                  "description": "An ordinary echo."
+                },
+                {
+                  "value": "loud",
+                  "description": "An echo in capitals."
+                }
+              ]
+            },
+            "tags": {
+              "type": "array",
+              "description": "Tags, echoed.",
+              "maxItems": 10,
+              "items": {
+                "type": "string",
+                "description": "A tag.",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "result": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$vocabulary": {
+            "https://json-schema.org/draft/2020-12/vocab/core": true,
+            "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+            "https://json-schema.org/draft/2020-12/vocab/validation": true,
+            "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+            "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+            "https://atlas.jhg.com/vocab/2026-10": false
+          },
+          "type": "object",
+          "description": "The request, echoed.",
+          "required": [
+            "text",
+            "count",
+            "kind"
+          ],
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "The text."
+            },
+            "count": {
+              "type": "integer",
+              "description": "How many times.",
+              "x-atlas-unit": "count"
+            },
+            "ratio": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "The ratio.",
+              "x-atlas-logical": "Fraction"
+            },
+            "when": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "The date.",
+              "format": "date"
+            },
+            "kind": {
+              "description": "How it was echoed.",
+              "type": "string",
+              "enum": [
+                "plain",
+                "loud",
+                "whisper",
+                "UNKNOWN"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "plain",
+                  "description": "An ordinary echo."
+                },
+                {
+                  "value": "loud",
+                  "description": "An echo in capitals."
+                },
+                {
+                  "value": "whisper",
+                  "description": "An echo, quietly."
+                },
+                {
+                  "value": "UNKNOWN",
+                  "description": "A value this reader does not know (§9.5.5)."
+                }
+              ]
+            },
+            "tags": {
+              "type": "array",
+              "description": "The tags.",
+              "items": {
+                "type": "string",
+                "description": "A tag."
+              }
+            },
+            "echoed_at": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "When.",
+              "format": "date-time"
+            }
+          }
+        }
+      },
+      "errors": [],
+      "meaning": {
+        "grain": "one echo",
+        "source": "the conformance gateway"
+      },
+      "usage": {
+        "when": "In the conformance suite only.",
+        "examples": [
+          {
+            "title": "Echo",
+            "interaction": "fetch",
+            "request": {
+              "text": "hello"
+            }
+          }
+        ]
+      },
+      "evolution": {
+        "previous_profile": "conformance.echo@v1#f17339273f0617c2",
+        "lens": []
+      },
+      "fingerprint": "4fe7738a97223902"
+    }
+  }
+}

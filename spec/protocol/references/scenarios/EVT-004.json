@@ -1,0 +1,135 @@
+{
+  "id": "EVT-004",
+  "level": "Events",
+  "description": "A grant revoked while subscribed: Service Bus refuses the connection, the gateway answers not_granted, and the iterator ends with it.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "conformance.tick@v1:subscribe",
+          "nth": 2
+        },
+        "respond": {
+          "status": 403,
+          "problem": {
+            "code": "not_granted",
+            "retryable": false
+          }
+        },
+        "times": 5
+      }
+    ],
+    "bus": [
+      {
+        "after": "connected",
+        "send": [
+          {
+            "id": "tick-1",
+            "source": "conformance",
+            "type": "com.jhg.fiquant.conformance.tick.v1",
+            "time": {
+              "$now_plus_iso": 0
+            },
+            "dataschema": "urn:atlas:profile:conformance.tick@v1:61948f2a0e7d7132",
+            "datacontenttype": "application/json",
+            "specversion": "1.0",
+            "subject": "ticker",
+            "data": {
+              "seq": 1,
+              "n": 1
+            }
+          }
+        ]
+      },
+      {
+        "after": "delivered:tick-1",
+        "revoke": true
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "subscribe.open",
+      "args": {
+        "id": "conformance.tick@v1"
+      }
+    },
+    {
+      "id": 3,
+      "op": "subscribe.next",
+      "args": {
+        "subscription": 2
+      }
+    },
+    {
+      "id": 4,
+      "op": "subscribe.next",
+      "args": {
+        "subscription": 2,
+        "timeout_ms": 10000
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true
+    },
+    {
+      "id": 3,
+      "ok": true,
+      "value_contains": {
+        "data": {
+          "seq": 1
+        }
+      }
+    },
+    {
+      "id": 4,
+      "ok": false,
+      "problem": {
+        "code": "not_granted"
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.tick@v1:subscribe"
+      },
+      "equals": 2
+    }
+  ]
+}

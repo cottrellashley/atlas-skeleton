@@ -1,0 +1,141 @@
+{
+  "id": "CORE-PROB-002",
+  "level": "Core",
+  "description": "A code no client knows is handled by its status and retryable.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {
+    "steps": [
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "a"
+          }
+        },
+        "respond": {
+          "status": 503,
+          "problem": {
+            "code": "conformance_strange",
+            "retryable": true,
+            "retry_after": 0
+          },
+          "headers": {
+            "Retry-After": "0"
+          }
+        },
+        "times": 4
+      },
+      {
+        "match": {
+          "address": "conformance.echo@v1:fetch",
+          "body_contains": {
+            "text": "b"
+          }
+        },
+        "respond": {
+          "status": 422,
+          "problem": {
+            "code": "conformance_odd",
+            "retryable": false
+          }
+        },
+        "times": 1
+      }
+    ]
+  },
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "a"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "call",
+      "args": {
+        "address": "conformance.echo@v1:fetch",
+        "request": {
+          "text": "b"
+        }
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": false,
+      "problem": {
+        "code": "conformance_strange",
+        "status": 503,
+        "retryable": true,
+        "cli_exit": 1
+      }
+    },
+    {
+      "id": 3,
+      "ok": false,
+      "problem": {
+        "code": "conformance_odd",
+        "status": 422,
+        "retryable": false,
+        "cli_exit": 1
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "a"
+        }
+      },
+      "equals": 4
+    },
+    {
+      "assert": "count",
+      "select": {
+        "address": "conformance.echo@v1:fetch",
+        "body_contains": {
+          "text": "b"
+        }
+      },
+      "equals": 1
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "id": "CORE-OP-001",
+  "level": "Core",
+  "description": "202 and an operation: polls no sooner than Retry-After, then the default doubling from 1 s to at most 30 s; reads result, or result_location when it is larger than 1 MiB; cancel reaches cancelled.",
+  "setup": {
+    "env": {
+      "ATLAS_URL": "{gateway}",
+      "ATLAS_HOME": "{ATLAS_HOME}",
+      "ATLAS_CONFORMANCE": "1"
+    },
+    "files": [
+      {
+        "path": "{ATLAS_HOME}/state/token-conformance.json",
+        "mode": "0600",
+        "dir_mode": "0700",
+        "json": {
+          "access_token": "ct-valid",
+          "expires_at": {
+            "$now_plus_s": 3600
+          },
+          "refresh_token": "rt-valid"
+        }
+      }
+    ]
+  },
+  "gateway": {},
+  "commands": [
+    {
+      "id": 1,
+      "op": "connect",
+      "args": {}
+    },
+    {
+      "id": 2,
+      "op": "call",
+      "args": {
+        "address": "conformance.slow@v1:fetch",
+        "request": {
+          "polls": 2
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "operation.wait",
+      "args": {
+        "name": "{operation:2}",
+        "timeout_ms": 30000
+      }
+    },
+    {
+      "id": 4,
+      "op": "call",
+      "args": {
+        "address": "conformance.slow@v1:fetch",
+        "request": {
+          "polls": 0,
+          "result_bytes": 1100000
+        }
+      }
+    },
+    {
+      "id": 5,
+      "op": "operation.wait",
+      "args": {
+        "name": "{operation:4}",
+        "timeout_ms": 30000
+      }
+    },
+    {
+      "id": 6,
+      "op": "call",
+      "args": {
+        "address": "conformance.slow@v1:fetch",
+        "request": {
+          "polls": 20
+        }
+      }
+    },
+    {
+      "id": 7,
+      "op": "operation.cancel",
+      "args": {
+        "name": "{operation:6}"
+      }
+    },
+    {
+      "id": 8,
+      "op": "operation.get",
+      "args": {
+        "name": "{operation:6}"
+      }
+    }
+  ],
+  "expected": [
+    {
+      "id": 1,
+      "ok": true
+    },
+    {
+      "id": 2,
+      "ok": true,
+      "value_contains": {
+        "address": "conformance.slow@v1:fetch",
+        "state": {
+          "$in": [
+            "pending",
+            "running"
+          ]
+        }
+      }
+    },
+    {
+      "id": 3,
+      "ok": true,
+      "value": {
+        "done": true,
+        "padding": "xxxxxxxxxxxxxxxx"
+      }
+    },
+    {
+      "id": 4,
+      "ok": true
+    },
+    {
+      "id": 5,
+      "ok": true,
+      "value_contains": {
+        "done": true,
+        "$length": {
+          "/padding": 1100000
+        }
+      }
+    },
+    {
+      "id": 6,
+      "ok": true
+    },
+    {
+      "id": 7,
+      "ok": true
+    },
+    {
+      "id": 8,
+      "ok": true,
+      "value_contains": {
+        "state": "cancelled"
+      }
+    }
+  ],
+  "expected_requests": [
+    {
+      "assert": "poll_intervals",
+      "operation": "{operation:2}",
+      "min_ms": [
+        1000,
+        1000,
+        2000
+      ]
+    },
+    {
+      "assert": "count",
+      "select": {
+        "path_prefix": "/v1/operations/",
+        "path_suffix": "/result",
+        "method": "GET"
+      },
+      "equals": 1
+    },
+    {
+      "assert": "header",
+      "select": {
+        "path_prefix": "/v1/operations/",
+        "path_suffix": "/result"
+      },
+      "name": "Authorization",
+      "equals": "Bearer ct-valid"
+    },
+    {
+      "assert": "count",
+      "select": {
+        "path_suffix": ":cancel",
+        "method": "POST"
+      },
+      "equals": 1
+    }
+  ],
+  "note": "`call` on an operation delivery returns the operation (its document); operation.wait polls it to its end and returns its result. The gateway answers 202 with Retry-After: 1 and each poll before the last without one, so the client waits 1, 1, 2 s. {operation:N} is the name of the operation command N returned.",
+  "questions": [
+    "Q-RUN-5"
+  ]
+}
