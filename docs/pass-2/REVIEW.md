@@ -1,6 +1,6 @@
 # Pass 2 follows the design review
 
-**Source:** the 2026-10-31 design review, `~/Documents/ChatGPT/creation/atlas-spec/review/`. It was read on 2026-10-31 in the order its README sets: [ATLAS-CORE](../../../../Documents/ChatGPT/creation/atlas-spec/review/ATLAS-CORE.md), CAPABILITY-HANDBOOK, DESIGN-REVIEW, INTEGRATIONS. Ashley asked that the build follow it. The review keeps Atlas's product promise and reduces its universal guarantees, so the first build is one complete, narrow journey rather than a fraction of every subsystem.
+**Source:** the 2026-10-31 design review, [`docs/source/atlas-spec/review/`](../source/atlas-spec/review). It was read on 2026-10-31 in the order its README sets: [ATLAS-CORE](../source/atlas-spec/review/ATLAS-CORE.md), CAPABILITY-HANDBOOK, DESIGN-REVIEW, INTEGRATIONS. Ashley asked that the build follow it. The review keeps Atlas's product promise and reduces its universal guarantees, so the first build is one complete, narrow journey rather than a fraction of every subsystem.
 
 The review does not change requirements by implication. Where pass 2 now departs from the spec or from `PLAN.md`, this file records the change and the review finding (R01–R26) behind it. Where the two disagree, this file governs `PLAN.md`.
 

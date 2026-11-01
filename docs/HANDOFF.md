@@ -6,7 +6,7 @@
 - what the repository holds today;
 - what still has to be done, in order, with the files to change and the tests that prove each step.
 
-It adopts the core handoff plan and the peer review of 2026-11-01 (section 9, *External sources*), and turns them into work on this repository. File links are relative to this file. Line numbers are those of this commit. They will move as the work proceeds, so each link also names the function or type it points at.
+It adopts the core handoff plan and the peer review of 2026-11-01 ([`docs/source/atlas-spec/review/`](source/atlas-spec/review)), and turns them into work on this repository. File links are relative to this file. Line numbers are those of this commit. They will move as the work proceeds, so each link also names the function or type it points at.
 
 ---
 
@@ -430,8 +430,9 @@ No capability-specific client code.
 - [`spec/protocol/references/`](../spec/protocol/references): the independent protocol references. These are the document schemas, the grammar, the vectors, the 50 scenarios and their fixture gateway, with `README.md` and `QUESTIONS.md`.
 - [`sdk/go/kit/PROVENANCE.md`](../sdk/go/kit/PROVENANCE.md) and [`sqlglot/PROVENANCE.md`](../sqlglot/PROVENANCE.md): the integrated repositories, at their pinned commits.
 
-**External sources.** These are not in this repository; they are kept with the spec transcription on the maintainer's machine:
-- **The Atlas spec**, a transcription in Markdown. The section numbers here (for example §6.4.1, §9.8.3) are its.
-- **The 2026-10-31 design review:** `ATLAS-CORE.md`, `CAPABILITY-HANDBOOK.md`, `DESIGN-REVIEW.md` and `INTEGRATIONS.md`. Adopted in REVIEW.md.
-- **The peer review of 2026-11-01** (`PEER-REVIEW-2026-11-01.md`): findings R3-01 to R3-16, and the architecture gaps B1 to B4 above.
-- **The core handoff plan of 2026-11-01** (`CORE-HANDOFF-PLAN.md`): the boundary, packages C0 to C6, and Gates A and B, which this plan adopts and maps onto the repository.
+**The source documents.** Copies are in [`docs/source/`](source); the masters stay on the maintainer's machine:
+- **The Atlas spec,** a transcription in Markdown: [`docs/source/atlas-spec/`](source/atlas-spec). The section numbers here (for example §6.4.1, §9.8.3) are its.
+- **The 2026-10-31 design review:** [`ATLAS-CORE.md`](source/atlas-spec/review/ATLAS-CORE.md), [`CAPABILITY-HANDBOOK.md`](source/atlas-spec/review/CAPABILITY-HANDBOOK.md), [`DESIGN-REVIEW.md`](source/atlas-spec/review/DESIGN-REVIEW.md) and [`INTEGRATIONS.md`](source/atlas-spec/review/INTEGRATIONS.md). Adopted in REVIEW.md.
+- **The peer review of 2026-11-01:** [`PEER-REVIEW-2026-11-01.md`](source/atlas-spec/review/PEER-REVIEW-2026-11-01.md), with findings R3-01 to R3-16, and the architecture gaps B1 to B4 above.
+- **The core handoff plan of 2026-11-01:** [`CORE-HANDOFF-PLAN.md`](source/atlas-spec/review/CORE-HANDOFF-PLAN.md), with the boundary, packages C0 to C6, and Gates A and B, which this plan adopts and maps onto the repository.
+- **The working digests:** [`docs/source/digests/`](source/digests), the cited summaries and gap studies written while the build was planned. `gaps/5.md` (the conformance gateway) and `gaps/7.md` (the step-3 mechanisms) carry the detailed designs for C4 and C5.
