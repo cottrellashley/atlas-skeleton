@@ -93,6 +93,10 @@ export class StandIn {
   /** Access tokens it accepts, and refresh tokens it redeems. */
   readonly access = new Set<string>();
   readonly refresh = new Map<string, any>();
+  /** The application its token endpoint redeems refresh tokens for, as Entra does: the fixture's client_id unless changed (R3-03). */
+  application = '';
+  /** How many answers the token endpoint has sent. */
+  tokenAnswers = 0;
   bootstrap: any;
   private server!: Server;
   private readonly now: () => number;
@@ -108,6 +112,7 @@ export class StandIn {
     s.url = `http://127.0.0.1:${(s.server.address() as AddressInfo).port}`;
     const fixture = refs('scenarios/fixtures/gateway.json');
     s.bootstrap = parse(JSON.stringify(fixture.bootstrap).replaceAll('{gateway}', s.url));
+    s.application = String(fixture.bootstrap.sign_in.client_id);
     opts.bootstrap?.(s.bootstrap, s.url);
     for (const [exact, p] of Object.entries(fixture.profiles)) s.profiles.set(exact, p);
     for (const [pinned, exact] of Object.entries(fixture.current)) s.current.set(pinned, exact as string);
@@ -153,7 +158,9 @@ export class StandIn {
     if (seen.method === 'GET' && path === '/.well-known/atlas') return sendJSON(res, 200, this.bootstrap, { etag: '"b1"' });
     if (path === '/oauth/token') {
       if (this.tokenGate) await this.tokenGate;
+      this.tokenAnswers++;
       const form = new URLSearchParams(body);
+      if ((form.get('client_id') ?? '') === '' || form.get('client_id') !== this.application) return sendJSON(res, 400, { error: 'invalid_client' });
       const answer = this.refresh.get(form.get('refresh_token') ?? '');
       if (form.get('grant_type') !== 'refresh_token' || !answer) return sendJSON(res, 400, { error: 'invalid_grant' });
       this.access.add(answer.access_token);

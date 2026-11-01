@@ -32,6 +32,7 @@ import (
 	"github.com/jhgonline/fi-app-atlas/gateway/ports"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
+	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
 )
 
 // WriteTimeout bounds one write to a pipe or a socket: a collector that
@@ -175,26 +176,54 @@ type line struct {
 	Principal      string            `json:"principal,omitempty"`
 	CallerKind     string            `json:"caller_kind,omitempty"`
 	Application    string            `json:"application,omitempty"`
+	Claimed        string            `json:"claimed,omitempty"`
+	Client         *client           `json:"client,omitempty"`
 	Environment    string            `json:"environment"`
 	PolicyRevision string            `json:"policy_revision,omitempty"`
 	Address        string            `json:"address,omitempty"`
 	Exact          string            `json:"exact,omitempty"`
+	Expected       string            `json:"expected,omitempty"`
 	RequestDigest  string            `json:"request_digest,omitempty"`
+	Step           string            `json:"step,omitempty"`
 	Code           string            `json:"code,omitempty"`
 	Rows           int64             `json:"rows,omitempty"`
 	Truncated      bool              `json:"truncated,omitempty"`
 	Usage          map[string]string `json:"usage,omitempty"`
+	Source         *source           `json:"source,omitempty"`
 	DurationMS     int64             `json:"duration_ms,omitempty"`
 }
 
-// encode is a fact's line, its newline included.
+// client is the calling client, as its Atlas-Client header named it.
+type client struct {
+	Name     string `json:"name"`
+	Version  string `json:"version"`
+	Protocol string `json:"protocol"`
+}
+
+// source is the source's own record of the work, as settlement copied it.
+type source struct {
+	QueryID string            `json:"query_id,omitempty"`
+	Rows    int64             `json:"rows,omitempty"`
+	Bytes   int64             `json:"bytes,omitempty"`
+	Cost    map[string]string `json:"cost,omitempty"`
+}
+
+// encode is a fact's line, its newline included: every member of the
+// fact (R3-04).
 func encode(f ports.Fact) ([]byte, error) {
-	b, err := json.Marshal(line{
+	l := line{
 		Kind: string(f.Kind), At: f.At.UTC().Format(time.RFC3339Nano), RequestID: f.RequestID, Attempt: f.Attempt, Operation: f.Operation,
-		Principal: f.Principal, CallerKind: f.CallerKind, Application: f.Application, Environment: f.Environment, PolicyRevision: f.PolicyRevision,
-		Address: f.Address, Exact: f.Exact, RequestDigest: f.RequestDigest, Code: f.Code, Rows: f.Rows, Truncated: f.Truncated, Usage: f.Usage,
+		Principal: f.Principal, CallerKind: f.CallerKind, Application: f.Application, Claimed: f.Claimed, Environment: f.Environment, PolicyRevision: f.PolicyRevision,
+		Address: f.Address, Exact: f.Exact, Expected: f.Expected, RequestDigest: f.RequestDigest, Step: string(f.Step), Code: f.Code, Rows: f.Rows, Truncated: f.Truncated, Usage: f.Usage,
 		DurationMS: f.Duration.Milliseconds(),
-	})
+	}
+	if f.Client != (protocol.Client{}) {
+		l.Client = &client{Name: f.Client.Name, Version: f.Client.Version, Protocol: f.Client.Protocol}
+	}
+	if f.Source != nil {
+		l.Source = &source{QueryID: f.Source.QueryID, Rows: f.Source.Rows, Bytes: f.Source.Bytes, Cost: f.Source.Cost}
+	}
+	b, err := json.Marshal(l)
 	if err != nil {
 		return nil, fmt.Errorf("auditlog: %w", err)
 	}
@@ -428,10 +457,17 @@ func decode(text []byte) (ports.Fact, error) {
 	if err != nil {
 		return ports.Fact{}, err
 	}
-	return ports.Fact{
+	f := ports.Fact{
 		Kind: ports.FactKind(l.Kind), At: at, RequestID: l.RequestID, Attempt: l.Attempt, Operation: l.Operation,
-		Principal: l.Principal, CallerKind: l.CallerKind, Application: l.Application, Environment: l.Environment, PolicyRevision: l.PolicyRevision,
-		Address: l.Address, Exact: l.Exact, RequestDigest: l.RequestDigest, Code: l.Code, Rows: l.Rows, Truncated: l.Truncated, Usage: l.Usage,
+		Principal: l.Principal, CallerKind: l.CallerKind, Application: l.Application, Claimed: l.Claimed, Environment: l.Environment, PolicyRevision: l.PolicyRevision,
+		Address: l.Address, Exact: l.Exact, Expected: l.Expected, RequestDigest: l.RequestDigest, Step: ports.Step(l.Step), Code: l.Code, Rows: l.Rows, Truncated: l.Truncated, Usage: l.Usage,
 		Duration: time.Duration(l.DurationMS) * time.Millisecond,
-	}, nil
+	}
+	if l.Client != nil {
+		f.Client = protocol.Client{Name: l.Client.Name, Version: l.Client.Version, Protocol: l.Client.Protocol}
+	}
+	if l.Source != nil {
+		f.Source = &ports.Usage{QueryID: l.Source.QueryID, Rows: l.Source.Rows, Bytes: l.Source.Bytes, Cost: l.Source.Cost}
+	}
+	return f, nil
 }

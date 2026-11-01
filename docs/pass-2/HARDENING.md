@@ -25,6 +25,18 @@ This is the ledger of the 2026-10-31/11-01 hardening. **Sources:**
 | P1, R036 (explain) | Explain was offered, but the assembly could not serve it | Views run on the real `DataSource`, so explain is served from the same plan as fetch | Acceptance point 1 |
 | P1, A-141 (history) | Acceptance point 4 failed silently: the registry refuses a profile without its history, and a tautology hid the failure | The capability is staged with its history, and every point asserts its outcome | `make e2e`, acceptance point 4 |
 
+## The peer review of 2026-11-01 (R3-01 to R3-16), on branch `handoff`
+
+Found by a static review (`docs/source/atlas-spec/review/PEER-REVIEW-2026-11-01.md`), and worked in `docs/HANDOFF.md`'s packages. Each fix began with a test named for its finding, shown to fail for the stated reason.
+
+| ID | Sev | Finding | Status | Proof |
+|---|---|---|---|---|
+| R3-01 | P1 | A provider that omits, nulls or mistypes the scoped value passes the projected-result guard | **FIXED** (C0) | `TestR3_01ScopeEvidenceIsRequired` (rows and batches; omitted, null, number, object), `TestR3_01NestedScopeEvidence`, `TestR3_01AProjectedAnswerWithItsEvidenceIsSent`; A-195 |
+| R3-02 | P1 | Remote-only Snowflake batches dereference nil: the engine cleared entries in the driver's own slice | **FIXED** (C0) | `TestR3_02RemoteBatchesAreTheEnginesOwn`, through gosnowflake 1.19.1 over a hermetic HTTP fixture: remote only, inline and remote, several records in a chunk, a download cancelled midway. It panicked before the fix |
+| R3-03 | P1 | Refresh requests omit `client_id`, in Go and Node | **FIXED** (C0) | `TestR3_03RefreshNamesTheBoundApplication` in Go and Node; the fakes' token endpoints now refuse a missing or wrong `client_id`, so every refresh test checks it; A-196. **Untested live against Entra** |
+| R3-04 | P1 | The audit log drops `Claimed`, `Client`, `Expected`, `Step` and `Source` | **FIXED** (C0) | `TestR3_04EveryFieldOfAFactIsPersisted` (the stored bytes and the decoded fact); `porttest.AuditSink` now compares every member and refuses to run unless its facts set every member of `ports.Fact` |
+| R3-05 | P1 | A pre-aborted Node caller leaves a failing refresh's rejection unhandled | **FIXED** (C0) | `TestR3_05ACancelledCallerLeavesNoUnhandledRejection`: pre-aborted, aborted at start, aborted during a failing refresh, and a second caller that continues |
+
 ## Still open, and who owns it
 
 These need more than this pass had credit for. Each one is the review's or this plan's:

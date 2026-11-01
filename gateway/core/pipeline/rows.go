@@ -193,7 +193,7 @@ func (r *Rows) read() (*ijson.Object, error) {
 		if err != nil {
 			return nil, err
 		}
-		return r.hold(row)
+		return r.hold(row, true)
 	}
 	for len(r.pending) == 0 {
 		b, rows, err := r.take()
@@ -299,7 +299,7 @@ func (r *Rows) take() (arrow.RecordBatch, []*ijson.Object, error) {
 			return nil, nil, protocol.NewProblem(protocol.CodeInternal, "a batch of the capability's answer does not match its contract")
 		}
 		for i, row := range rows {
-			held, err := r.hold(row)
+			held, err := r.hold(row, false)
 			if err != nil {
 				out.Release()
 				return nil, nil, err
@@ -336,10 +336,12 @@ func (r *Rows) conform(b arrow.RecordBatch) (arrow.RecordBatch, *protocol.Proble
 }
 
 // hold holds one row to the contract and the caller's scope: valid against
-// its schema, rebuilt with only what the schema declares (R106), and every
-// value it scopes inside the caller's scope (R05). A row's values are
-// never logged.
-func (r *Rows) hold(row *ijson.Object) (*ijson.Object, error) {
+// its schema, rebuilt with only what the schema declares (R106), and, when
+// scoped, every value it scopes inside the caller's scope (R05), its
+// evidence whole (R3-01). A batch's rows are scoped on the batch as the
+// provider gave it (batchInScope), before conform withholds the scoped
+// columns the caller did not ask for. A row's values are never logged.
+func (r *Rows) hold(row *ijson.Object, scoped bool) (*ijson.Object, error) {
 	if r.schema != nil {
 		if fs := r.schema.Validate(row); len(fs) > 0 {
 			r.log.Error("a row of the capability's answer does not match its contract", "pointer", fs[0].Pointer, "keyword", fs[0].Keyword)
@@ -349,8 +351,14 @@ func (r *Rows) hold(row *ijson.Object) (*ijson.Object, error) {
 	// The scope is checked on the row as the provider gave it, the scoped
 	// columns the caller did not ask for included (the pipeline asks for
 	// them, withScoped), and only then is what was not asked for withheld.
-	if err := r.inScope(access.Values(r.full, row)); err != nil {
-		return nil, err
+	if scoped {
+		vals, missing, ok := access.Evidence(r.full, row, true)
+		if !ok {
+			return nil, r.unscoped(missing)
+		}
+		if err := r.inScope(vals); err != nil {
+			return nil, err
+		}
 	}
 	if r.schema != nil {
 		if kept, dropped := declared(r.schema, row); dropped {
@@ -382,29 +390,41 @@ func (r *Rows) inScope(vals []access.Value) *protocol.Problem {
 
 // batchInScope holds every value a batch scopes inside the caller's scope,
 // on the batch as the provider gave it: before conform withholds the
-// columns the caller did not ask for, which may be the scoped ones.
+// columns the caller did not ask for, which may be the scoped ones. Every
+// scoped column must be there, and hold its evidence on every row (R3-01).
 func (r *Rows) batchInScope(b arrow.RecordBatch) *protocol.Problem {
 	if r.full == nil {
 		return nil
 	}
-	for j, f := range b.Schema().Fields() {
-		p, ok := r.full.Property(f.Name)
-		if !ok || !scoped(p) {
+	sch := b.Schema()
+	for _, name := range r.full.Properties() {
+		p, _ := r.full.Property(name)
+		if !access.Scoped(p) {
 			continue
 		}
-		col := b.Column(j)
+		at := sch.FieldIndices(name)
+		if len(at) != 1 {
+			if !r.full.Required(name) {
+				continue
+			}
+			return r.unscoped("/" + name)
+		}
+		col := b.Column(at[0])
 		for i := 0; i < int(b.NumRows()); i++ {
 			v, present, err := arrowschema.Value(col, i, p)
 			if err != nil {
-				r.log.Error("a batch of the capability's answer does not match its contract", "column", f.Name)
+				r.log.Error("a batch of the capability's answer does not match its contract", "column", name)
 				return protocol.NewProblem(protocol.CodeInternal, "a batch of the capability's answer does not match its contract")
 			}
 			if !present {
-				continue
+				v = nil
 			}
-			vals := access.Values(p, v)
+			vals, missing, ok := access.Evidence(p, v, r.full.Required(name))
+			if !ok {
+				return r.unscoped("/" + name + missing)
+			}
 			for k := range vals {
-				vals[k].Pointer = "/" + f.Name + vals[k].Pointer
+				vals[k].Pointer = "/" + name + vals[k].Pointer
 			}
 			if prob := r.inScope(vals); prob != nil {
 				return prob
@@ -412,6 +432,13 @@ func (r *Rows) batchInScope(b arrow.RecordBatch) *protocol.Problem {
 		}
 	}
 	return nil
+}
+
+// unscoped is the problem of an answer that lacks the evidence of its scope
+// at a pointer (R3-01): the provider's fault, and nothing of it is sent.
+func (r *Rows) unscoped(pointer string) *protocol.Problem {
+	r.log.Error("the capability answered a row without the evidence of its scope, and the gateway withheld it", "pointer", pointer)
+	return protocol.NewProblem(protocol.CodeInternal, "the capability answered a row without the evidence of its scope, and the gateway withheld it")
 }
 
 func (r *Rows) withheld() {
@@ -510,31 +537,9 @@ func withScoped(columns []string, row *schema.Schema) []string {
 		if slices.Contains(out, name) {
 			continue
 		}
-		if p, ok := row.Property(name); ok && scoped(p) {
+		if p, ok := row.Property(name); ok && access.Scoped(p) {
 			out = append(out, name)
 		}
 	}
 	return out
-}
-
-// scoped reports whether a schema holds a scoped value anywhere: its own
-// logical type, or one of its properties' or items'. A schema's $refs never
-// cycle (the compiler refuses one), and the depth bound is a backstop.
-func scoped(s *schema.Schema) bool { return scopedAt(s, 0) }
-
-func scopedAt(s *schema.Schema, depth int) bool {
-	if s == nil || depth > schema.MaxDepth {
-		return false
-	}
-	if name, _, _, ok := s.Logical(); ok {
-		if _, is := ports.DimensionOf(name); is {
-			return true
-		}
-	}
-	for _, name := range s.Properties() {
-		if p, ok := s.Property(name); ok && scopedAt(p, depth+1) {
-			return true
-		}
-	}
-	return scopedAt(s.Items(), depth+1)
 }

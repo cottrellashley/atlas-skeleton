@@ -308,6 +308,91 @@ func walk(s *schema.Schema, v any, ptr string, out *[]Value) {
 	}
 }
 
+// Evidence are the scoped values of an answer v, read through its schema s
+// as Values reads them, and the pointer of the first place where v lacks the
+// evidence of its scope (R3-01). The evidence is every scoped value the
+// contract requires: a required scoped member absent or null, a required
+// array of scoped values that is empty, or a scoped value that is not a
+// string, lacks it. An optional scoped member that is absent or null names
+// no data of its dimension. The provider is asked for every scoped column
+// (the pipeline's withScoped), so an answer without its evidence is the
+// provider's fault, withheld, never passed for having nothing to check.
+// required is whether v itself is: a record is, and a column of a batch is
+// when its row's schema requires it.
+func Evidence(s *schema.Schema, v any, required bool) (vals []Value, missing string, ok bool) {
+	missing, ok = evidence(s, v, "", required, &vals, 0)
+	return vals, missing, ok
+}
+
+func evidence(s *schema.Schema, v any, ptr string, required bool, out *[]Value, depth int) (string, bool) {
+	if !Scoped(s) {
+		return "", true
+	}
+	if v == nil {
+		return ptr, !required
+	}
+	if depth > schema.MaxDepth {
+		return ptr, false
+	}
+	if name, _, _, ok := s.Logical(); ok {
+		if dim, scoped := ports.DimensionOf(name); scoped {
+			str, isString := v.(string)
+			if !isString {
+				return ptr, false
+			}
+			*out = append(*out, Value{ptr, dim, str})
+			return "", true
+		}
+	}
+	switch x := v.(type) {
+	case []any:
+		if len(x) == 0 && required {
+			return ptr, false
+		}
+		for i, e := range x {
+			if at, ok := evidence(s.Items(), e, ptr+"/"+itoa(i), true, out, depth+1); !ok {
+				return at, false
+			}
+		}
+		return "", true
+	case interface {
+		Get(string) (any, bool)
+		Names() []string
+	}:
+		for _, name := range s.Properties() {
+			ps, _ := s.Property(name)
+			e, _ := x.Get(name)
+			if at, ok := evidence(ps, e, ptr+"/"+name, s.Required(name), out, depth+1); !ok {
+				return at, false
+			}
+		}
+		return "", true
+	}
+	return ptr, false
+}
+
+// Scoped reports whether a schema holds a scoped value anywhere: its own
+// logical type, or one of its properties' or items'. A schema's $refs never
+// cycle (the compiler refuses one), and the depth bound is a backstop.
+func Scoped(s *schema.Schema) bool { return scopedAt(s, 0) }
+
+func scopedAt(s *schema.Schema, depth int) bool {
+	if s == nil || depth > schema.MaxDepth {
+		return false
+	}
+	if name, _, _, ok := s.Logical(); ok {
+		if _, is := ports.DimensionOf(name); is {
+			return true
+		}
+	}
+	for _, name := range s.Properties() {
+		if p, ok := s.Property(name); ok && scopedAt(p, depth+1) {
+			return true
+		}
+	}
+	return scopedAt(s.Items(), depth+1)
+}
+
 func dimensionsOf(s *schema.Schema) []string {
 	var dims []string
 	var visit func(*schema.Schema, int)

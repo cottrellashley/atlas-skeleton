@@ -8,6 +8,13 @@
 
 It adopts the core handoff plan and the peer review of 2026-11-01 ([`docs/source/atlas-spec/review/`](source/atlas-spec/review)), and turns them into work on this repository. File links are relative to this file. Line numbers are those of this commit. They will move as the work proceeds, so each link also names the function or type it points at.
 
+**Status on branch `handoff`** (kept by [HANDOFF-PROGRESS.md](HANDOFF-PROGRESS.md), which has the detail):
+
+| Package | Status |
+|---|---|
+| C0 | Done: R3-01 to R3-05 fixed, each with a regression shown to fail first |
+| C1 to C6 | Not started |
+
 ---
 
 ## 1. The goal

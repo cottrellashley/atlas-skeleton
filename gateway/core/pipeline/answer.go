@@ -59,7 +59,11 @@ func (a *attempt) check(s *schema.Schema, rec *ijson.Object, scope ports.Scope) 
 		a.log.Warn("the capability answered members its contract does not declare; they were withheld")
 		rec = kept.(*ijson.Object)
 	}
-	for _, v := range access.Values(s, rec) {
+	vals, missing, ok := access.Evidence(s, rec, true)
+	if !ok {
+		return nil, a.fault("the capability answered a record without the evidence of its scope, and the gateway withheld it", "pointer", missing)
+	}
+	for _, v := range vals {
 		if !scope.Allows(v.Dimension, v.Value) {
 			return nil, a.fault("the capability answered data outside the caller's scope, and the gateway withheld it", "dimension", v.Dimension, "pointer", v.Pointer)
 		}

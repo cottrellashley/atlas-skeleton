@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 	"syscall"
@@ -18,6 +19,7 @@ import (
 	"github.com/jhgonline/fi-app-atlas/gateway/ports"
 	"github.com/jhgonline/fi-app-atlas/gateway/porttest"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
+	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
 )
 
 // ATLAS-MECH-014: a fact holds no token, key, body or query string, and its
@@ -486,5 +488,41 @@ func TestR012AStalledCollectorBoundsTheCallAndTheClose(t *testing.T) {
 	// The write that was cut is reported: the next call learns the sink failed.
 	if err := s.Record(context.Background(), fact); !errors.Is(err, ErrClosed) {
 		t.Fatalf("after Close: %v", err)
+	}
+}
+
+// R3-04: the line a fact is persisted as holds every member of the fact,
+// and the audit's own reader gives the same fact back. The stored bytes
+// are asserted, not only what a reader decodes.
+func TestR3_04EveryFieldOfAFactIsPersisted(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "audit.jsonl")
+	s, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f := ports.Fact{
+		Kind: ports.Settlement, At: time.Date(2026, 10, 31, 12, 0, 1, 500000000, time.UTC), RequestID: "r-1", Attempt: 2, Operation: "operations/7",
+		Principal: "alice", CallerKind: "person", Application: "atlas-cli", Claimed: "bob", Client: protocol.Client{Name: "atlas-cli", Version: "0.2.0", Protocol: "atlas/1.0"},
+		Environment: "dv", PolicyRevision: "p-7", Address: "portfolio.holdings@v1:fetch", Exact: "portfolio.holdings@v1#aaaa", Expected: "portfolio.holdings@v1#bbbb",
+		RequestDigest: "9f2b", Step: ports.StepSettle, Code: "upstream_failed", Rows: 3, Truncated: true, Usage: map[string]string{"credits": "0.002"},
+		Source: &ports.Usage{QueryID: "01bf", Rows: 3, Bytes: 2048, Cost: map[string]string{"credits": "0.002"}}, Duration: 1500 * time.Millisecond,
+	}
+	if err := s.Record(t.Context(), f); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Close(); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `{"kind":"settlement","at":"2026-10-31T12:00:01.5Z","request_id":"r-1","attempt":2,"operation":"operations/7","principal":"alice","caller_kind":"person","application":"atlas-cli","claimed":"bob","client":{"name":"atlas-cli","version":"0.2.0","protocol":"atlas/1.0"},"environment":"dv","policy_revision":"p-7","address":"portfolio.holdings@v1:fetch","exact":"portfolio.holdings@v1#aaaa","expected":"portfolio.holdings@v1#bbbb","request_digest":"9f2b","step":"settle","code":"upstream_failed","rows":3,"truncated":true,"usage":{"credits":"0.002"},"source":{"query_id":"01bf","rows":3,"bytes":2048,"cost":{"credits":"0.002"}},"duration_ms":1500}` + "\n"
+	if string(b) != want {
+		t.Fatalf("the stored line:\n got %s\nwant %s", b, want)
+	}
+	got := readFile(t, path)
+	if len(got) != 1 || !reflect.DeepEqual(got[0], f) {
+		t.Fatalf("read back %+v, want %+v", got, f)
 	}
 }

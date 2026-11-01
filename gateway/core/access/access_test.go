@@ -214,3 +214,66 @@ type nobody struct{}
 func (nobody) Serve(context.Context, *ports.Invocation) (*ports.Answer, error) {
 	return nil, errors.New("not called")
 }
+
+// R3-01: a result's scope evidence is every scoped value its contract
+// requires, at any depth. Evidence finds it in nested records and arrays,
+// and names where it is missing: a required scoped member absent or null,
+// a required array of them empty, or a scoped value that is not a string.
+// An optional scoped member may be absent or null; present, it is evidence.
+func TestR3_01NestedScopeEvidence(t *testing.T) {
+	s, err := schema.Compile(mustJSON(t, `{`+voc+`, "type": "object", "required": ["owner", "books"],
+	  "properties": {
+	   "owner": {"type": "object", "required": ["portfolio"], "properties": {"portfolio": {"type": ["string", "null"], "x-atlas-logical": "PortfolioCode", "description": "P."}}, "description": "O."},
+	   "books": {"type": "array", "items": {"type": "string", "x-atlas-logical": "PortfolioCode", "description": "B."}, "description": "Bs."},
+	   "also": {"type": ["string", "null"], "x-atlas-logical": "IndexCode", "description": "I."}}}`), schema.Open)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cases := []struct {
+		row     string
+		missing string // "" when the evidence is whole
+		values  int
+	}{
+		{`{"owner": {"portfolio": "A"}, "books": ["B", "C"]}`, "", 3},
+		{`{"owner": {"portfolio": "A"}, "books": ["B"], "also": "X"}`, "", 3},
+		{`{"owner": {"portfolio": "A"}, "books": ["B"], "also": null}`, "", 2},
+		{`{"books": ["B"]}`, "/owner", 0},
+		{`{"owner": {}, "books": ["B"]}`, "/owner/portfolio", 0},
+		{`{"owner": {"portfolio": null}, "books": ["B"]}`, "/owner/portfolio", 0},
+		{`{"owner": {"portfolio": 7}, "books": ["B"]}`, "/owner/portfolio", 0},
+		{`{"owner": {"portfolio": "A"}, "books": []}`, "/books", 0},
+		{`{"owner": {"portfolio": "A"}, "books": ["B", null]}`, "/books/1", 0},
+		{`{"owner": {"portfolio": "A"}, "books": "B"}`, "/books", 0},
+	}
+	// A member's value read alone, as a batch's column is: optional, an
+	// empty array or a null names nothing; required, it lacks its evidence.
+	books, _ := s.Property("books")
+	for _, required := range []bool{false, true} {
+		for _, v := range []string{`[]`, `null`} {
+			if _, _, ok := Evidence(books, mustJSON(t, v), required); ok != !required {
+				t.Errorf("books %s, required %v: whole %v", v, required, ok)
+			}
+		}
+	}
+	for _, tc := range cases {
+		vals, missing, ok := Evidence(s, mustJSON(t, tc.row), true)
+		if tc.missing == "" {
+			if !ok || len(vals) != tc.values {
+				t.Errorf("%s: want %d values and whole evidence, got %v %q %v", tc.row, tc.values, vals, missing, ok)
+			}
+			continue
+		}
+		if ok || missing != tc.missing {
+			t.Errorf("%s: want the evidence missing at %q, got %q (ok %v)", tc.row, tc.missing, missing, ok)
+		}
+	}
+}
+
+func mustJSON(t *testing.T, s string) ijson.Value {
+	t.Helper()
+	v, err := ijson.Parse([]byte(s))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return v
+}

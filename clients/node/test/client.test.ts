@@ -531,3 +531,96 @@ test('TestExplicitTokenStaysWithItsGateway', async (t) => {
   await assert.rejects(c.whoami(), problemIs('unauthenticated'));
   assert.equal(elsewhere.seen.length, 0);
 });
+
+// R3-03: a refresh names the application the sign-in was bound to (client_id, which Entra requires) and its scopes.
+// A token endpoint registered for that application renews the sign-in; one registered for another refuses it.
+test('TestR3_03RefreshNamesTheBoundApplication', async (t) => {
+  for (const [registered, renewed] of [['atlas-conformance', true], ['someone-else', false]] as const) {
+    const gw = await StandIn.start();
+    const home = mkdtempSync(join(tmpdir(), 'atlas-node-'));
+    t.after(async () => { await gw.close(); rmSync(home, { recursive: true, force: true }); });
+    gw.application = registered;
+    await signIn({ url: gw.url, home, accessToken: 'ct-old', refreshToken: 'rt-valid', expiresIn: 30 });
+    const client = await atlas.connect({ url: gw.url, home });
+    if (!renewed) {
+      await assert.rejects(client.whoami(), problemIs('unauthenticated'));
+      continue;
+    }
+    await client.whoami();
+    const sent = gw.seen.filter((s) => s.path === '/oauth/token');
+    assert.equal(sent.length, 1);
+    const form = new URLSearchParams(sent[0].body);
+    assert.equal(form.get('client_id'), 'atlas-conformance');
+    assert.equal(form.get('scope'), `${gw.url}/.default`);
+    assert.equal(form.get('refresh_token'), 'rt-valid');
+  }
+});
+
+// R3-05: a caller that gives up never leaves a refresh's rejection unhandled, which would end the process. A caller
+// whose signal is already aborted starts no refresh at all; one that gives up as it starts, while its credentials are
+// read, starts none either or leaves it observed; a sole caller that gives up while the refresh runs, which then fails,
+// leaves its rejection observed; and another caller sharing a refresh still gets its answer.
+test('TestR3_05ACancelledCallerLeavesNoUnhandledRejection', async (t) => {
+  const unhandled: unknown[] = [];
+  const onUnhandled = (e: unknown) => { unhandled.push(e); };
+  process.on('unhandledRejection', onUnhandled);
+  t.after(() => { process.off('unhandledRejection', onUnhandled); });
+  // until waits for cond a bounded number of event-loop turns: what it waits for is this process's own I/O.
+  const until = async (cond: () => boolean, what: string) => {
+    for (let i = 0; i < 2000 && !cond(); i++) await new Promise((ok) => setTimeout(ok, 1));
+    assert.ok(cond(), `timed out waiting for ${what}`);
+  };
+  const settle = async () => { for (let i = 0; i < 10; i++) await new Promise((ok) => setImmediate(ok)); };
+  const start = async (refreshToken: string) => {
+    const gw = await StandIn.start();
+    const home = mkdtempSync(join(tmpdir(), 'atlas-node-'));
+    t.after(async () => { await gw.close(); rmSync(home, { recursive: true, force: true }); });
+    await signIn({ url: gw.url, home, accessToken: 'ct-old', refreshToken, expiresIn: 30 });
+    return { gw, client: await atlas.connect({ url: gw.url, home }) };
+  };
+  const refreshes = (gw: StandIn) => gw.seen.filter((s) => s.path === '/oauth/token').length;
+
+  { // already aborted
+    const { gw, client } = await start('rt-unknown');
+    const gone = new AbortController();
+    gone.abort(new Error('the caller had already given up'));
+    await assert.rejects(client.call('atlas.whoami@v1:fetch', {}, { signal: gone.signal }), /already given up/);
+    await settle();
+    assert.equal(refreshes(gw), 0, 'a caller that had given up started no refresh');
+  }
+  { // aborted as it starts, while its credentials are read
+    const { gw, client } = await start('rt-unknown');
+    const gone = new AbortController();
+    const a = client.call('atlas.whoami@v1:fetch', {}, { signal: gone.signal });
+    gone.abort(new Error('the caller gave up at once'));
+    await assert.rejects(a, /gave up at once/);
+    await until(() => gw.tokenAnswers === refreshes(gw), 'any refresh to be answered');
+    await settle();
+  }
+  { // gives up during a refresh that then fails
+    const { gw, client } = await start('rt-unknown');
+    const release = gw.holdTokens();
+    const gone = new AbortController();
+    const a = client.call('atlas.whoami@v1:fetch', {}, { signal: gone.signal });
+    await until(() => refreshes(gw) === 1, 'the refresh to start');
+    gone.abort(new Error('the caller gave up'));
+    await assert.rejects(a, /the caller gave up/);
+    release();
+    await until(() => gw.tokenAnswers === 1, 'the refresh to be answered');
+    await settle();
+  }
+  { // another caller sharing the refresh continues
+    const { gw, client } = await start('rt-valid');
+    const release = gw.holdTokens();
+    const gone = new AbortController();
+    const a = client.call('atlas.whoami@v1:fetch', {}, { signal: gone.signal });
+    const b = client.call('atlas.whoami@v1:fetch', {});
+    await until(() => refreshes(gw) === 1, 'the refresh to start');
+    gone.abort(new Error('the first caller gave up'));
+    await assert.rejects(a, /the first caller gave up/);
+    release();
+    assert.ok(await b, 'the caller that stayed gets its answer');
+    assert.equal(refreshes(gw), 1);
+  }
+  assert.deepEqual(unhandled, [], 'no refresh rejection was left unhandled');
+});

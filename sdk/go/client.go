@@ -721,7 +721,19 @@ func (t *tokenStore) refresh(ctx context.Context, f *tokenFile) (*tokenFile, err
 	}
 	ctx, cancel := context.WithTimeout(ctx, RefreshTimeout)
 	defer cancel()
+	// The application and scopes are the binding's, as the endpoint is
+	// (R3-03): Entra refuses a refresh that names no client_id.
+	client, scopes := t.signIn.ClientID, t.signIn.Scopes
+	if f.Binding != nil {
+		client, scopes = f.Binding.ClientID, f.Binding.Scopes
+	}
 	form := url.Values{"grant_type": {"refresh_token"}, "refresh_token": {f.RefreshToken}}
+	if client != "" {
+		form.Set("client_id", client)
+	}
+	if len(scopes) > 0 {
+		form.Set("scope", strings.Join(scopes, " "))
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, strings.NewReader(form.Encode()))
 	if err != nil {
 		return nil, protocol.NewProblem(protocol.CodeUnauthenticated, "the token endpoint: "+err.Error())

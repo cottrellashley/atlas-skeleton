@@ -176,6 +176,10 @@ type Gateway struct {
 	writers  map[string]string
 	access   map[string]bool
 	grants   map[string]Grant
+	// client is the application its token endpoint redeems refresh tokens
+	// for, as Entra does: the fixture's sign_in client_id unless Application
+	// names another.
+	client   *string
 	counts   map[string]int
 	requests []Request
 	edit     func(*ijson.Object)
@@ -398,6 +402,15 @@ func (g *Gateway) Bootstrap(edit func(*ijson.Object)) {
 	g.edit = edit
 }
 
+// Application replaces the application its token endpoint redeems refresh
+// tokens for. A refresh that names no client_id, or another, is refused
+// with invalid_client, as Entra refuses one (R3-03).
+func (g *Gateway) Application(id string) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.client = &id
+}
+
 // Tokens replaces the access tokens it accepts and the refresh tokens its
 // token endpoint redeems.
 func (g *Gateway) Tokens(access []string, grants map[string]Grant) {
@@ -549,6 +562,26 @@ func (g *Gateway) bootstrap(w http.ResponseWriter, r *http.Request) {
 func (g *Gateway) token(w http.ResponseWriter, body []byte) {
 	form, err := url.ParseQuery(string(body))
 	g.mu.Lock()
+	client := ""
+	if g.client != nil {
+		client = *g.client
+	} else {
+		b, _ := g.fixture.Get("bootstrap")
+		if bo, ok := b.(*ijson.Object); ok {
+			si, _ := bo.Get("sign_in")
+			if o, ok := si.(*ijson.Object); ok {
+				id, _ := o.Get("client_id")
+				client, _ = id.(string)
+			}
+		}
+	}
+	if err == nil && (form.Get("client_id") == "" || form.Get("client_id") != client) {
+		g.mu.Unlock()
+		w.Header().Set(protocol.HeaderContentType, protocol.MediaJSON)
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"error":"invalid_client"}`))
+		return
+	}
 	grant, ok := g.grants[form.Get("refresh_token")]
 	if ok {
 		g.access[grant.AccessToken] = true

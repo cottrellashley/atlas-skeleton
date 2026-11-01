@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"maps"
+	"reflect"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/jhgonline/fi-app-atlas/gateway/ports"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
+	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
 )
 
 // Audit is an AuditSink under test, with what the suite needs to check it.
@@ -35,6 +36,9 @@ type Audit struct {
 // is reported, never swallowed; and a fact whose context has ended is not
 // recorded. open makes a fresh, empty store for each case.
 func AuditSink(t *testing.T, open func(t *testing.T) Audit) {
+	if err := everyField(auditFacts()); err != nil {
+		t.Fatal(err)
+	}
 	for _, c := range auditCases {
 		t.Run(c.name, func(t *testing.T) {
 			if err := c.check(t, open(t)); err != nil {
@@ -119,7 +123,34 @@ func auditFacts() []ports.Fact {
 	outcome.Kind, outcome.Code, outcome.Rows, outcome.Truncated, outcome.Duration = ports.Outcome, "upstream_failed", 1000, true, 1500*time.Millisecond
 	outcome.At = at.Add(1500 * time.Millisecond)
 	settlement.Kind, settlement.Usage = ports.Settlement, map[string]string{"rows": "1000", "credits": "0.002"}
+	settlement.Source = &ports.Usage{QueryID: "01bf-0000-1234-0001", Rows: 1000, Bytes: 2048, Cost: map[string]string{"credits": "0.002"}}
+	settlement.Step = ports.StepSettle
+	refusal.Step, outcome.Step = ports.StepAccess, ports.StepAnswer
+	for _, f := range []*ports.Fact{&admission, &refusal, &outcome, &settlement} {
+		f.Claimed = "someone-else@example.com"
+		f.Client = protocol.Client{Name: "atlas-cli", Version: "0.2.0", Protocol: "atlas/1.0"}
+		f.Expected = "portfolio.holdings@v1#219b68a11867acd4"
+	}
 	return []ports.Fact{admission, refusal, outcome, settlement}
+}
+
+// everyField reports a member of ports.Fact that no fact of auditFacts
+// sets (R3-04): the suite compares every member, so each must be set by
+// one of them, and a member added to Fact is added here too.
+func everyField(facts []ports.Fact) error {
+	t := reflect.TypeFor[ports.Fact]()
+	for i := range t.NumField() {
+		set := false
+		for _, f := range facts {
+			if !reflect.ValueOf(f).Field(i).IsZero() {
+				set = true
+			}
+		}
+		if !set {
+			return fmt.Errorf("porttest: no fact of the suite sets ports.Fact.%s, so no store is checked to keep it", t.Field(i).Name)
+		}
+	}
+	return nil
 }
 
 // sameFacts reports how got differs from want: in order when ordered,
@@ -151,10 +182,20 @@ next:
 	return nil
 }
 
+// sameFact reports whether a store kept every member of a fact (R3-04):
+// times compare as instants, and an empty map as an absent one.
 func sameFact(a, b ports.Fact) bool {
-	return a.Kind == b.Kind && a.At.Equal(b.At) && a.RequestID == b.RequestID && a.Attempt == b.Attempt && a.Operation == b.Operation &&
-		a.Principal == b.Principal && a.CallerKind == b.CallerKind && a.Application == b.Application &&
-		a.Environment == b.Environment && a.PolicyRevision == b.PolicyRevision && a.Address == b.Address && a.Exact == b.Exact &&
-		a.RequestDigest == b.RequestDigest && a.Code == b.Code && a.Rows == b.Rows && a.Truncated == b.Truncated &&
-		maps.Equal(a.Usage, b.Usage) && a.Duration == b.Duration
+	if !a.At.Equal(b.At) {
+		return false
+	}
+	a.At = b.At
+	if len(a.Usage) == 0 && len(b.Usage) == 0 {
+		a.Usage, b.Usage = nil, nil
+	}
+	if a.Source != nil && b.Source != nil && len(a.Source.Cost) == 0 && len(b.Source.Cost) == 0 {
+		as, bs := *a.Source, *b.Source
+		as.Cost, bs.Cost = nil, nil
+		a.Source, b.Source = &as, &bs
+	}
+	return reflect.DeepEqual(a, b)
 }

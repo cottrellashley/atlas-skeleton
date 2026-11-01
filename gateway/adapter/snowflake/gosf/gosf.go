@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -220,6 +221,11 @@ func (e *Engine) execute(ctx context.Context, st *snowflake.Statement) (*snowfla
 	for i, o := range st.Columns {
 		fields[i] = arrow.Field{Name: o.Name, Type: o.Type, Nullable: true}
 	}
+	// The list is the engine's own (R3-02): with no inline first batch the
+	// driver hands out its own slice, and its downloader writes each chunk
+	// it fetches through that slice's entries, which Next clears as it
+	// goes. Each batch, and each record it holds, stays the driver's.
+	batches = slices.Clone(batches)
 	return &snowflake.Answer{QueryID: sr.GetQueryID(), Batches: &stream{conn: conn, rows: rows, batches: batches, cols: cols, mem: e.mem,
 		schema: arrow.NewSchema(fields, nil), queryID: sr.GetQueryID()}}, nil
 }

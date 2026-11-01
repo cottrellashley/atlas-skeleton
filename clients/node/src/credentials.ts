@@ -269,14 +269,22 @@ export class TokenStore implements Credentials {
   }
 
   private async get(signal: AbortSignal, failed: string | undefined): Promise<string> {
+    // A caller that has given up starts nothing (R3-05).
+    if (signal.aborted) throw signal.reason;
     if (!this.refreshing) {
-      const f = await this.usable();
+      const f = await raceSignal(this.usable(), signal);
       if (!this.due(f, failed)) return f.access_token;
       // The refresh is shared by every call that needs it, so no one call's
       // signal bounds it: it runs under its own bound, and each call waits no
       // longer than its own signal allows. One call's abort or deadline never
       // fails the others (R26, "every outbound call honours its deadline").
-      this.refreshing ??= this.locked(AbortSignal.timeout(LOCK_STALE_MS), failed).finally(() => { this.refreshing = undefined; });
+      // Its rejection is always observed here, so a refresh whose every
+      // caller gave up never ends the process (R3-05).
+      if (!this.refreshing) {
+        const shared = this.locked(AbortSignal.timeout(LOCK_STALE_MS), failed).finally(() => { this.refreshing = undefined; });
+        shared.catch(() => {});
+        this.refreshing = shared;
+      }
     }
     return raceSignal(this.refreshing, signal);
   }
@@ -321,11 +329,17 @@ export class TokenStore implements Credentials {
     if (eo === undefined || !secureOrigin(eo) || (!f.binding && eo !== this.origin)) {
       throw refused(`the sign-in cannot be renewed at ${endpoint}: a refresh token goes only to the token endpoint it was issued for`, 'Sign in again: atlas login --token <token>.');
     }
+    // The application and scopes are the binding's, as the endpoint is
+    // (R3-03): Entra refuses a refresh that names no client_id.
+    const app = f.binding ?? this.now;
+    const form = new URLSearchParams({ grant_type: 'refresh_token', refresh_token: f.refresh_token! });
+    if (app.client_id !== '') form.set('client_id', app.client_id);
+    if (app.scopes.length > 0) form.set('scope', app.scopes.join(' '));
     let res: Response;
     try {
       res = await this.http(endpoint, {
         method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: f.refresh_token! }).toString(),
+        body: form.toString(),
         signal, redirect: 'error',
       });
     } catch (e) {
@@ -381,7 +395,10 @@ export async function readLimited(res: Response, max: number, signal?: AbortSign
 
 /** p, or signal's reason if it aborts first; the listener is removed either way. */
 function raceSignal<T>(p: Promise<T>, signal: AbortSignal): Promise<T> {
-  if (signal.aborted) return Promise.reject(signal.reason);
+  if (signal.aborted) {
+    p.catch(() => {}); // abandoned, its rejection observed (R3-05)
+    return Promise.reject(signal.reason);
+  }
   return new Promise<T>((resolve, reject) => {
     const onAbort = () => reject(signal.reason);
     signal.addEventListener('abort', onAbort, { once: true });

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -284,5 +285,52 @@ func TestR26ARedirectIsNotFollowed(t *testing.T) {
 	wantProblem(t, err, "upstream_failed")
 	if n := len(target.Requests()); n != 0 {
 		t.Fatalf("the redirect's target received %d requests", n)
+	}
+}
+
+// R3-03: a refresh names the application the sign-in was bound to, as
+// Entra requires (client_id), with the scopes it was bound to. A token
+// endpoint that redeems refresh tokens for that application renews the
+// sign-in; one registered for another application refuses it, and the
+// call is unauthenticated.
+func TestR3_03RefreshNamesTheBoundApplication(t *testing.T) {
+	isolate(t)
+	ctx := context.Background()
+	for _, tc := range []struct {
+		name, registered string
+		renewed          bool
+	}{
+		{"the bound application", "atlas-conformance", true},
+		{"another application", "someone-else", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			home := t.TempDir()
+			gw := fakegw.New(t, fakegw.Options{})
+			gw.Tokens([]string{"ct-old"}, map[string]fakegw.Grant{"rt-1": {AccessToken: "ct-new", RefreshToken: "rt-2", ExpiresIn: 3600}})
+			gw.Application(tc.registered)
+			c := connect(t, gw, home)
+			if err := c.SignIn("ct-old", "rt-1", 30*time.Second); err != nil {
+				t.Fatal(err)
+			}
+			_, err := c.Whoami(ctx)
+			if !tc.renewed {
+				wantProblem(t, err, "unauthenticated")
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			sent := gw.To("/oauth/token")
+			if len(sent) != 1 {
+				t.Fatalf("%d refreshes", len(sent))
+			}
+			form, err := url.ParseQuery(string(sent[0].Body))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if form.Get("client_id") != "atlas-conformance" || form.Get("scope") != gw.URL+"/.default" || form.Get("grant_type") != "refresh_token" || form.Get("refresh_token") != "rt-1" {
+				t.Fatalf("the refresh form: %v", form)
+			}
+		})
 	}
 }

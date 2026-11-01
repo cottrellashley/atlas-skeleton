@@ -38,6 +38,13 @@ type snowflakeServer struct {
 	// held, when set, holds each query until the client goes away,
 	// calling held once it does.
 	held func()
+	// chunks, when set, are the answer's remote chunks, each an Arrow IPC
+	// stream served at /chunks/<i>, and inline whether the answer also
+	// carries its first rows inline. stall, when set, holds each chunk's
+	// download until the client goes away, calling stall once it starts.
+	chunks [][]byte
+	inline bool
+	stall  func()
 }
 
 // sent is one query request: its text, its per-statement parameters and
@@ -93,7 +100,36 @@ func (s *snowflakeServer) serve(w http.ResponseWriter, r *http.Request) {
 			<-r.Context().Done() // until the driver gives up on it
 			return
 		}
-		s.reply(w, map[string]any{"success": true, "data": answer(s.t)})
+		s.mu.Lock()
+		chunks, inline := s.chunks, s.inline
+		s.mu.Unlock()
+		data := answer(s.t)
+		if chunks != nil {
+			if !inline {
+				data["rowsetBase64"] = ""
+			}
+			var metas []any
+			for i := range chunks {
+				metas = append(metas, map[string]any{"url": s.srv.URL + "/chunks/" + strconv.Itoa(i), "rowCount": 2, "uncompressedSize": len(chunks[i]), "compressedSize": len(chunks[i])})
+			}
+			data["chunks"], data["chunkHeaders"] = metas, map[string]string{"x-test": "1"}
+		}
+		s.reply(w, map[string]any{"success": true, "data": data})
+	case strings.HasPrefix(r.URL.Path, "/chunks/"):
+		i, _ := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/chunks/"))
+		s.mu.Lock()
+		chunks, stall := s.chunks, s.stall
+		s.mu.Unlock()
+		if stall != nil {
+			stall()
+			<-r.Context().Done()
+			return
+		}
+		if i < 0 || i >= len(chunks) {
+			http.NotFound(w, r)
+			return
+		}
+		_, _ = w.Write(chunks[i])
 	case strings.HasPrefix(r.URL.Path, "/monitoring/queries/"):
 		s.reply(w, map[string]any{"success": true, "data": map[string]any{"queries": []any{map[string]any{"status": "SUCCESS",
 			"startTime": 1761890400000, "endTime": 1761890401000, "stats": map[string]any{"scanBytes": 2048, "producedRows": 2}}}}})
@@ -113,9 +149,7 @@ func (s *snowflakeServer) serve(w http.ResponseWriter, r *http.Request) {
 // rows as an Arrow IPC stream in Snowflake's encodings, a NUMBER(38,6) as
 // its unscaled Int64 and a NUMBER(9,2) as the Int16 its values fit.
 func answer(t *testing.T) map[string]any {
-	schema := arrow.NewSchema([]arrow.Field{{Name: "portfolio", Type: arrow.BinaryTypes.String, Nullable: true},
-		{Name: "market_value.amount", Type: arrow.PrimitiveTypes.Int64, Nullable: true}, {Name: "market_value.currency", Type: arrow.BinaryTypes.String, Nullable: true},
-		{Name: "price", Type: arrow.PrimitiveTypes.Int16, Nullable: true}, {Name: "as_of", Type: arrow.FixedWidthTypes.Date32, Nullable: true}}, nil)
+	schema := answerSchema
 	b := array.NewRecordBuilder(allocOf, schema)
 	defer b.Release()
 	b.Field(0).(*array.StringBuilder).AppendValues([]string{"147HYC", "147HYC"}, nil)
@@ -125,16 +159,9 @@ func answer(t *testing.T) map[string]any {
 	b.Field(4).(*array.Date32Builder).AppendValues([]arrow.Date32{20756, 20756}, nil)
 	rec := b.NewRecordBatch()
 	defer rec.Release()
-	var buf bytes.Buffer
-	w := ipc.NewWriter(&buf, ipc.WithSchema(schema))
-	if err := w.Write(rec); err != nil {
-		t.Fatal(err)
-	}
-	if err := w.Close(); err != nil {
-		t.Fatal(err)
-	}
+	buf := ipcOf(t, schema, rec)
 	return map[string]any{"queryId": "01bf-0000-1234-0001", "queryResultFormat": "arrow", "total": 2, "returned": 2,
-		"rowsetBase64": base64.StdEncoding.EncodeToString(buf.Bytes()),
+		"rowsetBase64": base64.StdEncoding.EncodeToString(buf),
 		"rowtype": []any{
 			map[string]any{"name": "portfolio", "type": "text", "nullable": true, "length": 16777216},
 			map[string]any{"name": "market_value.amount", "type": "fixed", "precision": 38, "scale": 6, "nullable": true},
@@ -142,6 +169,27 @@ func answer(t *testing.T) map[string]any {
 			map[string]any{"name": "price", "type": "fixed", "precision": 9, "scale": 2, "nullable": true},
 			map[string]any{"name": "as_of", "type": "date", "nullable": true},
 		}}
+}
+
+// answerSchema is the Arrow schema of answer's rows, in Snowflake's
+// encodings.
+var answerSchema = arrow.NewSchema([]arrow.Field{{Name: "portfolio", Type: arrow.BinaryTypes.String, Nullable: true},
+	{Name: "market_value.amount", Type: arrow.PrimitiveTypes.Int64, Nullable: true}, {Name: "market_value.currency", Type: arrow.BinaryTypes.String, Nullable: true},
+	{Name: "price", Type: arrow.PrimitiveTypes.Int16, Nullable: true}, {Name: "as_of", Type: arrow.FixedWidthTypes.Date32, Nullable: true}}, nil)
+
+// ipcOf is an Arrow IPC stream of recs.
+func ipcOf(t *testing.T, schema *arrow.Schema, recs ...arrow.RecordBatch) []byte {
+	var buf bytes.Buffer
+	w := ipc.NewWriter(&buf, ipc.WithSchema(schema))
+	for _, rec := range recs {
+		if err := w.Write(rec); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := w.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return buf.Bytes()
 }
 
 // engineFor is an Engine over gosnowflake, reaching server, with a
@@ -164,49 +212,20 @@ func engineFor(t *testing.T, s *snowflakeServer) *Engine {
 	return e
 }
 
-// R051, ATLAS-DATA-004, ATLAS-SNOWFLAKE-004, R09: through the Snowflake
-// Source and the real driver, the statement Snowflake receives is the
-// plan's, byte for byte, with every value a binding and the tag sent as the
-// statement's QUERY_TAG, never in its text; it runs synchronously; its
-// answer, in Snowflake's own encodings, comes back in the writer schema
-// with exact decimals; and Settle reads Snowflake's record of it.
-func TestThroughTheDriver(t *testing.T) {
-	s := newServer(t)
-	e := engineFor(t, s)
-	source, err := snowflake.NewSource(e, snowflake.Options{Registered: [][]string{{"HARBOUR", "HOLDINGS"}}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	money := arrow.StructOf(arrow.Field{Name: "amount", Type: money6}, arrow.Field{Name: "currency", Type: arrow.BinaryTypes.String})
-	price := &arrow.Decimal128Type{Precision: 9, Scale: 2}
-	r := ports.PlanRequest{
-		Query: ports.Query{Object: "HARBOUR.HOLDINGS.POSITIONS_V", Columns: []ports.Column{{Name: "PORTFOLIO_CODE", Type: ports.String},
-			{Name: "MARKET_VALUE", Type: ports.Decimal}, {Name: "CURRENCY", Type: ports.String}, {Name: "PRICE", Type: ports.Decimal}, {Name: "AS_OF_DATE", Type: ports.Date}},
-			Where: []ports.Predicate{{Column: "PORTFOLIO_CODE", Op: ports.In, Type: ports.String, Values: []any{"147HYC"}}, {Column: "AS_OF_DATE", Op: ports.Lte, Type: ports.Date, Values: []any{"2026-10-30"}}}},
-		Writer: arrow.NewSchema([]arrow.Field{{Name: "portfolio", Type: arrow.BinaryTypes.String}, {Name: "market_value", Type: money, Nullable: true},
-			{Name: "price", Type: price, Nullable: true}, {Name: "as_of", Type: arrow.FixedWidthTypes.Date32}}, nil),
-		Columns:    [][]string{{"PORTFOLIO_CODE"}, {"MARKET_VALUE", "CURRENCY"}, {"PRICE"}, {"AS_OF_DATE"}},
-		Capability: "portfolio.holdings@v1", RequestID: "req-42",
-	}
-	ctx := context.Background()
-	p, err := source.Plan(ctx, r)
-	if err != nil {
-		t.Fatal(err)
-	}
-	res, err := source.Execute(ctx, p)
-	if err != nil {
-		t.Fatal(err)
-	}
+// readRows reads every batch of an answer as text, one row each, checking
+// each batch is in the writer schema, and closes it.
+func readRows(t *testing.T, ctx context.Context, batches ports.BatchStream, writer *arrow.Schema) []string {
+	t.Helper()
 	var rows []string
 	for {
-		b, err := res.Batches.Next(ctx)
+		b, err := batches.Next(ctx)
 		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !b.Schema().Equal(p.Writer) {
+		if !b.Schema().Equal(writer) {
 			t.Fatalf("a batch of %s", b.Schema())
 		}
 		for i := range int(b.NumRows()) {
@@ -220,9 +239,54 @@ func TestThroughTheDriver(t *testing.T) {
 		}
 		b.Release()
 	}
-	if err := res.Batches.Close(); err != nil {
+	if err := batches.Close(); err != nil {
 		t.Fatal(err)
 	}
+	if err := batches.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return rows
+}
+
+// holdingsRequest is a plan of holdings that answer's rows answer.
+func holdingsRequest() ports.PlanRequest {
+	money := arrow.StructOf(arrow.Field{Name: "amount", Type: money6}, arrow.Field{Name: "currency", Type: arrow.BinaryTypes.String})
+	price := &arrow.Decimal128Type{Precision: 9, Scale: 2}
+	return ports.PlanRequest{
+		Query: ports.Query{Object: "HARBOUR.HOLDINGS.POSITIONS_V", Columns: []ports.Column{{Name: "PORTFOLIO_CODE", Type: ports.String},
+			{Name: "MARKET_VALUE", Type: ports.Decimal}, {Name: "CURRENCY", Type: ports.String}, {Name: "PRICE", Type: ports.Decimal}, {Name: "AS_OF_DATE", Type: ports.Date}},
+			Where: []ports.Predicate{{Column: "PORTFOLIO_CODE", Op: ports.In, Type: ports.String, Values: []any{"147HYC"}}, {Column: "AS_OF_DATE", Op: ports.Lte, Type: ports.Date, Values: []any{"2026-10-30"}}}},
+		Writer: arrow.NewSchema([]arrow.Field{{Name: "portfolio", Type: arrow.BinaryTypes.String}, {Name: "market_value", Type: money, Nullable: true},
+			{Name: "price", Type: price, Nullable: true}, {Name: "as_of", Type: arrow.FixedWidthTypes.Date32}}, nil),
+		Columns:    [][]string{{"PORTFOLIO_CODE"}, {"MARKET_VALUE", "CURRENCY"}, {"PRICE"}, {"AS_OF_DATE"}},
+		Capability: "portfolio.holdings@v1", RequestID: "req-42",
+	}
+}
+
+// R051, ATLAS-DATA-004, ATLAS-SNOWFLAKE-004, R09: through the Snowflake
+// Source and the real driver, the statement Snowflake receives is the
+// plan's, byte for byte, with every value a binding and the tag sent as the
+// statement's QUERY_TAG, never in its text; it runs synchronously; its
+// answer, in Snowflake's own encodings, comes back in the writer schema
+// with exact decimals; and Settle reads Snowflake's record of it.
+func TestThroughTheDriver(t *testing.T) {
+	s := newServer(t)
+	e := engineFor(t, s)
+	source, err := snowflake.NewSource(e, snowflake.Options{Registered: [][]string{{"HARBOUR", "HOLDINGS"}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := holdingsRequest()
+	ctx := context.Background()
+	p, err := source.Plan(ctx, r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := source.Execute(ctx, p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := readRows(t, ctx, res.Batches, p.Writer)
 	if got, want := strings.Join(rows, "; "), "147HYC 1014852.172500 USD 101.25 2026-10-30; 147HYC -2024690.000000 EUR null 2026-10-30"; got != want {
 		t.Fatalf("the answer:\n got %s\nwant %s", got, want)
 	}
