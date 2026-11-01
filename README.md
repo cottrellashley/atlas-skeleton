@@ -1,6 +1,6 @@
 # atlas-skeleton
 
-The Go core of Atlas, built from the transcribed spec (`~/Documents/ChatGPT/creation/atlas-spec`). Its packages are laid out as in `fi-app-atlas` (§6.5), so they can be carried over.
+The Go core of Atlas, built from the transcribed spec ([`docs/source/atlas-spec`](docs/source/atlas-spec)). The plan for handing it to a company is [`docs/HANDOFF.md`](docs/HANDOFF.md). Its packages are laid out as in `fi-app-atlas` (§6.5), so they can be carried over.
 
 **Pass 2 is in progress** on the `pass-2` branch.
 

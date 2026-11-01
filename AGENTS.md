@@ -4,7 +4,7 @@ This is the Go core of Atlas: the gateway, the Go SDK, the CLI, the Python SDK's
 
 ## Read first
 
-1. The spec, `~/Documents/ChatGPT/creation/atlas-spec/`. §9 is normative for everything on the wire. §6.6 holds the 15 principles, and §6.7 the mechanisms with their values. Where the spec and anything else disagree, the spec wins. Where the spec is ambiguous, write the case down; don't guess.
+1. The spec, [`docs/source/atlas-spec/`](docs/source/atlas-spec): a copy of the transcription kept with the repository, beside the review that governs pass 2 (`docs/source/atlas-spec/review/`, adopted in `docs/pass-2/REVIEW.md`). The plan for the handoff is [`docs/HANDOFF.md`](docs/HANDOFF.md). §9 is normative for everything on the wire. §6.6 holds the 15 principles, and §6.7 the mechanisms with their values. Where the spec and anything else disagree, the spec wins. Where the spec is ambiguous, write the case down; don't guess.
 2. `docs/pass-2/PLAN.md` (what we are building, in which order) and `docs/pass-2/CRITIQUE.md` (what pass 1 got wrong).
 3. `cloud-gateway-patterns-go` is the source of the mechanisms. It loses to the spec in six places:
    - every interaction is a POST to its binding

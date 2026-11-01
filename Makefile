@@ -23,7 +23,8 @@ PRODUCT := sdk/go gateway gateway/local gateway/adapter/snowflake/gosf gateway/c
 LIBS := sqlglot tools
 MODULES := $(PRODUCT) $(LIBS)
 BIN := $(CURDIR)/.bin
-ATLAS_SPEC ?= $(HOME)/Documents/ChatGPT/creation/atlas-spec
+# The spec the requirement tools read: the copy kept with the repository.
+export ATLAS_SPEC ?= $(CURDIR)/docs/source/atlas-spec
 
 .PHONY: help check release fmt vet staticcheck test tidy e2e e2e-python e2e-node vuln requirements requirements-index
 
