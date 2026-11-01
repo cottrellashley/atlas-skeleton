@@ -2,6 +2,8 @@
 
 Written at the end of the first handoff session (2026-11-01: C0 to C2, and C3 in part). Read it with [AGENTS.md](../AGENTS.md), [HANDOFF.md](HANDOFF.md) and [HANDOFF-PROGRESS.md](HANDOFF-PROGRESS.md). AGENTS.md binds; this records what the work taught, and what to watch.
 
+**Scope clarification, 2026-11-01:** the pattern choices in §6 guide new integrations and specific fixes within the existing handoff work. They are not a refactoring task. Preserve working providers, ports, clients, profiles and protocol behavior. Do not migrate existing capabilities, introduce replacement frameworks, or implement planned features just to match this guidance. A change to shared code needs a concrete defect or an existing handoff requirement, a bounded change, and its own proof. C0–C6 and their acceptance gates remain the work plan.
+
 ## 1. Is it sound? The verdict
 
 The shape is right for the vision: one pipeline, ports, modules, and contract-driven clients. The C1 exit test proved it. A separate company module added a ticket capability and its own `workspace` dimension with no change to Atlas. Scope, audit, deadlines, discovery and the three clients came with it.
@@ -71,3 +73,24 @@ The risk is **incompleteness, not tangle**. Until C4 and C5 land, a company's ea
 - Finish C3 (R3-13, R3-14), then C4: the importable production root, the conformance runners, the RS256 issuer, and the Gate A exercise with its boundary hash check.
 - For any changing or job capability, finish C5 first.
 - Ask the company for its first integrations early; they choose the reference extensions.
+
+## 6. Which pattern to use
+
+Atlas supplies the consistent discovery and call interface. Choose the implementation per interaction, according to who owns the state and execution. One platform can use several rows below; this table does not introduce new interfaces or require every connector to support every pattern.
+
+| What is being exposed | Pattern to follow | Boundary and current status |
+|---|---|---|
+| Ordinary reads and bounded API calls to Azure, Astronomer or another service | Existing `ports.Module` / `Provider`, wrapping the vendor SDK or supported API client | Reuse upstream authentication and transport tools; map the capability's request, scope and result. Preserve native identifiers and useful semantics. The provider seam and HTTP example exist; Service Bus and Astronomer connectors are still to be built in separately scoped work. |
+| Curated warehouse results such as portfolio holdings | Existing view provider and `DataSource` over the warehouse driver | Use the shared planning, scope, projection and exact-type machinery where a declared tabular contract needs it. Snowflake already uses its own Go driver. An unrelated HTTP API does not need this query abstraction. |
+| Resources owned by another platform | SDK/API provider over the native resource | The upstream remains authoritative for identity, state, concurrency and lifecycle. Expose supported interactions; do not create a second Atlas resource store or controller merely to wrap the object. |
+| Durable resources that Atlas itself owns | The planned Atlas resource envelope, persistence and reconciliation pattern | Appropriate when Atlas owns the desired state and must maintain it. Implement only under the relevant scoped requirement; this is not a migration of external resources into Atlas. |
+| Jobs and state-changing operations | Provider dispatch to the native operation, with the shared C5 mechanisms | Atlas owns admission, approval, replay protection, audit and the durable reference to the source operation. The upstream owns job execution. Preserve uncertain outcomes when the source cannot prove whether work happened. C5/Gate B remain prerequisites; do not build another scheduler. |
+| Message delivery and sustained subscriptions | Native messaging semantics, with an explicitly selected delivery binding | Reuse the platform SDK; keep acknowledgement, locks, redelivery and retention explicit. The current event spec selects direct client-to-Service-Bus delivery. A gateway-hosted receiver is a separate design change, not authorized by this table. Neither event runtime is implemented here. |
+| Large uploads, downloads and result files | The specified handoff/transfer pattern when supported | Authorize through Atlas; transfer bytes directly using narrowly scoped access and shared client support. Handoff remains planned. Existing gateway streaming stays valid; do not replace it merely because a result is large. |
+| Dataframe conversion, local files and language conveniences | Client-side helpers over the common call/result | Keep local presentation outside upstream capabilities. Reuse existing helpers; no client rewrite is required. |
+
+The source spec calls gateway-executed SDK/API work **Run**, and reserves **Broker** for direct client connections ([§6.3](source/atlas-spec/06-3-reaching-systems.md#631-the-patterns)). Calling Atlas a capability broker in discussion does not rename these wire modes. This clarification changes no protocol references, bindings or existing execution behavior.
+
+For an integration already being added, record its selected row, authoritative state owner, upstream identity and SDK/API, and retry/cancellation behavior in its existing documentation or review. The common pipeline still enforces Atlas authorization, scope, deadlines and audit; use of a vendor SDK bypasses none of these. Coordinate retries with the SDK so one logical change is not submitted repeatedly by independent retry loops. If the chosen pattern needs an unsupported mechanism, record the specific gap in the handoff ledger instead of building a parallel framework inside the connector.
+
+**Profile authoring:** continue using today's canonical profiles and compatibility gate. When the already-planned authoring tooling is implemented, generate repetitive structure into that same contract from one maintained definition. Owners still supply purpose, access, effects and data meaning. This is guidance for that tooling, not an instruction to build a generator now, replace the schema, weaken validation or rewrite existing profiles.

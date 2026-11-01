@@ -52,6 +52,8 @@ There are two release gates. **Gate A is the first handoff. Gate B completes it.
 
 ## 2. The boundary
 
+Use [LESSONS.md §6](LESSONS.md#6-which-pattern-to-use) to choose the implementation pattern for an integration. It clarifies the existing architecture and does not add a refactoring phase, change protocol bindings, or expand C0–C6. Preserve working implementations; any shared change must address a specific defect or requirement in this plan.
+
 During each gate's exercise, the Atlas side is frozen. The company changes only its side. The test of the boundary is mechanical: hash the Atlas side before and after the exercise, and the hashes must match (section 5, C4 and C6).
 
 | The company adds or changes | Atlas owns: unchanged during an integration exercise |
