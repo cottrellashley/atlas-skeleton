@@ -2,7 +2,6 @@ package edge
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -15,6 +14,7 @@ import (
 	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
 )
 
 // maxDepth is the deepest a request body may nest.
@@ -155,59 +155,39 @@ func (s *Server) read(r *http.Request, id string, body ijson.Value) *pipeline.Ca
 // and recorded (06-2 §6.2, ATLAS-ACCESS-007).
 const HeaderOnBehalfOf = "X-Atlas-On-Behalf-Of"
 
-// negotiating is a pipeline that calls the edge back once a call's access
-// is decided and before its request is validated, a limit taken or its
-// work admitted: with the route it resolved from the snapshot it loaded
-// for the call. A problem negotiate returns is the call's refusal. The
-// edge then chooses the encoding without telling a caller who may not know
-// the capability anything about its binding, and without running work it
-// would refuse (PR08; needs: lane P1).
-type negotiating interface {
-	RunNegotiated(ctx context.Context, c *pipeline.Call, negotiate func(registry.Route) *protocol.Problem) (*pipeline.Result, error)
-}
-
-// run takes a call through the pipeline, and chooses its encoding once the
-// pipeline has decided its access. Until the pipeline calls back, the edge
-// chooses after Run: as confidential, but a call the edge cannot answer in
-// any type it accepts has run its work first.
+// run takes a call through the pipeline, which calls negotiate back once
+// the call's access is decided and before any work is admitted (R3-07), with
+// the route its address matched: the edge chooses the encoding from the
+// binding that address is, an older profile's included (R3-08), without
+// telling a caller who may not know the capability anything about it.
 func (s *Server) run(r *http.Request, c *pipeline.Call) (*pipeline.Result, choice, error) {
 	x := exchangeOf(r)
 	var ch choice
 	negotiate := func(rt registry.Route) *protocol.Problem {
 		x.address = rt.Capability.Pinned.String() + ":" + rt.Interaction
+		bound := *rt.Capability.Current.Interactions[rt.Interaction]
+		bound.Bindings = []profile.Binding{rt.Binding}
 		var prob *protocol.Problem
-		ch, prob = choose(r.Header, c.Features, rt.Capability.Current.Interactions[rt.Interaction], r.URL.Path)
+		ch, prob = choose(r.Header, c.Features, &bound, rt.Binding.Address)
 		return prob
 	}
-	if np, ok := any(s.opt.Pipeline).(negotiating); ok {
-		res, err := np.RunNegotiated(r.Context(), c, negotiate)
-		return res, ch, err
-	}
-	res, err := s.opt.Pipeline.Run(r.Context(), c)
-	if err != nil {
-		return nil, choice{}, err
-	}
-	if prob := negotiate(registry.Route{Capability: res.Capability, Interaction: res.Interaction.Name}); prob != nil {
-		x.failed = prob
-		s.finish(res, x)
-		return nil, choice{}, prob
-	}
-	return res, ch, nil
+	res, err := s.opt.Pipeline.RunNegotiated(r.Context(), c, negotiate)
+	return res, ch, err
 }
-
-// failing is an answer the edge can end with its own problem, which the
-// pipeline records as the call's outcome (pipeline.Rows.Fail).
-type failing interface{ Fail(err error) }
 
 // finish ends the call: its rows, its context, its outcome. The outcome is
 // what the caller received (R09, R138): the answer as the pipeline gave
 // it; the problem the edge ended it with instead; or, for a caller that
 // went away, a cancellation, which Close records.
 func (s *Server) finish(res *pipeline.Result, x *exchange) {
-	if x.failed != nil && !x.gone && res.Rows != nil {
-		if f, ok := any(res.Rows).(failing); ok {
-			f.Fail(x.failed)
-		}
+	// One failure and outcome for records and tables alike (R3-07): a
+	// caller who went away is a cancellation, and the problem the edge ended
+	// the answer with is the call's outcome.
+	switch {
+	case x.gone:
+		res.Gone()
+	case x.failed != nil:
+		res.Fail(x.failed)
 	}
 	res.Close()
 }

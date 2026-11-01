@@ -59,9 +59,14 @@ type Rows struct {
 	truncated bool
 	over      bool // the source holds rows past the cap
 	done      bool
-	err       error
-	pending   []*ijson.Object // held rows of the batch being read
-	dropped   bool            // undeclared members were withheld (logged once)
+	// ended is how the answer ended, recorded as the call's outcome only
+	// once the caller has it or never will (Close, Fail, Gone): an answer
+	// read whole and then not delivered is no success (R3-07).
+	ended    ending
+	recorded bool
+	err      error
+	pending  []*ijson.Object // held rows of the batch being read
+	dropped  bool            // undeclared members were withheld (logged once)
 }
 
 // Next is the next row, or io.EOF after the last; any other error ends the
@@ -125,26 +130,49 @@ func (r *Rows) Count() int64 { return r.n }
 // Truncated reports whether the caller's output cap cut the answer.
 func (r *Rows) Truncated() bool { return r.truncated }
 
-// Close ends the answer early, as when the caller went away: its outcome
-// is a cancellation.
+// Close ends the call once its answer is sent: its outcome is how the
+// answer ended, or a cancellation when it was not read to its end.
 func (r *Rows) Close() {
 	if !r.done {
 		r.finish(ending{step: ports.StepAnswer, code: ports.CodeCancelled})
 	}
+	r.record()
 }
 
-// Fail ends the answer early with err, as an edge does that cannot write a
-// row: its outcome is err's problem, internal for an error that is none.
+// Fail ends the answer with err, as an edge does that cannot send it: its
+// outcome is err's problem, internal for an error that is none, even when
+// every row had been read.
 func (r *Rows) Fail(err error) {
-	if r.done {
-		return
-	}
 	var prob *protocol.Problem
 	if !errors.As(err, &prob) {
 		r.log.Error("the answer could not be sent", "error", err)
 		prob = protocol.NewProblem(protocol.CodeInternal, "an internal error occurred")
 	}
-	_ = r.stop(prob)
+	if !r.done {
+		_ = r.stop(prob)
+	} else if r.ended.code == "" {
+		r.ended.step, r.ended.code = ports.StepAnswer, prob.Code
+	}
+	r.record()
+}
+
+// Gone ends the answer of a caller who went away: its outcome is a
+// cancellation, even when every row had been read.
+func (r *Rows) Gone() {
+	if !r.done {
+		r.finish(ending{step: ports.StepAnswer, code: ports.CodeCancelled})
+	} else if r.ended.code == "" {
+		r.ended.step, r.ended.code = ports.StepAnswer, ports.CodeCancelled
+	}
+	r.record()
+}
+
+// record writes the outcome, once.
+func (r *Rows) record() {
+	if !r.recorded {
+		r.recorded = true
+		r.end(r.ended)
+	}
 }
 
 // final is what a read after the end answers.
@@ -496,7 +524,9 @@ func (r *Rows) stop(prob *protocol.Problem) error {
 	return io.EOF
 }
 
-// finish closes the source and ends the call, once.
+// finish closes the source and ends the answer, once: a failure is
+// recorded at once, and a success when Close, Fail or Gone says whether
+// the caller received it.
 func (r *Rows) finish(e ending) {
 	if r.done {
 		return
@@ -507,7 +537,10 @@ func (r *Rows) finish(e ending) {
 		r.log.Warn("the capability's source did not close cleanly", "error", err)
 	}
 	e.rows, e.truncated = r.n, r.truncated
-	r.end(e)
+	r.ended = e
+	if e.code != "" {
+		r.record() // a failure is the outcome now; only a success awaits delivery
+	}
 }
 
 // closeSource closes the stream the answer reads, a panic in it an error.

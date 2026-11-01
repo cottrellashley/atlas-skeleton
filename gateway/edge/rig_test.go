@@ -61,7 +61,7 @@ func testPolicy(limits ...ports.Limit) *ports.Policy {
 	return &ports.Policy{
 		Revision: "r1",
 		Roles:    map[string][]string{"credit": {"analyst"}, "hy": {"analyst"}},
-		Grants:   []ports.Grant{{ID: "grant-read", Role: "analyst", Capabilities: []string{"portfolio.holdings@v1", "portfolio.list@v1", "portfolio.secret@v1", "portfolio.legacy@v1"}}},
+		Grants:   []ports.Grant{{ID: "grant-read", Role: "analyst", Capabilities: []string{"portfolio.holdings@v1", "portfolio.list@v1", "portfolio.secret@v1", "portfolio.legacy@v1", "portfolio.moved@v1", "portfolio.echo@v1"}}},
 		Scopes: map[string]ports.Scope{
 			"credit": {"portfolio": {"147HYC", "GLOBAL-CREDIT", "EM-RATES", "EURO-IG"}},
 			"hy":     {"portfolio": {"147HYC"}},

@@ -239,6 +239,19 @@ func (r *Result) Close() {
 	}
 }
 
+// Gone ends the call of a caller who went away before its answer was
+// delivered: the outcome is a cancellation, for a record as for a table
+// (R3-07).
+func (r *Result) Gone() {
+	if r.Rows != nil {
+		r.Rows.Gone()
+		return
+	}
+	if r.end != nil {
+		r.end(ending{step: ports.StepAnswer, code: ports.CodeCancelled})
+	}
+}
+
 // Fail ends the call with err, as an edge does that cannot send its
 // answer: the outcome is err's problem, internal for an error that is
 // none, its cause logged.
@@ -255,7 +268,19 @@ func (r *Result) Fail(err error) {
 // Run takes a call through the nine steps. Its error is a
 // *protocol.Problem; when it returns a Result, the caller sends it and then
 // calls Close.
-func (p *Pipeline) Run(ctx context.Context, c *Call) (res *Result, err error) {
+func (p *Pipeline) Run(ctx context.Context, c *Call) (*Result, error) {
+	return p.RunNegotiated(ctx, c, nil)
+}
+
+// RunNegotiated is Run, with the call's representation chosen by
+// negotiate once its access is decided and before its request is
+// validated, a limit taken or its work admitted (HANDOFF.md C2, R3-07):
+// with the route the address matched, its binding the one the address is,
+// an older profile's included (R3-08). A caller without access is refused
+// before negotiate runs, so a confidential binding is never disclosed; a
+// problem negotiate returns is the call's refusal, and no work runs. A nil
+// negotiate negotiates nothing.
+func (p *Pipeline) RunNegotiated(ctx context.Context, c *Call, negotiate func(registry.Route) *protocol.Problem) (res *Result, err error) {
 	// The replica's room for another call (06-7 §6.7.2): a call past it is
 	// shed before any work, and leaves no fact, so overload cannot feed on
 	// the audit sink.
@@ -264,6 +289,7 @@ func (p *Pipeline) Run(ctx context.Context, c *Call) (res *Result, err error) {
 		return nil, protocol.NewProblem(protocol.CodeUnavailable, fmt.Sprintf("the gateway is running as many calls as it allows (%d)", p.opt.MaxInFlight)).WithRetryAfter(shedRetryAfter).WithNext("Wait retry_after seconds, then repeat the call.")
 	}
 	a := p.begin(ctx, c, release)
+	a.negotiate = negotiate
 	defer func() {
 		if v := recover(); v != nil {
 			res, err = nil, a.panicked(v)
@@ -355,6 +381,14 @@ func (a *attempt) run() (*Result, error) {
 	for _, t := range cap.Current.Traits {
 		if t.Critical && !c.Features.Understands(lower(t.Name)) {
 			return a.stop(ports.StepAddress, protocol.NewProblem(protocol.CodeCriticalTraitUnsupported, "the capability's trait "+t.Name+" is critical, and the client does not implement it").WithTarget("Atlas-Client-Features").WithNext("Use a client that implements "+t.Name+"."))
+		}
+	}
+
+	// The representation, once access is decided and before any work.
+	if a.negotiate != nil {
+		a.step = ports.StepNegotiate
+		if prob := a.negotiate(route); prob != nil {
+			return a.stop(ports.StepNegotiate, prob)
 		}
 	}
 

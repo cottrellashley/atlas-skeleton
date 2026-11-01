@@ -88,6 +88,11 @@ const (
 	StepAddress Step = "address"
 	// StepAccess is step 3: visibility, denies and grants.
 	StepAccess Step = "access"
+	// StepNegotiate is the representation chosen for the call, once its
+	// access is decided and before its request is validated or admitted
+	// (HANDOFF.md C2, R3-07): an Accept the binding cannot answer is
+	// refused here, and no work runs.
+	StepNegotiate Step = "negotiate"
 	// StepRequest is step 4's validation, resolution and normalisation.
 	StepRequest Step = "request"
 	// StepScope is step 4's data scope over the values a request names.

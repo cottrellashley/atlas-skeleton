@@ -10,6 +10,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
 	"github.com/jhgonline/fi-app-atlas/gateway/ports"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
@@ -33,6 +34,9 @@ type attempt struct {
 	step   ports.Step // the step it is at, which a fact names
 	fact   ports.Fact // what every fact of the call shares
 	log    *slog.Logger
+	// negotiate, when set, chooses the call's representation once its access
+	// is decided (RunNegotiated).
+	negotiate func(registry.Route) *protocol.Problem
 
 	holding  []func() // released when it ends, last first
 	admitted time.Time
