@@ -1,6 +1,6 @@
 # Pass 2: the plan
 
-Pass 2 rebuilds the skeleton from the rewritten spec (230 requirements) as if it were the last pass. By the end, each real system plugs in through configuration and an adapter that is already written and tested.
+Pass 2 rebuilds the skeleton from the rewritten spec (229 requirements) as if it were the last pass. By the end, each real system plugs in through configuration and an adapter that is already written and tested.
 
 [CRITIQUE.md](CRITIQUE.md) lists the 36 defects in pass 1, of which 14 are blockers. This plan fixes all of them.
 
@@ -16,7 +16,7 @@ Pass 2 is done when all of these are true:
    - a hermetic fake that passes the port's suite
    - a real adapter, written against the vendor's SDK and tested as far as this machine allows
    - a line in [PLUG-IN.md](PLUG-IN.md) (written at the end) saying exactly what plugging it in takes
-3. **Every one of the 230 requirements maps to a test**, or is marked as checked by review (`make requirements`).
+3. **Every one of the 229 requirements maps to a test**, or is marked as checked by review (`make requirements`).
 4. **It holds under load and failure:**
    - load tests with SLOs as pass criteria
    - a fault-injection test per blast-radius row

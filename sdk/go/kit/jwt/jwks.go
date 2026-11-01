@@ -22,6 +22,7 @@ package jwt
 import (
 	"context"
 	"crypto"
+	"crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rsa"
@@ -69,13 +70,14 @@ func (k JWK) PublicKey() (crypto.PublicKey, error) {
 		return &rsa.PublicKey{N: n, E: int(e.Int64())}, nil
 	case "EC":
 		var curve elliptic.Curve
+		var point ecdh.Curve
 		switch k.Crv {
 		case "P-256":
-			curve = elliptic.P256()
+			curve, point = elliptic.P256(), ecdh.P256()
 		case "P-384":
-			curve = elliptic.P384()
+			curve, point = elliptic.P384(), ecdh.P384()
 		case "P-521":
-			curve = elliptic.P521()
+			curve, point = elliptic.P521(), ecdh.P521()
 		default:
 			return nil, fmt.Errorf("jwk %s: unsupported curve %q", k.Kid, k.Crv)
 		}
@@ -87,11 +89,19 @@ func (k JWK) PublicKey() (crypto.PublicKey, error) {
 		if err != nil {
 			return nil, err
 		}
-		pub := &ecdsa.PublicKey{Curve: curve, X: x, Y: y}
-		if !curve.IsOnCurve(x, y) {
+		// ATLAS: the on-curve check goes through crypto/ecdh; Curve.IsOnCurve is deprecated.
+		size := (curve.Params().BitSize + 7) / 8
+		if x.Sign() < 0 || y.Sign() < 0 || x.BitLen() > 8*size || y.BitLen() > 8*size {
 			return nil, fmt.Errorf("jwk %s: point not on curve", k.Kid)
 		}
-		return pub, nil
+		uncompressed := make([]byte, 1+2*size)
+		uncompressed[0] = 4
+		x.FillBytes(uncompressed[1 : 1+size])
+		y.FillBytes(uncompressed[1+size:])
+		if _, err := point.NewPublicKey(uncompressed); err != nil {
+			return nil, fmt.Errorf("jwk %s: point not on curve", k.Kid)
+		}
+		return &ecdsa.PublicKey{Curve: curve, X: x, Y: y}, nil
 	}
 	return nil, fmt.Errorf("jwk %s: unsupported kty %q", k.Kid, k.Kty)
 }

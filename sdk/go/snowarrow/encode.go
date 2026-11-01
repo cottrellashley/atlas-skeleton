@@ -110,7 +110,7 @@ func encodeColumn(mem memory.Allocator, c Column, values []any) (arrow.Array, er
 	case TimestampNTZ, TimestampLTZ, TimestampTZ:
 		return encodeTimestamp(mem, c, values)
 	}
-	return nil, fmt.Errorf("Snowflake type %q is not in snowflake-arrow/1", c.Type)
+	return nil, fmt.Errorf("snowflake-arrow/1 has no type %q", c.Type)
 }
 
 func unscaledOf(v any) (*big.Int, error) {
@@ -159,7 +159,7 @@ func encodeFixed(mem memory.Allocator, c Column, values []any) (arrow.Array, err
 		return b.NewArray(), nil
 	}
 	var b array.Builder
-	appendInt := func(int64) {}
+	var appendInt func(int64)
 	switch {
 	case lo >= math.MinInt8 && hi <= math.MaxInt8:
 		x := array.NewInt8Builder(mem)

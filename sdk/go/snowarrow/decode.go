@@ -54,18 +54,18 @@ func decodeColumn(mem memory.Allocator, col Column, src arrow.Array, want arrow.
 		return decodeFixed(mem, col, src, want)
 	case Real, Text, Boolean, Date:
 		if !arrow.TypeEqual(src.DataType(), want) {
-			return nil, fmt.Errorf("Snowflake %s arrived as %s; the writer wants %s", col.Type, src.DataType(), want)
+			return nil, fmt.Errorf("a Snowflake %s column arrived as %s; the writer wants %s", col.Type, src.DataType(), want)
 		}
 		src.Retain()
 		return src, nil
 	case TimestampNTZ, TimestampLTZ, TimestampTZ:
 		ts, ok := want.(*arrow.TimestampType)
 		if !ok || ts.Unit != arrow.Microsecond {
-			return nil, fmt.Errorf("Snowflake %s cannot be read as %s", col.Type, want)
+			return nil, fmt.Errorf("a Snowflake %s column cannot be read as %s", col.Type, want)
 		}
 		return decodeTimestamp(mem, col, src, ts)
 	}
-	return nil, fmt.Errorf("Snowflake type %q is not in snowflake-arrow/1", col.Type)
+	return nil, fmt.Errorf("snowflake-arrow/1 has no type %q", col.Type)
 }
 
 // scaledValue reads a fixed column's value as its unscaled integer.

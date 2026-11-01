@@ -1,0 +1,1147 @@
+[
+  {
+    "id": "AP-001",
+    "file": "09-atlas-protocol.md",
+    "text": "Every Atlas client, in every language, passes the conformance suite at every level it declares."
+  },
+  {
+    "id": "AP-002",
+    "file": "09-atlas-protocol.md",
+    "text": "The Atlas Gateway passes the gateway conformance suite."
+  },
+  {
+    "id": "AP-003",
+    "file": "09-atlas-protocol.md",
+    "text": "A client written only from this part, its artifacts and its test vectors, by someone who has not read any implementation, passes the conformance suite at Core (the test of this part's completeness)."
+  },
+  {
+    "id": "AP-CLIENT-001",
+    "file": "09-7-clients.md",
+    "text": "Two clients at the same levels, given the same gateway, inputs and conformance scenario, make the same calls and return the same results and problems."
+  },
+  {
+    "id": "AP-CLIENT-002",
+    "file": "09-7-clients.md",
+    "text": "A token written by any client is used by every other client on the same machine."
+  },
+  {
+    "id": "AP-CLIENT-003",
+    "file": "09-7-clients.md",
+    "text": "The same request record, built from the same inputs, is byte-for-byte the same JSON from every client (canonicalised by RFC 8785): no client moves a request member into its options."
+  },
+  {
+    "id": "AP-CLIENT-004",
+    "file": "09-7-clients.md",
+    "text": "A client given an address added to the gateway after its catalogue was cached calls it successfully, with no restart and no cache cleared by hand."
+  },
+  {
+    "id": "AP-CLIENT-005",
+    "file": "09-7-clients.md",
+    "text": "Every client lands the same result in the same form for the same call and options: a table as Arrow in memory, content in memory under the threshold and at the same disk place with the same manifest when saved or larger (the conformance scenarios `CORE-CONTENT-001` and `-002`)."
+  },
+  {
+    "id": "AP-CONF-001",
+    "file": "09-8-conformance.md",
+    "text": "Every client's CI runs the vectors and the scenarios of its levels on every change."
+  },
+  {
+    "id": "AP-CONF-002",
+    "file": "09-8-conformance.md",
+    "text": "The conformance gateway and the vectors are versioned with the protocol, and a protocol minor version adds cases without changing existing ones."
+  },
+  {
+    "id": "AP-CONV-001",
+    "file": "09-1-conventions-and-grammar.md",
+    "text": "Every client and the gateway rejects a JSON document with duplicate member names, or a number outside the I-JSON range where an integer is required."
+  },
+  {
+    "id": "AP-CONV-002",
+    "file": "09-1-conventions-and-grammar.md",
+    "text": "Every client and the gateway accepts exactly the strings the grammars of 9.1.3 to 9.1.5 accept (the grammar test vectors)."
+  },
+  {
+    "id": "AP-DOC-001",
+    "file": "09-3-documents.md",
+    "text": "Every document the gateway sends in the gateway conformance suite validates against its schema."
+  },
+  {
+    "id": "AP-DOC-002",
+    "file": "09-3-documents.md",
+    "text": "The gateway serves the built-ins of 9.3.2 with exactly these requests and results."
+  },
+  {
+    "id": "AP-DOC-003",
+    "file": "09-3-documents.md",
+    "text": "Every record of a `resource`-family capability validates against `resource.schema.json`; its ETag and generation do not move when only its `status` changes; a field mask naming a server-owned member is `invalid_request`."
+  },
+  {
+    "id": "AP-EVENTS-001",
+    "file": "09-7-clients.md",
+    "text": "A client at the Events level receives every event sent to its subscription at least once, drops duplicates by `id`, resolves each to its reader profile, and never sends its Service Bus credential to the gateway."
+  },
+  {
+    "id": "AP-EVENTS-002",
+    "file": "09-7-clients.md",
+    "text": "A client refuses an `emulator` connect handover from a gateway whose environment is not `conformance` or `local`."
+  },
+  {
+    "id": "AP-FP-001",
+    "file": "09-4-fingerprints.md",
+    "text": "Every client and the gateway produces, for every case in the fingerprint vectors, exactly the canonical form, SHA-256 and fingerprint given."
+  },
+  {
+    "id": "AP-HTTP-001",
+    "file": "09-6-http-binding.md",
+    "text": "Every client parses every Atlas header in the header vectors exactly, and rejects the malformed ones."
+  },
+  {
+    "id": "AP-HTTP-002",
+    "file": "09-6-http-binding.md",
+    "text": "Every client treats a truncated NDJSON or Arrow answer as `upstream_failed`."
+  },
+  {
+    "id": "AP-RESOLVE-001",
+    "file": "09-5-resolution.md",
+    "text": "Every client and the gateway produces, for every case in the resolution vectors, exactly the expected record, or a problem with the expected `code` and `target`."
+  },
+  {
+    "id": "AP-RESOLVE-002",
+    "file": "09-5-resolution.md",
+    "text": "A Columnar client's column-wise resolution equals its row-wise resolution on every vector, as a table of one row and as a table of many."
+  },
+  {
+    "id": "AP-SCHEMA-001",
+    "file": "09-2-schemas.md",
+    "text": "Every client's validator gives the same result as the schema test vectors for every case."
+  },
+  {
+    "id": "AP-SCHEMA-002",
+    "file": "09-2-schemas.md",
+    "text": "Every client and the gateway derives the same Arrow schema from the same table schema (the Arrow test vectors)."
+  },
+  {
+    "id": "AP-SCHEMA-003",
+    "file": "09-2-schemas.md",
+    "text": "The same result, sent in every encoding its capability offers, resolves to identical records."
+  },
+  {
+    "id": "ATLAS-ACCESS-001",
+    "file": "06-2-access-limits-and-audit.md",
+    "text": "A deny on a capability or interaction refuses it whatever grants the caller holds."
+  },
+  {
+    "id": "ATLAS-ACCESS-002",
+    "file": "06-2-access-limits-and-audit.md",
+    "text": "A family grant never reaches an interaction whose effect class is not `read`, nor a named-grant-only interaction."
+  },
+  {
+    "id": "ATLAS-ACCESS-003",
+    "file": "06-2-access-limits-and-audit.md",
+    "text": "Limits hold exactly when many copies of the front door serve the same caller at once; a burst of twenty parallel calls starts at most what the budget allows."
+  },
+  {
+    "id": "ATLAS-ACCESS-004",
+    "file": "06-2-access-limits-and-audit.md",
+    "text": "Every call, refused or not, leaves exactly one audit record, durable before the call's answer ends, in the immutable store, and readable in Log Analytics within minutes."
+  },
+  {
+    "id": "ATLAS-ACCESS-005",
+    "file": "06-2-access-limits-and-audit.md",
+    "text": "The same call with the same token gives identical decisions, problems and results through every client and every edge."
+  },
+  {
+    "id": "ATLAS-ACCESS-006",
+    "file": "06-2-access-limits-and-audit.md",
+    "text": "No credential from the caller's machine, other than its token for the gateway, appears in any traffic from a client to the gateway (a conformance test capturing a client's traffic while its extras run)."
+  },
+  {
+    "id": "ATLAS-ACCESS-007",
+    "file": "06-2-access-limits-and-audit.md",
+    "text": "An identity header on a request changes nothing and is recorded."
+  },
+  {
+    "id": "ATLAS-ACCESS-008",
+    "file": "06-2-access-limits-and-audit.md",
+    "text": "No token appears in any log, trace or audit record (a test searching every sink for token prefixes)."
+  },
+  {
+    "id": "ATLAS-ACCESS-009",
+    "file": "06-2-access-limits-and-audit.md",
+    "text": "An invalid request from a caller who holds no grant for its interaction is refused with `not_granted` (or `denied`), never `invalid_request` or `resolution_failed`."
+  },
+  {
+    "id": "ATLAS-ACCESS-010",
+    "file": "06-2-access-limits-and-audit.md",
+    "text": "An invalid request from a caller who holds the grant is refused with `invalid_request` (or `resolution_failed`), reserves no limit, and leaves nothing to settle."
+  },
+  {
+    "id": "ATLAS-ACTION-001",
+    "file": "02-4-actions.md",
+    "text": "`plan` changes nothing in any system; a conformance test checks the target before and after."
+  },
+  {
+    "id": "ATLAS-ACTION-002",
+    "file": "02-4-actions.md",
+    "text": "A `run` whose policy needs approval is refused with `approval_required` until approved by another principal."
+  },
+  {
+    "id": "ATLAS-ACTION-003",
+    "file": "02-4-actions.md",
+    "text": "Every finished run has a receipt in its profile's schema, linked from the audit record."
+  },
+  {
+    "id": "ATLAS-BINDING-001",
+    "file": "04-plugging-in.md",
+    "text": "Every interaction in every profile has at least one binding whose server is named in the gateway's bootstrap."
+  },
+  {
+    "id": "ATLAS-BINDING-002",
+    "file": "04-plugging-in.md",
+    "text": "The same request through any two bindings of one interaction returns the same result, in each binding's encoding."
+  },
+  {
+    "id": "ATLAS-BINDING-003",
+    "file": "04-plugging-in.md",
+    "text": "The published OpenAPI and AsyncAPI descriptions are regenerated by the gates and fail them when they differ from what is committed."
+  },
+  {
+    "id": "ATLAS-CAP-001",
+    "file": "02-1-capabilities.md",
+    "text": "Every capability declares `id`, `version`, `domain`, `owner`, `family`, `stability`, `lifecycle`, `visibility` and `traits`, and every interaction declares `effect`, `result`, `delivery`, `execution` and at least one binding."
+  },
+  {
+    "id": "ATLAS-CAP-002",
+    "file": "02-1-capabilities.md",
+    "text": "An id matches `^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$`; only built-in capabilities have the domain `atlas`; a version is a positive integer; an interaction is one its family defines."
+  },
+  {
+    "id": "ATLAS-CAP-003",
+    "file": "02-1-capabilities.md",
+    "text": "Every request through every edge resolves to exactly one address before it is authorised."
+  },
+  {
+    "id": "ATLAS-CAP-004",
+    "file": "02-1-capabilities.md",
+    "text": "A capability offering both executions returns identical rows in the identical schema for the same request through either; a conformance test asserts it."
+  },
+  {
+    "id": "ATLAS-CAP-005",
+    "file": "02-1-capabilities.md",
+    "text": "A client that does not understand a trait marked critical is refused that capability with a problem naming the trait and the client version that understands it."
+  },
+  {
+    "id": "ATLAS-CAP-006",
+    "file": "02-1-capabilities.md",
+    "text": "Each family has a conformance battery generated from this spec, run against every capability of that family."
+  },
+  {
+    "id": "ATLAS-CAT-ASTRONOMER-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-ATLAS-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-AZURE-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-BLOOMBERG-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-CITI-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-CREDITFLOW-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-CURVE-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-DATA-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-DATAQUERY-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-EVENT-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-GLOBALRV-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-INDEX-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-INTEX-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-KB-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-MODEL-PORTFOLIO-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-NAUTILUS-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-PORTFOLIO-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-PRODUCT-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-RESEARCH-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-SECURITIZED-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-SECURITY-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-SHAREPOINT-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-SIGNAL-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-SNOWFLAKE-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-SPGLOBAL-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-UNIVERSE-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CAT-YIELDBOOK-001",
+    "file": "07-the-catalogue.md",
+    "text": "Every capability in this table is served with a profile whose properties match it."
+  },
+  {
+    "id": "ATLAS-CATALOGUE-001",
+    "file": "07-the-catalogue.md",
+    "text": "The set of capabilities in these tables equals the set the gateway serves at the same commit; the gate fails otherwise."
+  },
+  {
+    "id": "ATLAS-CATALOGUE-002",
+    "file": "07-the-catalogue.md",
+    "text": "No two listed capabilities answer the same question (checked by review when a capability is added, and by the role journeys: ATLAS-VISION-003)."
+  },
+  {
+    "id": "ATLAS-CLI-001",
+    "file": "05-clients.md",
+    "text": "The CLI passes the conformance suite at its levels."
+  },
+  {
+    "id": "ATLAS-CLI-002",
+    "file": "05-clients.md",
+    "text": "A capability added to the catalogue is callable with `atlas fetch|get|run` and its flags, with no release."
+  },
+  {
+    "id": "ATLAS-CLIENTS-001",
+    "file": "05-clients.md",
+    "text": "Every client passes the conformance suite at its declared levels."
+  },
+  {
+    "id": "ATLAS-CLIENTS-002",
+    "file": "05-clients.md",
+    "text": "A capability added to the catalogue is callable from every client with no client release."
+  },
+  {
+    "id": "ATLAS-CLIENTS-003",
+    "file": "05-clients.md",
+    "text": "A client calls every capability through the Atlas Gateway, and only there; it never reaches a capability's source or vendor directly."
+  },
+  {
+    "id": "ATLAS-CLIENTS-004",
+    "file": "05-clients.md",
+    "text": "An extra is named in its client's own interface, apart from capabilities; it never sends a credential from the caller's machine to the gateway; and its client's page says what it needs to run."
+  },
+  {
+    "id": "ATLAS-CLIENTS-005",
+    "file": "05-clients.md",
+    "text": "A dashboard declares the extras it uses in its lock. Where one cannot run (a page in Nautilus Cloud has no person's file system), the panels that need it say what they need and where they can run, and every other panel renders."
+  },
+  {
+    "id": "ATLAS-CLIENTS-006",
+    "file": "05-clients.md",
+    "text": "No profile, answer or capability names a path, folder or layout on the caller's machine; what happens to a result here is the client's (checked by the profile lint for path-like members, and by review)."
+  },
+  {
+    "id": "ATLAS-CONTRACT-001",
+    "file": "03-contracts.md",
+    "text": "Every profile carries the schemas its surface requires, and the gate refuses one that lacks any."
+  },
+  {
+    "id": "ATLAS-CORE-001",
+    "file": "00-overview.md",
+    "text": "Every capability has a profile, served by the gateway, from which a conforming client can discover, call and read it without code written for that capability."
+  },
+  {
+    "id": "ATLAS-CORE-002",
+    "file": "00-overview.md",
+    "text": "A change to a capability's contract that versioning classifies as safe or dangerous requires no client release."
+  },
+  {
+    "id": "ATLAS-CORE-003",
+    "file": "00-overview.md",
+    "text": "Every call, through every edge, passes the same pipeline and resolves to exactly one `capability@version:interaction`."
+  },
+  {
+    "id": "ATLAS-CORE-004",
+    "file": "00-overview.md",
+    "text": "The Atlas Gateway passes the gateway conformance suite; every client passes the client conformance suite at the levels it declares."
+  },
+  {
+    "id": "ATLAS-CORE-005",
+    "file": "00-overview.md",
+    "text": "The same request yields identical records through every execution, binding and encoding a capability offers."
+  },
+  {
+    "id": "ATLAS-CORE-006",
+    "file": "00-overview.md",
+    "text": "A deny always wins; what a caller cannot use never appears in their working view."
+  },
+  {
+    "id": "ATLAS-CORE-007",
+    "file": "00-overview.md",
+    "text": "Identity comes only from validated tokens; credentials on the caller's machine never leave it."
+  },
+  {
+    "id": "ATLAS-CORE-008",
+    "file": "00-overview.md",
+    "text": "Every capability is served by the Atlas Gateway, and only by it; a client extra is never a capability and never calls the gateway except through the client's ordinary calls."
+  },
+  {
+    "id": "ATLAS-CORE-009",
+    "file": "00-overview.md",
+    "text": "Deploying a gateway with a new capability needs no change anywhere else: no client release, and no change to any agent, skill, system prompt, MCP tool list or harness configuration. Every client in use finds, understands and calls it, and an agent completes a task with it, the moment it is served."
+  },
+  {
+    "id": "ATLAS-DATA-001",
+    "file": "02-2-data-surface.md",
+    "text": "A `fetch` with `columns` returns exactly those columns, in the writer profile's types, through every execution the capability offers."
+  },
+  {
+    "id": "ATLAS-DATA-002",
+    "file": "02-2-data-surface.md",
+    "text": "In client execution, the statement the caller receives includes the requested columns and pushed-down filters; the caller runs it unchanged."
+  },
+  {
+    "id": "ATLAS-DATA-003",
+    "file": "02-2-data-surface.md",
+    "text": "Settlement compares what the source recorded under the ticket's tag with the planned statement, and records a mismatch against the caller."
+  },
+  {
+    "id": "ATLAS-DATA-004",
+    "file": "02-2-data-surface.md",
+    "text": "`explain` returns the plan the same request's `fetch` runs, byte for byte for a SQL statement; a capability that cannot explain itself does not offer `explain`."
+  },
+  {
+    "id": "ATLAS-DATA-005",
+    "file": "02-2-data-surface.md",
+    "text": "A ticket's credential can do nothing at the source that the caller's own identity could not."
+  },
+  {
+    "id": "ATLAS-DATA-006",
+    "file": "02-2-data-surface.md",
+    "text": "An export's files are readable only through its links, which expire, and only by the caller."
+  },
+  {
+    "id": "ATLAS-DATA-007",
+    "file": "02-2-data-surface.md",
+    "text": "`explain` is decided, validated and resolved exactly as the same request's `fetch` (the same problem for an invalid parameter), and runs nothing at the source except its estimate."
+  },
+  {
+    "id": "ATLAS-DISCOVERY-001",
+    "file": "02-6-discovery.md",
+    "text": "`/.well-known/atlas` is served by the gateway in every environment and needs no sign-in."
+  },
+  {
+    "id": "ATLAS-DISCOVERY-002",
+    "file": "02-6-discovery.md",
+    "text": "The working view returns exactly the capabilities available to the caller; a conformance test varies each availability condition alone and checks the capability disappears."
+  },
+  {
+    "id": "ATLAS-DISCOVERY-003",
+    "file": "02-6-discovery.md",
+    "text": "A denied capability appears in no working-view response (catalogue, search, describe, completion, MCP tools), and appears in `atlas.access` with status `denied`."
+  },
+  {
+    "id": "ATLAS-DISCOVERY-004",
+    "file": "02-6-discovery.md",
+    "text": "`atlas.access` returns, for every listed capability, one status from the table above, its reason, how to obtain it, and the caller's limits and use where they hold it."
+  },
+  {
+    "id": "ATLAS-DISCOVERY-005",
+    "file": "02-6-discovery.md",
+    "text": "A confidential capability answers `not_found` to every caller who does not hold it, in both views and on a direct call."
+  },
+  {
+    "id": "ATLAS-DISCOVERY-007",
+    "file": "02-6-discovery.md",
+    "text": "A compatible profile change reaches a long-lived client within 60 seconds through the change feed, and within 15 minutes without it."
+  },
+  {
+    "id": "ATLAS-DISCOVERY-008",
+    "file": "02-6-discovery.md",
+    "text": "`atlas.describe` lists, for the calling client, every binding it cannot use with what is missing."
+  },
+  {
+    "id": "ATLAS-DISCOVERY-009",
+    "file": "02-6-discovery.md",
+    "text": "`atlas.guide` answers, for every capability available to the caller, every section of the guide in order, within `max_tokens`, its examples in the calling client's syntax and each valid against the request schema."
+  },
+  {
+    "id": "ATLAS-DISCOVERY-010",
+    "file": "02-6-discovery.md",
+    "text": "No guide names a capability the caller cannot use."
+  },
+  {
+    "id": "ATLAS-EVENT-001",
+    "file": "02-5-events.md",
+    "text": "A client checks an event against its profile before publishing it, and refuses one that does not conform; a gateway-held sampling subscription reports non-conforming official events to their owner."
+  },
+  {
+    "id": "ATLAS-EVENT-002",
+    "file": "02-5-events.md",
+    "text": "A durable subscriber that reconnects receives every event delivered while it was away, at least once, within the entity's retention."
+  },
+  {
+    "id": "ATLAS-EVENT-003",
+    "file": "02-5-events.md",
+    "text": "Every event's `dataschema` names a profile fingerprint the catalogue serves."
+  },
+  {
+    "id": "ATLAS-EVENT-004",
+    "file": "02-5-events.md",
+    "text": "The AsyncAPI document for every event capability is generated from its profile and validated by the AsyncAPI tooling in the gates."
+  },
+  {
+    "id": "ATLAS-EVENT-005",
+    "file": "02-5-events.md",
+    "text": "A person holds a Service Bus data role on an entity if and only if Atlas grants them the matching interaction on it (a reconciliation test)."
+  },
+  {
+    "id": "ATLAS-EVENT-006",
+    "file": "02-5-events.md",
+    "text": "A role no grant backs is removed within 60 seconds of the grant's change, and within five minutes when the change's event is lost or the change was a group membership in Entra; a role or entity the gateway made and no record owns is removed by the next resync."
+  },
+  {
+    "id": "ATLAS-GATEWAY-001",
+    "file": "06-1-front-door-and-services.md",
+    "text": "The front door holds no state that matters in its process: killing any copy mid-request loses nothing a retry with the same idempotency key does not recover."
+  },
+  {
+    "id": "ATLAS-GATEWAY-002",
+    "file": "06-1-front-door-and-services.md",
+    "text": "A service refuses a call whose token is unsigned, expired, or scoped to another address."
+  },
+  {
+    "id": "ATLAS-GATEWAY-003",
+    "file": "06-1-front-door-and-services.md",
+    "text": "Every service passes its conformance batteries in process and through the service protocol."
+  },
+  {
+    "id": "ATLAS-GATEWAY-004",
+    "file": "06-1-front-door-and-services.md",
+    "text": "Every event the gateway publishes about its own state comes from the change feed."
+  },
+  {
+    "id": "ATLAS-GATEWAY-005",
+    "file": "06-1-front-door-and-services.md",
+    "text": "No edge buffers a chunked answer whole; gateway memory stays flat while a result larger than its memory limit streams or is exported."
+  },
+  {
+    "id": "ATLAS-GATEWAY-006",
+    "file": "06-1-front-door-and-services.md",
+    "text": "A service that crashes makes its capabilities `unavailable` within five seconds, and nothing else."
+  },
+  {
+    "id": "ATLAS-GATEWAY-007",
+    "file": "06-1-front-door-and-services.md",
+    "text": "A service claiming an id outside its domain is refused at registration."
+  },
+  {
+    "id": "ATLAS-GATEWAY-008",
+    "file": "06-1-front-door-and-services.md",
+    "text": "A replica started while Cosmos DB is unreachable is ready within 45 seconds, serving the last-known-good snapshot, and says so in readiness with the snapshot's revision and age."
+  },
+  {
+    "id": "ATLAS-GATEWAY-009",
+    "file": "06-1-front-door-and-services.md",
+    "text": "While Cosmos DB is unreachable, calls are answered as §6.1.14's table says: unbudgeted reads on per-replica limits, audited as degraded; everything else `unavailable`, naming Cosmos DB; after 60 minutes, everything but health and the bootstrap."
+  },
+  {
+    "id": "ATLAS-GATEWAY-010",
+    "file": "06-1-front-door-and-services.md",
+    "text": "A snapshot that fails its checks is never published; the one serving keeps serving, and the failure is in readiness and the audit."
+  },
+  {
+    "id": "ATLAS-GATEWAY-011",
+    "file": "06-1-front-door-and-services.md",
+    "text": "A switch turned off reaches every replica within 60 seconds without a deploy: its target's calls are `unavailable` with the switch's reason, and its capabilities' availability says so; turned on, or past its `until`, they serve again."
+  },
+  {
+    "id": "ATLAS-GATEWAY-012",
+    "file": "06-1-front-door-and-services.md",
+    "text": "Every row of §6.1.16 has a fault-injection test (the dependency's fake made to fail) asserting what fails and what keeps working; a new dependency adds its row and its test before it is used."
+  },
+  {
+    "id": "ATLAS-GATEWAY-013",
+    "file": "06-1-front-door-and-services.md",
+    "text": "A step repeated after a crash creates nothing twice in a system that accepts a key (a fake per system counting what it received)."
+  },
+  {
+    "id": "ATLAS-GATEWAY-014",
+    "file": "06-1-front-door-and-services.md",
+    "text": "A service whose admission fails serves none of its capabilities, every capability admitted before keeps serving, and the failed condition and its reason are in readiness and the audit."
+  },
+  {
+    "id": "ATLAS-GO-001",
+    "file": "05-clients.md",
+    "text": "The Go SDK passes the conformance suite at its levels."
+  },
+  {
+    "id": "ATLAS-GO-002",
+    "file": "05-clients.md",
+    "text": "`atlas-engine` is built for every platform the Python SDK ships, by pure Go cross-compilation (no C compiler), from one Linux machine."
+  },
+  {
+    "id": "ATLAS-MECH-001",
+    "file": "06-7-implementation-patterns.md",
+    "text": "The edge's middleware is declared in one list in the order of 6.7.2, and a test asserts the order."
+  },
+  {
+    "id": "ATLAS-MECH-002",
+    "file": "06-7-implementation-patterns.md",
+    "text": "A request body over 1 MiB is refused with `invalid_request` before step 1 runs."
+  },
+  {
+    "id": "ATLAS-MECH-003",
+    "file": "06-7-implementation-patterns.md",
+    "text": "Every pipeline step is a named span with its own duration metric, and every refused call's audit record names the step that refused it."
+  },
+  {
+    "id": "ATLAS-MECH-004",
+    "file": "06-7-implementation-patterns.md",
+    "text": "No service imports `kit/jwt`, `kit/limit` or `kit/idem`, and only adapters import `kit/retry` (the layer check)."
+  },
+  {
+    "id": "ATLAS-MECH-005",
+    "file": "06-7-implementation-patterns.md",
+    "text": "The gateway refuses to start without an issuer; a token with `alg: none`, an unlisted algorithm, an unknown `crit` header or no `kid` is `unauthenticated`; the principal is the token's `oid`."
+  },
+  {
+    "id": "ATLAS-MECH-006",
+    "file": "06-7-implementation-patterns.md",
+    "text": "Of 1,000 calls to a dependency with half failing, retries never exceed one in ten calls in any minute; a caller's fault (`invalid_request`, `not_found`) never counts toward a breaker."
+  },
+  {
+    "id": "ATLAS-MECH-007",
+    "file": "06-7-implementation-patterns.md",
+    "text": "A caller asking for another principal's operation gets `not_found`; a panic in an operation's work becomes its problem `internal`, and the process lives."
+  },
+  {
+    "id": "ATLAS-MECH-008",
+    "file": "06-7-implementation-patterns.md",
+    "text": "Two requests differing only in member order or whitespace have the same idempotency fingerprint; keys are scoped to the principal and the address."
+  },
+  {
+    "id": "ATLAS-MECH-009",
+    "file": "06-7-implementation-patterns.md",
+    "text": "A cursor used by another principal, with another request, or after an hour is `invalid_request`, target `/cursor`."
+  },
+  {
+    "id": "ATLAS-MECH-010",
+    "file": "06-7-implementation-patterns.md",
+    "text": "After start, the request path never reads profiles, governance, house rules or switches from the store: a store fake that fails every such read leaves every call's answer unchanged."
+  },
+  {
+    "id": "ATLAS-MECH-011",
+    "file": "06-7-implementation-patterns.md",
+    "text": "No result is cached until O60 is decided; a grant change clears every copy's cached grants within 60 seconds."
+  },
+  {
+    "id": "ATLAS-MECH-012",
+    "file": "06-7-implementation-patterns.md",
+    "text": "Every goroutine the gateway starts goes through `kit/conc`'s `Go`, so a panic is recovered and reported (a vet check refuses a bare `go` statement outside `kit`)."
+  },
+  {
+    "id": "ATLAS-MECH-013",
+    "file": "06-7-implementation-patterns.md",
+    "text": "A rate limit is a token bucket on the stored counter: a burst of its size passes, the next call is `limit_exceeded` with `retry_after` equal to the time to one token."
+  },
+  {
+    "id": "ATLAS-MECH-014",
+    "file": "06-7-implementation-patterns.md",
+    "text": "No log line, span or metric of the hermetic suite contains a token, a key, a request body or a query string planted in it."
+  },
+  {
+    "id": "ATLAS-MECH-015",
+    "file": "06-7-implementation-patterns.md",
+    "text": "Every metric's labels come from bounded sets (the address, never the path; the code, never the message), and `/readyz` names each check it ran and its result."
+  },
+  {
+    "id": "ATLAS-MECH-016",
+    "file": "06-7-implementation-patterns.md",
+    "text": "On shutdown, readiness turns false first; requests already running finish within 30 seconds; new ones get `unavailable` with `Retry-After: 2`."
+  },
+  {
+    "id": "ATLAS-MECH-017",
+    "file": "06-7-implementation-patterns.md",
+    "text": "A deployable with two modules of one id, or a module that does not implement its namespace's interface, fails at start, before readiness."
+  },
+  {
+    "id": "ATLAS-MECH-018",
+    "file": "06-7-implementation-patterns.md",
+    "text": "For every pattern P01 to P19, the generator's output builds, its profile passes the lint, and its generated tests run in CI."
+  },
+  {
+    "id": "ATLAS-NODE-001",
+    "file": "05-clients.md",
+    "text": "The Node SDK passes the conformance suite at its levels."
+  },
+  {
+    "id": "ATLAS-NODE-002",
+    "file": "05-clients.md",
+    "text": "A dashboard whose lock declares an extra that cannot run where it is opened renders every other panel."
+  },
+  {
+    "id": "ATLAS-OPERATION-001",
+    "file": "06-1-front-door-and-services.md",
+    "text": "When the replica running an operation is killed, within one minute another replica resumes it, if its work can resume, or ends it `failed` with `unavailable`; no operation stays `running` without a live lease for longer."
+  },
+  {
+    "id": "ATLAS-OPERATION-002",
+    "file": "06-1-front-door-and-services.md",
+    "text": "An operation ended by a takeover releases its idempotency key: repeating its start with the same key starts a new operation."
+  },
+  {
+    "id": "ATLAS-OPERATION-003",
+    "file": "06-1-front-door-and-services.md",
+    "text": "Before a taken-over operation is ended, its upstream work is cancelled by its tag (a Snowflake query by `QUERY_TAG`), so nothing it started keeps running."
+  },
+  {
+    "id": "ATLAS-PACKAGES-001",
+    "file": "06-5-packages.md",
+    "text": "The layer check passes for every package of the gateway module."
+  },
+  {
+    "id": "ATLAS-PACKAGES-002",
+    "file": "06-5-packages.md",
+    "text": "Every implementation of a port passes that port's suite in `porttest`."
+  },
+  {
+    "id": "ATLAS-PACKAGES-003",
+    "file": "06-5-packages.md",
+    "text": "The gateway, the conformance gateway, the Go SDK, the CLI and the Python SDK's engine use `sdk/go/protocol` for every protocol rule; nothing in Go implements one a second time."
+  },
+  {
+    "id": "ATLAS-PACKAGES-004",
+    "file": "06-5-packages.md",
+    "text": "`go mod tidy` changes nothing in any module (what is declared is exactly what is imported)."
+  },
+  {
+    "id": "ATLAS-PACKAGES-005",
+    "file": "06-5-packages.md",
+    "text": "Each deployable's image holds its one binary, the CA certificates and nothing else."
+  },
+  {
+    "id": "ATLAS-PACKAGES-006",
+    "file": "06-5-packages.md",
+    "text": "Every module a deployable registers implements its namespace's interface, checked at start and in CI; two modules with one id fail at start."
+  },
+  {
+    "id": "ATLAS-PACKAGES-007",
+    "file": "06-5-packages.md",
+    "text": "A module failing `Provision` or `Validate` cleans up every module of its generation already provisioned, and the generation serving before keeps serving (or, at start, the deployable never becomes ready)."
+  },
+  {
+    "id": "ATLAS-PACKAGES-008",
+    "file": "06-5-packages.md",
+    "text": "No package of the gateway registers anything from an `init` function (a vet check)."
+  },
+  {
+    "id": "ATLAS-PACKAGES-009",
+    "file": "06-5-packages.md",
+    "text": "A service's `StateHandle` refuses every key outside its own domain, and no service imports another domain's service or reaches its containers."
+  },
+  {
+    "id": "ATLAS-PRINCIPLES-001",
+    "file": "06-6-principles.md",
+    "text": "Every service, before it is admitted beyond `local`, and every profile, before it becomes `stable`, has the review of 6.6.3 recorded with each question answered yes, or answered no with the decision in §8 that allows it (checked by review)."
+  },
+  {
+    "id": "ATLAS-PRINCIPLES-002",
+    "file": "06-6-principles.md",
+    "text": "Every principle in 6.6.1 names at least one requirement that a test checks (checked by `make requirements`)."
+  },
+  {
+    "id": "ATLAS-PROFILE-001",
+    "file": "03-contracts.md",
+    "text": "`atlas.describe` returns a capability's full profile, by `id@vN` or by fingerprint, with its governance for the caller and its availability."
+  },
+  {
+    "id": "ATLAS-PROFILE-002",
+    "file": "03-contracts.md",
+    "text": "The gateway and every client compute the same fingerprint for the same profile (a conformance test with fixed profiles)."
+  },
+  {
+    "id": "ATLAS-PROFILE-003",
+    "file": "03-contracts.md",
+    "text": "The catalogue snapshot matches the profiles the gateway serves at the same commit; the gate fails otherwise."
+  },
+  {
+    "id": "ATLAS-PROFILE-004",
+    "file": "03-contracts.md",
+    "text": "A change to a limit, a grant or a service's health leaves every fingerprint unchanged."
+  },
+  {
+    "id": "ATLAS-PROFILE-005",
+    "file": "03-contracts.md",
+    "text": "Every interaction declares a deadline maximum, and every capability declares its errors."
+  },
+  {
+    "id": "ATLAS-PROTOCOL-001",
+    "file": "04-plugging-in.md",
+    "text": "Every failure on every binding is a problem with a registered `code`, the `request_id` and a `next` step."
+  },
+  {
+    "id": "ATLAS-PROTOCOL-002",
+    "file": "04-plugging-in.md",
+    "text": "Every result names its writer profile's fingerprint and the schema of what it returned."
+  },
+  {
+    "id": "ATLAS-PROTOCOL-003",
+    "file": "04-plugging-in.md",
+    "text": "Work past its deadline stops in every downstream service, and a cancelled call is cancelled downstream."
+  },
+  {
+    "id": "ATLAS-PROTOCOL-004",
+    "file": "04-plugging-in.md",
+    "text": "Every long-running interaction returns an `atlas.operation`, which can be polled, watched and cancelled."
+  },
+  {
+    "id": "ATLAS-PROTOCOL-005",
+    "file": "04-plugging-in.md",
+    "text": "A problem marked `retryable` is never returned for a request that changed something and cannot be repeated safely; every problem's `Atlas-Error-Code` header equals its `code`."
+  },
+  {
+    "id": "ATLAS-PROTOCOL-006",
+    "file": "04-plugging-in.md",
+    "text": "No downstream service works past the caller's deadline (a test with a two-second deadline on a ten-second query)."
+  },
+  {
+    "id": "ATLAS-PY-001",
+    "file": "05-clients.md",
+    "text": "The Python SDK passes the conformance suite at its levels, through its runner driving the face."
+  },
+  {
+    "id": "ATLAS-PY-002",
+    "file": "05-clients.md",
+    "text": "`read_as` returns every column with the type its profile declares (no decimal becomes a float)."
+  },
+  {
+    "id": "ATLAS-PY-003",
+    "file": "05-clients.md",
+    "text": "A pipeline task calls Atlas with its workload's token and never with a person's."
+  },
+  {
+    "id": "ATLAS-PY-004",
+    "file": "05-clients.md",
+    "text": "A process forked after its engine started gets an engine of its own on its first call, and no call hangs, in `fork`, `spawn` and `forkserver` pools, Celery's prefork pool, Airflow's executors and gunicorn with `--preload`."
+  },
+  {
+    "id": "ATLAS-PY-005",
+    "file": "05-clients.md",
+    "text": "Ctrl+C, a deadline or an `asyncio` cancellation ends a call within one second, and the engine stops its work."
+  },
+  {
+    "id": "ATLAS-PY-006",
+    "file": "05-clients.md",
+    "text": "The wheel installs and passes the vectors on Python 3.11 to 3.14 on every platform it is built for, with no Go and no compiler present."
+  },
+  {
+    "id": "ATLAS-PY-007",
+    "file": "05-clients.md",
+    "text": "No engine process outlives the Python process that started it."
+  },
+  {
+    "id": "ATLAS-REACH-001",
+    "file": "06-3-reaching-systems.md",
+    "text": "Every credential a handover carries is within rule 1, or is a listed exception."
+  },
+  {
+    "id": "ATLAS-REACH-002",
+    "file": "06-3-reaching-systems.md",
+    "text": "Every kind of credential that leaves the gateway has an escalation test: used on another object, for another right, after it expires, after a revoke (once the stated bound has passed) and by another person, it fails every time."
+  },
+  {
+    "id": "ATLAS-REACH-003",
+    "file": "06-3-reaching-systems.md",
+    "text": "No token obtained by OBO appears in any answer, log or trace."
+  },
+  {
+    "id": "ATLAS-REACH-004",
+    "file": "06-3-reaching-systems.md",
+    "text": "A listed exception blocks release beyond Development until it is closed."
+  },
+  {
+    "id": "ATLAS-RECONCILE-001",
+    "file": "06-7-implementation-patterns.md",
+    "text": "A second sync of a converged key writes nothing, inside or outside the gateway (a counting fake)."
+  },
+  {
+    "id": "ATLAS-RECONCILE-002",
+    "file": "06-7-implementation-patterns.md",
+    "text": "With the event that should wake it dropped, every controller converges within one resync period."
+  },
+  {
+    "id": "ATLAS-RECONCILE-003",
+    "file": "06-7-implementation-patterns.md",
+    "text": "A sync that fails is retried with growing delay and never in a tight loop; one failing key never delays another."
+  },
+  {
+    "id": "ATLAS-RECONCILE-004",
+    "file": "06-7-implementation-patterns.md",
+    "text": "Deleting a resource whose controller made something outside leaves nothing behind once it is gone; while cleanup fails it stays `deleting`."
+  },
+  {
+    "id": "ATLAS-RECONCILE-005",
+    "file": "06-7-implementation-patterns.md",
+    "text": "A write of desired fields never changes `status`, and a controller's status write never changes desired fields or the ETag."
+  },
+  {
+    "id": "ATLAS-RECONCILE-006",
+    "file": "06-7-implementation-patterns.md",
+    "text": "With two replicas running, each controller syncs on one only; killing that one moves it to the other within 20 seconds."
+  },
+  {
+    "id": "ATLAS-RESOLVE-001",
+    "file": "03-contracts.md",
+    "text": "The gateway and every client resolve every payload by the algorithm above; the golden files pass in each."
+  },
+  {
+    "id": "ATLAS-RESOLVE-002",
+    "file": "03-contracts.md",
+    "text": "A client locked to any earlier profile of `id@vN` reads any later `id@vN` result without an error, unless a field it reads was dropped after its sunset."
+  },
+  {
+    "id": "ATLAS-RESOLVE-003",
+    "file": "03-contracts.md",
+    "text": "A request written under an earlier profile of `id@vN`, sent with its fingerprint, is accepted and means what it meant then."
+  },
+  {
+    "id": "ATLAS-RESOLVE-004",
+    "file": "03-contracts.md",
+    "text": "Resolving a table of one million rows on the client takes time proportional to its columns' size, not to a per-row interpreter (a benchmark in the gates)."
+  },
+  {
+    "id": "ATLAS-RESOURCE-001",
+    "file": "02-3-resources.md",
+    "text": "`update` changes only the fields in its mask, and fails with `412` when the ETag no longer matches."
+  },
+  {
+    "id": "ATLAS-RESOURCE-002",
+    "file": "02-3-resources.md",
+    "text": "A `create` repeated with the same idempotency key returns the first result and creates nothing."
+  },
+  {
+    "id": "ATLAS-RESOURCE-003",
+    "file": "02-3-resources.md",
+    "text": "A resource written through one served version reads back through every other served version, converted by the declared lenses; a conformance test round-trips each pair."
+  },
+  {
+    "id": "ATLAS-RESOURCE-004",
+    "file": "02-3-resources.md",
+    "text": "Every resource record the gateway sends validates against `resource.schema.json`, and its profile's record schema declares the envelope exactly."
+  },
+  {
+    "id": "ATLAS-RESOURCE-005",
+    "file": "02-3-resources.md",
+    "text": "A `create` or `update` that sets `metadata` (other than `labels`) or `status` changes neither; a field mask naming them is `invalid_request`."
+  },
+  {
+    "id": "ATLAS-RESOURCE-006",
+    "file": "02-3-resources.md",
+    "text": "`metadata.generation` and the ETag move on every change to the record's own fields or labels, and on nothing else."
+  },
+  {
+    "id": "ATLAS-RESOURCE-007",
+    "file": "02-3-resources.md",
+    "text": "A converged resource's `status.observed_generation` reaches its `metadata.generation`, with `ready` true, once its controller has converged it; while it cannot, `ready` is false with a `reason`."
+  },
+  {
+    "id": "ATLAS-SNOWFLAKE-001",
+    "file": "02-2-1-snowflake-data.md",
+    "text": "The same request through every execution a capability offers yields identical records."
+  },
+  {
+    "id": "ATLAS-SNOWFLAKE-002",
+    "file": "02-2-1-snowflake-data.md",
+    "text": "Gateway memory stays flat while streaming a result larger than its memory limit."
+  },
+  {
+    "id": "ATLAS-SNOWFLAKE-003",
+    "file": "02-2-1-snowflake-data.md",
+    "text": "A handoff gives the client nothing that reads anything but its one result."
+  },
+  {
+    "id": "ATLAS-SNOWFLAKE-004",
+    "file": "02-2-1-snowflake-data.md",
+    "text": "No decimal reaches a client as a float unless its profile declares a `number`."
+  },
+  {
+    "id": "ATLAS-SOURCE-001",
+    "file": "06-4-data-sources.md",
+    "text": "A data capability's conformance battery passes against every adapter it can be served by, and its profile's fingerprint is identical under each: a different fingerprint means an engine leaked into the contract."
+  },
+  {
+    "id": "ATLAS-TYPES-001",
+    "file": "03-contracts.md",
+    "text": "Every schema in every served profile validates as JSON Schema 2020-12 and uses only the vocabularies in 3.2.8; the gate refuses one that does not."
+  },
+  {
+    "id": "ATLAS-TYPES-002",
+    "file": "03-contracts.md",
+    "text": "A table result's Arrow schema and JSON Schema describe the same columns, by the mapping in 3.2.2."
+  },
+  {
+    "id": "ATLAS-TYPES-003",
+    "file": "03-contracts.md",
+    "text": "Every client validates a request against its schema before sending it."
+  },
+  {
+    "id": "ATLAS-VENDOR-001",
+    "file": "02-2-2-vendor-api-data.md",
+    "text": "A change in a vendor's response that the service's mapping absorbs changes no fingerprint."
+  },
+  {
+    "id": "ATLAS-VENDOR-002",
+    "file": "02-2-2-vendor-api-data.md",
+    "text": "Drift in an `upstream` capability's observed schema is reported to its owner within a day."
+  },
+  {
+    "id": "ATLAS-VERSION-001",
+    "file": "03-contracts.md",
+    "text": "The gate classifies every profile change by 3.3.3 to 3.3.7 and fails a breaking change within a version."
+  },
+  {
+    "id": "ATLAS-VERSION-002",
+    "file": "03-contracts.md",
+    "text": "A deprecated element returns `Deprecation` and `Sunset` on every call that uses it, and every client surfaces a warning."
+  },
+  {
+    "id": "ATLAS-VERSION-003",
+    "file": "03-contracts.md",
+    "text": "At most two versions of a capability are live."
+  },
+  {
+    "id": "ATLAS-VERSION-004",
+    "file": "03-contracts.md",
+    "text": "The number of client releases caused by contract changes is reported for every release, and is zero."
+  },
+  {
+    "id": "ATLAS-VERSION-005",
+    "file": "03-contracts.md",
+    "text": "A client that declares no features is served correctly by the gateway (a conformance test)."
+  },
+  {
+    "id": "ATLAS-VERSION-006",
+    "file": "03-contracts.md",
+    "text": "Each worked example in this section is a conformance test."
+  },
+  {
+    "id": "ATLAS-VERSION-007",
+    "file": "03-contracts.md",
+    "text": "A service whose profile breaks a profile the gateway already serves is refused at registration, with the field and the rule named (for example `request property 'pool' became required: declare @v2`)."
+  },
+  {
+    "id": "ATLAS-VERSION-008",
+    "file": "03-contracts.md",
+    "text": "A change to governance never changes a fingerprint."
+  },
+  {
+    "id": "ATLAS-VERSION-009",
+    "file": "03-contracts.md",
+    "text": "A new capability that a client at the gateway's `minimum_protocol` could not call is refused at registration, naming what it needs."
+  },
+  {
+    "id": "ATLAS-VERSION-010",
+    "file": "03-contracts.md",
+    "text": "Gateway release N−1, run against a store written by release N, reads and updates every stored record (resources, operations, idempotency records, counters, snapshots) without losing a field (`make evolution`)."
+  },
+  {
+    "id": "ATLAS-VISION-001",
+    "file": "00-vision.md",
+    "text": "Every role journey (below) is completed by an agent using only the CLI and SDKs, in every release."
+  },
+  {
+    "id": "ATLAS-VISION-002",
+    "file": "00-vision.md",
+    "text": "Every capability's profile passes the agent-readiness check: a summary, a meaning and unit for every field, at least one example, and a next step for every problem it declares."
+  },
+  {
+    "id": "ATLAS-VISION-003",
+    "file": "00-vision.md",
+    "text": "A role journey run twice calls the same capabilities, in the same order."
+  },
+  {
+    "id": "ATLAS-VISION-004",
+    "file": "00-vision.md",
+    "text": "An artefact an agent built (a dashboard, a model, a job, a tool) pins its addresses and profiles in a lock, and makes no discovery call when it runs."
+  }
+]

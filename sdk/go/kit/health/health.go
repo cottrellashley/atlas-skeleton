@@ -19,6 +19,7 @@ package health
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -131,7 +132,9 @@ func Handler(name string, log *slog.Logger, checks ...Check) http.Handler {
 		w.Header().Set("Cache-Control", "no-store")
 		if len(failed) > 0 {
 			log.WarnContext(r.Context(), "health check failed", "probe", name, "failed", failed, "detail", detailed.String())
-			http.Error(w, report.String()+name+" check failed", http.StatusServiceUnavailable)
+			// ATLAS: written directly, not with http.Error: one error path, checked by atlasvet.
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, _ = io.WriteString(w, report.String()+name+" check failed\n")
 			return
 		}
 		if _, verbose := r.URL.Query()["verbose"]; !verbose {

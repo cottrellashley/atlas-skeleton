@@ -2,10 +2,7 @@ module github.com/jhgonline/fi-app-atlas/sdk/go
 
 go 1.25.0
 
-require (
-	github.com/BurntSushi/toml v1.6.0
-	github.com/apache/arrow-go/v18 v18.8.0
-)
+require github.com/apache/arrow-go/v18 v18.8.0
 
 require (
 	github.com/goccy/go-json v0.10.6 // indirect

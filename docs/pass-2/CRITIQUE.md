@@ -1,6 +1,6 @@
 # Pass 1, criticised
 
-This reviews pass 1 against the rewritten spec (`atlas-spec/`, 2026-10-31: 230 requirements) and the practices of `cloud-gateway-patterns-go`. Pass 1 proved the pattern in the hermetic setting: one front door, the Go client wrapped for Python, schema evolution behind a lock, streamed rows equal to handed-off rows. It is not the product.
+This reviews pass 1 against the rewritten spec (`atlas-spec/`, 2026-10-31: 229 requirements) and the practices of `cloud-gateway-patterns-go`. Pass 1 proved the pattern in the hermetic setting: one front door, the Go client wrapped for Python, schema evolution behind a lock, streamed rows equal to handed-off rows. It is not the product.
 
 Severity is what the defect would cost in production:
 
@@ -61,7 +61,7 @@ Severity is what the defect would cost in production:
 | # | Severity | Defect | Fix |
 |---|---|---|---|
 | 34 | Major | There are no load, chaos or fault-injection tests, and no evolution (N−1) test. | `tools/load`, a fault-injection row per dependency, `make evolution` |
-| 35 | Major | There's no requirement traceability: no way to show that each of the 230 requirements is tested. | `make requirements`: every ATLAS- and AP- id mapped to a test, or marked as checked by review |
+| 35 | Major | There's no requirement traceability: no way to show that each of the 229 requirements is tested. | `make requirements`: every ATLAS- and AP- id mapped to a test, or marked as checked by review |
 | 36 | Minor | There's no `AGENTS.md`, decision records, generator or review checklist answers. | The paved road: `AGENTS.md`, `cmd/atlas-new`, review records per service |
 
 ## What survives

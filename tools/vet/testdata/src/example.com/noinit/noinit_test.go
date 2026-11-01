@@ -1,0 +1,3 @@
+package noinit
+
+func init() {}

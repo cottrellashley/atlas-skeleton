@@ -1,0 +1,48 @@
+# sdk/go's layers, which tools/layercheck enforces (§6.5.9).
+#
+#   - A package imports only packages in its own layer or a lower one, and
+#     only the third-party modules its rules allow.
+#   - Paths are relative to the repository module path. A path ending in /...
+#     covers everything under it.
+#   - When several paths match a package, the most specific one decides its
+#     layer.
+
+[layers]
+# The protocol, the kit and the chunk codec (§6.5.3): shared with the gateway
+# and every Go client.
+0 = ["sdk/go/protocol/...", "sdk/go/snowarrow/...", "sdk/go/kit/...", "sdk/go/internal/..."]
+# The Go client: package atlas, at the module's root (§5.4).
+1 = ["sdk/go"]
+# Built on the client: the engine the Python SDK runs, and the conformance gateway.
+2 = ["sdk/go/engine/...", "sdk/go/conformance/..."]
+3 = ["sdk/go/cmd/..."]
+
+[[forbid]]
+from = "sdk/go/protocol/..."
+imports = ["sdk/go/kit/...", "sdk/go/snowarrow/..."]
+why = "everything depends on the protocol, so it imports nothing of ours (§6.5.3)"
+
+[[forbid]]
+from = "sdk/go/kit/..."
+imports = ["sdk/go/snowarrow/..."]
+why = "the kit holds mechanics and no Atlas decision (§6.7 rule 2)"
+
+[[external]]
+from = "sdk/go/protocol/..."
+allow = ["github.com/apache/arrow-go/v18/..."]
+why = "the protocol depends on the standard library and Apache Arrow only (§6.5.3)"
+
+[[external]]
+from = "sdk/go/snowarrow/..."
+allow = ["github.com/apache/arrow-go/v18/..."]
+why = "the chunk codec depends on Apache Arrow only"
+
+[[external]]
+from = "sdk/go/kit/..."
+allow = []
+why = "the kit imports only sdk/go/protocol and the standard library (§6.7 rule 2)"
+
+[[external]]
+from = "sdk/go/internal/..."
+allow = []
+why = "test helpers: the standard library only"
