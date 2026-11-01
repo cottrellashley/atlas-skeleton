@@ -7,6 +7,8 @@
 - **C3, in part:** R3-09 (boolean items), R3-10 (ambiguous lenses refused, A-202), R3-11 (nested result renames breaking) and R3-12 (effective lifecycle in discovery) are fixed and tested. Still to do: R3-13 (Python Arrow from the reader schema), R3-14 (the Go client checks the Arrow physical schema; the design is to check it in `arrowschema`, against `Derive`'s fields and `atlas:profile`), and C3's cross-client exit matrix.
 - **Not started:** C4 (Gate A), C5 (Gate B), C6 (packaging). **Neither gate has been run.**
 
+**Lessons and rules for the next session:** [LESSONS.md](LESSONS.md).
+
 **For Ashley to decide or provide:**
 - A review of the proposed protocol amendment A-200 (`x-atlas-scope`, the dimension registry, whoami's `scope`), with the references owner.
 - The company's first integrations.
