@@ -2,10 +2,13 @@ package ports_test
 
 import (
 	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
 )
 
 // R134, R040, 06-7 §6.7.10: a policy is read strictly. A member it does not
@@ -30,7 +33,7 @@ func TestR134APolicyIsReadStrictly(t *testing.T) {
 		{"a deny with no subject", `{"revision": "r1", "denies": [{"id": "d", "capabilities": ["a.b@v1"], "reason": "No."}]}`, "denies[0]: names its subject"},
 		{"a deny that says nothing to its subject", `{"revision": "r1", "denies": [{"id": "d", "subject": "dave", "capabilities": ["a.b@v1"]}]}`, "denies[0]: gives its reason"},
 		{"a deny with no id", `{"revision": "r1", "denies": [{"subject": "dave", "capabilities": ["a.b@v1"], "reason": "No."}]}`, "denies[0]: has an id"},
-		{"a scope in no dimension", `{"revision": "r1", "scopes": {"hy": {"portfolios": ["147HYC"]}}}`, `"portfolios" is not a dimension`},
+		{"a scope in a dimension that is no name", `{"revision": "r1", "scopes": {"hy": {"Portfolios": ["147HYC"]}}}`, `"Portfolios" is not a dimension's name`},
 		{"a scope with an empty value", `{"revision": "r1", "scopes": {"hy": {"portfolio": [""]}}}`, `scopes["hy"]["portfolio"]`},
 		{"a limit that limits nothing", `{"revision": "r1", "limits": [{"subject": "*", "capability": "a.*"}]}`, "limits[0]: sets per_minute"},
 		{"a negative limit", `{"revision": "r1", "limits": [{"subject": "*", "capability": "a.*", "max_rows": -1}]}`, "limits[0]: per_minute"},
@@ -98,22 +101,36 @@ func TestTheFormsAPolicyMayTake(t *testing.T) {
 	}
 }
 
-// R071: the dimensions are the protocol's two code types, fixed: a
-// PortfolioCode names a portfolio and an IndexCode an index (§9.2.3), and
-// no other logical type is a dimension.
-func TestR071DimensionsComeFromTheLogicalTypes(t *testing.T) {
-	for logical, want := range map[string]string{"PortfolioCode": "portfolio", "IndexCode": "index"} {
-		if dim, ok := ports.DimensionOf(logical); !ok || dim != want || !ports.IsDimension(want) {
-			t.Fatalf("%s: %q %v", logical, dim, ok)
+// R071, A-200: a schema's dimension is the one its x-atlas-scope names, or
+// the one its protocol code type names: a PortfolioCode names a portfolio
+// and an IndexCode an index (§9.2.3), and no other logical type is one.
+// The protocol's dimensions are those two.
+func TestR071DimensionsComeFromTheSchema(t *testing.T) {
+	of := func(members string) *schema.Schema {
+		v, err := ijson.Parse([]byte(`{"$schema": "https://json-schema.org/draft/2020-12/schema", "$vocabulary": {"https://json-schema.org/draft/2020-12/vocab/core": true, "https://json-schema.org/draft/2020-12/vocab/applicator": true, "https://json-schema.org/draft/2020-12/vocab/validation": true, "https://json-schema.org/draft/2020-12/vocab/meta-data": true, "https://json-schema.org/draft/2020-12/vocab/format-assertion": true, "https://atlas.jhg.com/vocab/2026-10": false}, ` + members + `}`))
+		if err != nil {
+			t.Fatal(err)
+		}
+		s, err := schema.Compile(v, schema.Open)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return s
+	}
+	for members, want := range map[string]string{
+		`"type": "string", "x-atlas-logical": "PortfolioCode"`: "portfolio",
+		`"type": "string", "x-atlas-logical": "IndexCode"`:     "index",
+		`"type": "string", "x-atlas-scope": "workspace"`:       "workspace",
+		`"type": "string", "x-atlas-logical": "Isin"`:          "",
+		`"type": "string"`: "",
+	} {
+		dim, ok := ports.DimensionOf(of(members))
+		if dim != want || ok != (want != "") {
+			t.Errorf("%s: %q %v, want %q", members, dim, ok, want)
 		}
 	}
-	for _, logical := range []string{"Isin", "Money", "Currency", ""} {
-		if dim, ok := ports.DimensionOf(logical); ok {
-			t.Fatalf("%s is no dimension, got %q", logical, dim)
-		}
-	}
-	if ports.IsDimension("portfolios") {
-		t.Fatal("a typo is no dimension")
+	if got := ports.DefaultDimensions().Names(); !slices.Equal(got, []string{"index", "portfolio"}) {
+		t.Fatalf("the protocol's dimensions: %v", got)
 	}
 }
 

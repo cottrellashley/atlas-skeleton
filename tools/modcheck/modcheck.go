@@ -66,22 +66,28 @@ func Modules(root string) ([]Module, error) {
 }
 
 // Check lists every way the repository's modules could reach the private
-// organisation: a requirement of one of its paths without a replace to the
-// directory that holds it, a replace that points anywhere else, and a module
-// that go.work leaves out.
+// organisation, or ask anyone for an in-repo module: a requirement of an
+// in-repo module, or of a private path, without a replace to the directory
+// that holds it, a replace that points anywhere else, and a module that
+// go.work leaves out.
 func Check(root string, mods []Module, work *modfile.WorkFile) []string {
 	var out []string
+	// A module may be outside the organisation (a company's own, HANDOFF.md
+	// C1). Every in-repo module, inside it or not, is reached only through a
+	// replace to its directory, so the go command asks no one for any of
+	// them.
 	byPath := map[string]Module{}
 	for _, m := range mods {
-		if !strings.HasPrefix(m.Path, Private) {
-			out = append(out, fmt.Sprintf("%s: module %s is not under %s", m.Dir, m.Path, Private))
-		}
 		byPath[m.Path] = m
+	}
+	inRepo := func(path string) bool {
+		_, ok := byPath[path]
+		return ok || strings.HasPrefix(path, Private)
 	}
 	for _, m := range mods {
 		replaced := map[string]string{}
 		for _, r := range m.File.Replace {
-			if strings.HasPrefix(r.Old.Path, Private) {
+			if inRepo(r.Old.Path) {
 				replaced[r.Old.Path] = r.New.Path
 				if r.New.Version != "" || !modfile.IsDirectoryPath(r.New.Path) {
 					out = append(out, fmt.Sprintf("%s: replace %s => %s %s: an in-repo module is replaced by its directory, never by a module version", m.Dir, r.Old.Path, r.New.Path, r.New.Version))
@@ -89,7 +95,7 @@ func Check(root string, mods []Module, work *modfile.WorkFile) []string {
 			}
 		}
 		for _, req := range m.File.Require {
-			if !strings.HasPrefix(req.Mod.Path, Private) {
+			if !inRepo(req.Mod.Path) {
 				continue
 			}
 			target, ok := byPath[req.Mod.Path]

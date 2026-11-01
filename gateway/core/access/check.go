@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"maps"
 	"slices"
 	"strings"
 	"sync"
@@ -67,6 +68,18 @@ func Check(p *ports.Policy, cat Catalogue) []string {
 	}
 	for i, r := range p.HouseRules {
 		entries(fmt.Sprintf("house_rules[%d]", i), r.Capabilities, nil, served, cat.Withheld, false, bad)
+	}
+	// Scope is granted only in a dimension the deployment defines (A-200):
+	// one it does not would be granted and never enforced.
+	if cat.Served != nil {
+		dims := cat.Served.Dimensions()
+		for _, subject := range slices.Sorted(maps.Keys(p.Scopes)) {
+			for _, dim := range slices.Sorted(maps.Keys(p.Scopes[subject])) {
+				if !dims.Has(dim) {
+					bad("scopes[%q]: %q is no dimension the deployment defines (it defines %s)", subject, dim, strings.Join(dims.Names(), ", "))
+				}
+			}
+		}
 	}
 	return out
 }

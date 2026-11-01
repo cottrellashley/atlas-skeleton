@@ -344,13 +344,11 @@ func scoped(s *schema.Schema, v ijson.Value, ptr string) [][3]string {
 	if s == nil || v == nil {
 		return nil
 	}
-	if name, _, _, ok := s.Logical(); ok {
-		if dim, isScoped := ports.DimensionOf(name); isScoped {
-			if str, isString := v.(string); isString {
-				return [][3]string{{dim, ptr, str}}
-			}
-			return nil
+	if dim, isScoped := ports.DimensionOf(s); isScoped {
+		if str, isString := v.(string); isString {
+			return [][3]string{{dim, ptr, str}}
 		}
+		return nil
 	}
 	var out [][3]string
 	switch x := v.(type) {

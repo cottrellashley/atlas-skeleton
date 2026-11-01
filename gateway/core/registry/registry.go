@@ -23,6 +23,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"maps"
 	"slices"
 	"sort"
 	"strings"
@@ -138,7 +139,12 @@ type Snapshot struct {
 	byPinned   map[string]*Capability
 	byExact    map[string]*profile.Profile
 	byPath     map[string]Route
+	dims       *ports.Dimensions
 }
+
+// Dimensions are the deployment's access dimensions, which every scoped
+// schema the snapshot serves names (A-200).
+func (s *Snapshot) Dimensions() *ports.Dimensions { return s.dims }
 
 // Capabilities are every admitted capability, by pinned id.
 func (s *Snapshot) Capabilities() []*Capability { return slices.Clone(s.caps) }
@@ -161,14 +167,22 @@ func (s *Snapshot) Has(p grammar.Pinned) bool { return s.byPinned[p.String()] !=
 
 // Registry holds the current snapshot.
 type Registry struct {
-	mu  sync.Mutex // one registration at a time
-	cur atomic.Pointer[Snapshot]
+	mu   sync.Mutex // one registration at a time
+	cur  atomic.Pointer[Snapshot]
+	dims *ports.Dimensions
 }
 
-// New is an empty registry.
-func New() *Registry {
-	r := &Registry{}
-	r.cur.Store(build(0, nil))
+// New is an empty registry of the protocol's dimensions alone.
+func New() *Registry { return NewWith(ports.DefaultDimensions()) }
+
+// NewWith is an empty registry of a deployment's dimensions: every scoped
+// schema a capability registers must name one of them (A-200).
+func NewWith(dims *ports.Dimensions) *Registry {
+	if dims == nil {
+		dims = ports.DefaultDimensions()
+	}
+	r := &Registry{dims: dims}
+	r.cur.Store(build(0, nil, dims))
 	return r
 }
 
@@ -225,6 +239,12 @@ func (r *Registry) Register(entries ...Entry) error {
 					ok = false
 				}
 			}
+			for _, name := range slices.Sorted(maps.Keys(p.Schemas)) {
+				for _, why := range r.dims.Check(p.Schemas[name]) {
+					refuse("%s: /schemas/%s%s", p.Exact(), name, why)
+					ok = false
+				}
+			}
 		}
 		if !ok {
 			continue
@@ -249,7 +269,7 @@ func (r *Registry) Register(entries ...Entry) error {
 		byPinned[pinned.String()] = c
 		added = append(added, admitted{c, fresh})
 	}
-	next := build(old.Generation+1, values(byPinned))
+	next := build(old.Generation+1, values(byPinned), r.dims)
 	for _, a := range added {
 		for _, i := range a.fresh {
 			p := a.c.Chain[i]
@@ -355,12 +375,12 @@ func values(m map[string]*Capability) []*Capability {
 	return out
 }
 
-func build(generation int, caps []*Capability) *Snapshot {
+func build(generation int, caps []*Capability, dims *ports.Dimensions) *Snapshot {
 	sort.Slice(caps, func(i, j int) bool {
 		a, b := caps[i].Pinned, caps[j].Pinned
 		return a.ID < b.ID || a.ID == b.ID && a.Version < b.Version
 	})
-	s := &Snapshot{Generation: generation, caps: caps, byPinned: map[string]*Capability{}, byExact: map[string]*profile.Profile{}, byPath: map[string]Route{}}
+	s := &Snapshot{Generation: generation, caps: caps, dims: dims, byPinned: map[string]*Capability{}, byExact: map[string]*profile.Profile{}, byPath: map[string]Route{}}
 	h := sha256.New()
 	for _, c := range caps {
 		s.byPinned[c.Pinned.String()] = c

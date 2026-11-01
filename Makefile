@@ -19,7 +19,7 @@ export GOFLAGS := -tags=minicore_disabled
 
 # Modules with product code, checked by atlasvet as well. Libraries (sqlglot,
 # a port of SQLGlot that keeps its own idioms) and tools get go vet only.
-PRODUCT := sdk/go gateway gateway/local gateway/adapter/snowflake/gosf gateway/cmd/gateway clients/cli
+PRODUCT := sdk/go gateway gateway/local gateway/adapter/snowflake/gosf gateway/cmd/gateway clients/cli extensions
 LIBS := sqlglot tools
 MODULES := $(PRODUCT) $(LIBS)
 BIN := $(CURDIR)/.bin

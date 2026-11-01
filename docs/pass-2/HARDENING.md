@@ -37,6 +37,15 @@ Found by a static review (`docs/source/atlas-spec/review/PEER-REVIEW-2026-11-01.
 | R3-04 | P1 | The audit log drops `Claimed`, `Client`, `Expected`, `Step` and `Source` | **FIXED** (C0) | `TestR3_04EveryFieldOfAFactIsPersisted` (the stored bytes and the decoded fact); `porttest.AuditSink` now compares every member and refuses to run unless its facts set every member of `ports.Fact` |
 | R3-05 | P1 | A pre-aborted Node caller leaves a failing refresh's rejection unhandled | **FIXED** (C0) | `TestR3_05ACancelledCallerLeavesNoUnhandledRejection`: pre-aborted, aborted at start, aborted during a failing refresh, and a second caller that continues |
 
+The review's architecture gaps (HANDOFF.md §4):
+
+| Gap | Status | Proof |
+|---|---|---|
+| B1: only warehouse capabilities have a registration path | **CLOSED** (C1): `ports.Module`, with `views.Module` as one constructor | `TestC1ACompanyModuleScopedByItsOwnDimension`, in a separate company module |
+| B2: access dimensions are fixed in the framework | **CLOSED** (C1), as a proposed amendment (A-200) awaiting the references owner | `TestC1ScopeNamesADefinedDimension`, `TestC1APolicyScopesOnlyDefinedDimensions`, `TestC1APolicyInAnUndefinedDimensionStopsTheStart` |
+| B3: no shared mechanisms for changing, metered or long-running work | Open: C5 | |
+| B4: the proof is narrower than the handoff claims | Open: C4 | |
+
 ## Still open, and who owns it
 
 These need more than this pass had credit for. Each one is the review's or this plan's:

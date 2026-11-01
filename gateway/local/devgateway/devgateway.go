@@ -7,6 +7,7 @@ package devgateway
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -93,8 +94,8 @@ func New(ctx context.Context, opt Options) (*Gateway, error) {
 	return &Gateway{Gateway: g, Handler: mux, Tokens: tokens, engine: engine}, nil
 }
 
-// Close releases the warehouse.
-func (g *Gateway) Close() error { return g.engine.Close() }
+// Close releases the modules and the warehouse.
+func (g *Gateway) Close() error { return errors.Join(g.Gateway.Close(), g.engine.Close()) }
 
 // TokenEndpoint redeems a development refresh token (RFC 6749 §6).
 func TokenEndpoint(refresh map[string]string) http.HandlerFunc {

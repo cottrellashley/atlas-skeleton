@@ -20,6 +20,14 @@ const voc = `"$schema": "https://json-schema.org/draft/2020-12/schema", "$vocabu
 
 // echo is a small, complete data capability.
 func echo(address, extra string) string {
+	defs := ""
+	if strings.Contains(extra, "$defs") {
+		defs = `"$defs": {"number": {"type": "integer", "description": "N."}, "record": {"type": "object", "additionalProperties": false, "properties": {"p": {"type": "string", "x-atlas-logical": "PortfolioCode", "description": "P."}}, "description": "R."}}, `
+	}
+	result := ""
+	if r, ok := strings.CutPrefix(extra, "result:"); ok {
+		extra, result = "", r
+	}
 	return `{
  "identity": {"id": "demo.echo", "version": 1, "title": "Echo", "summary": "Says what it is told.", "domain": "demo", "owner": "QFI"},
  "properties": {"family": "data", "stability": "official", "lifecycle": "stable", "visibility": "listed", "traits": []},
@@ -27,8 +35,8 @@ func echo(address, extra string) string {
   "deadline": {"default": "PT30S", "max": "PT2M"},
   "bindings": [{"protocol": "https", "server": "gateway", "method": "POST", "address": "` + address + `", "encodings": ["json"], "auth": "bearer"}]}},
  "schemas": {
-  "request": {` + voc + `, "type": "object", "additionalProperties": false, "required": ["text"], "properties": {"text": {"type": "string", "description": "What to say."}` + extra + `}},
-  "result": {` + voc + `, "type": "object", "required": ["text"], "properties": {"text": {"type": "string", "description": "What was said."}}}},
+  "request": {` + voc + `, ` + defs + `"type": "object", "additionalProperties": false, "required": ["text"], "properties": {"text": {"type": "string", "description": "What to say."}` + extra + `}},
+  "result": {` + voc + `, "type": "object", "required": ["text"], "properties": {"text": {"type": "string", "description": "What was said."}` + result + `}}},
  "errors": [],
  "meaning": {"grain": "one answer", "source": "the request"},
  "usage": {"when": "You need an echo.", "examples": [{"title": "Hello", "interaction": "fetch", "request": {"text": "hello"}}]},
@@ -112,5 +120,52 @@ func TestRegisterRefusesASharedAddress(t *testing.T) {
 	b := load(t, strings.Replace(echo("/v1/demo/x:fetch", ""), `"id": "demo.echo"`, `"id": "demo.other"`, 1))
 	if err := r.Register(Entry{Profiles: []*profile.Profile{a}, Provider: nobody{}}, Entry{Profiles: []*profile.Profile{b}, Provider: nobody{}}); err == nil || !strings.Contains(err.Error(), "already") {
 		t.Fatalf("got %v", err)
+	}
+}
+
+// C1, A-200: a profile's x-atlas-scope names a dimension the deployment
+// defines, consistently with the protocol's code types, or the whole
+// generation is refused at registration, so nothing scoped is served that
+// the gateway cannot enforce.
+func TestC1ScopeNamesADefinedDimension(t *testing.T) {
+	dims, err := ports.NewDimensions(ports.Dimension{Name: "workspace", Description: "A support workspace."})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range []struct {
+		extra, why string
+	}{
+		{`, "workspace": {"type": "string", "x-atlas-scope": "workspace", "description": "W."}`, ""},
+		{`, "desk": {"type": "string", "x-atlas-scope": "desk", "description": "D."}`, `/schemas/request/properties/desk: x-atlas-scope names "desk", which the deployment does not define (it defines index, portfolio, workspace)`},
+		{`, "book": {"type": "string", "x-atlas-logical": "PortfolioCode", "x-atlas-scope": "workspace", "description": "B."}`, `/schemas/request/properties/book: x-atlas-scope names "workspace", but a PortfolioCode is a code of "portfolio"`},
+		// The review of C1: scope is enforced through properties and items
+		// only, so a scoped value anywhere else is refused, never served
+		// unenforced; and an x-atlas-scope beside a $ref is a string's.
+		{`, "either": {"anyOf": [{"type": "string", "x-atlas-scope": "nosuch", "description": "N."}, {"type": "integer", "description": "I."}], "description": "E."}`, `/schemas/request/properties/either/anyOf/0: a scoped value under anyOf`},
+		{`, "pair": {"type": "array", "prefixItems": [{"type": "string", "x-atlas-scope": "workspace", "description": "W."}], "items": false, "description": "P."}`, `/schemas/request/properties/pair/prefixItems/0: a scoped value under prefixItems`},
+		{`result:, "map": {"type": "object", "additionalProperties": {"type": "string", "x-atlas-logical": "PortfolioCode", "description": "P."}, "description": "M."}`, `/schemas/result/properties/map/additionalProperties: a scoped value under additionalProperties`},
+		{`, "n": {"$ref": "#/$defs/number", "x-atlas-scope": "workspace", "description": "N."}`, `/schemas/request/properties/n: x-atlas-scope stands only on a string`},
+		{`, "o": {"$ref": "#/$defs/record", "x-atlas-scope": "workspace", "description": "O."}`, `/schemas/request/properties/o: x-atlas-scope stands only on a string`},
+	} {
+		r := NewWith(dims)
+		err := r.Register(Entry{Profiles: []*profile.Profile{load(t, echo("/v1/demo/demo.echo@v1:fetch", c.extra))}, Provider: nobody{}})
+		switch {
+		case c.why == "" && err != nil:
+			t.Errorf("%s: %v", c.extra, err)
+		case c.why != "" && (err == nil || !strings.Contains(err.Error(), c.why)):
+			t.Errorf("%s: %v, want %q", c.extra, err, c.why)
+		}
+		if r.Snapshot().Dimensions() != dims {
+			t.Error("the snapshot does not carry the registry's dimensions")
+		}
+	}
+	if err := New().Register(Entry{Profiles: []*profile.Profile{load(t, echo("/v1/demo/demo.echo@v1:fetch", `, "workspace": {"type": "string", "x-atlas-scope": "workspace", "description": "W."}`))}, Provider: nobody{}}); err == nil {
+		t.Error("a registry of the protocol's dimensions alone admitted a workspace")
+	}
+	if _, err := ports.NewDimensions(ports.Dimension{Name: "portfolio", Description: "Again."}); err == nil {
+		t.Error("the protocol's own dimension was defined again")
+	}
+	if _, err := ports.NewDimensions(ports.Dimension{Name: "Desk", Description: "D."}); err == nil {
+		t.Error("a dimension that is no name was defined")
 	}
 }

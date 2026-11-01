@@ -14,6 +14,7 @@ type Audit struct {
 	facts   []ports.Fact
 	err     error
 	stalled bool
+	changed chan struct{} // closed, and replaced, when a fact is kept
 }
 
 // Record keeps the fact, unless the sink was told to fail. A stalled sink
@@ -36,7 +37,33 @@ func (a *Audit) Record(ctx context.Context, f ports.Fact) error {
 		return a.err
 	}
 	a.facts = append(a.facts, f)
+	if a.changed != nil {
+		close(a.changed)
+		a.changed = nil
+	}
 	return nil
+}
+
+// Await is the facts of one call once it has at least n, or ctx's error:
+// a settlement is recorded after its call's answer is sent, so a test that
+// reads it waits here, never by sleeping.
+func (a *Audit) Await(ctx context.Context, requestID string, n int) ([]ports.Fact, error) {
+	for {
+		a.mu.Lock()
+		if a.changed == nil {
+			a.changed = make(chan struct{})
+		}
+		changed := a.changed
+		a.mu.Unlock()
+		if facts := a.Of(requestID); len(facts) >= n {
+			return facts, nil
+		}
+		select {
+		case <-changed:
+		case <-ctx.Done():
+			return a.Of(requestID), ctx.Err()
+		}
+	}
 }
 
 // Fail makes every Record fail with err (nil heals it).

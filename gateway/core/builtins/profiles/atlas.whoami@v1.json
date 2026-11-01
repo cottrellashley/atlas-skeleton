@@ -65,7 +65,84 @@
     "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
     "https://atlas.jhg.com/vocab/2026-10": false
    },
-   "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/whoami_result"
+   "type": "object",
+   "required": [
+    "principal",
+    "name",
+    "kind",
+    "roles",
+    "environment",
+    "available_domains",
+    "house_rules"
+   ],
+   "properties": {
+    "principal": {
+     "type": "string",
+     "description": "The caller's Entra object id.",
+     "x-atlas-logical": "Principal"
+    },
+    "name": {
+     "type": "string",
+     "description": "The caller's name."
+    },
+    "kind": {
+     "type": "string",
+     "enum": [
+      "person",
+      "workload",
+      "UNKNOWN"
+     ],
+     "x-atlas-enum": [
+      {
+       "value": "person"
+      },
+      {
+       "value": "workload"
+      },
+      {
+       "value": "UNKNOWN",
+       "description": "A value this reader does not know (§9.5.5)."
+      }
+     ],
+     "description": "Who the caller is."
+    },
+    "roles": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "description": "The roles the caller holds."
+    },
+    "environment": {
+     "type": "string",
+     "pattern": "^[a-z](-?[a-z0-9])*$",
+     "description": "The environment."
+    },
+    "available_domains": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "pattern": "^[a-z](-?[a-z0-9])*$"
+     },
+     "description": "The domains with something available to the caller."
+    },
+    "house_rules": {
+     "$ref": "https://atlas.jhg.com/protocol/1.0/catalog-page.schema.json#/$defs/house_rules"
+    },
+    "scope": {
+     "type": "object",
+     "description": "The data you may read, by access dimension: every dimension the deployment defines, each with the codes you may read sorted, [\"*\"] when you may read every one, and [] when none. A dimension is never left out, so none reads as unrestricted by its absence.",
+     "additionalProperties": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "description": "A code of the dimension, or * for every one."
+      },
+      "description": "The codes of one dimension you may read."
+     }
+    }
+   },
+   "description": "Who you are, your roles, the environment, the domains with something available to you, the house rules that reach you, and the data you may read. It is the protocol's whoami_result (builtins.schema.json) with scope added: the access-dimension amendment (ASSUMPTIONS.md A-200)."
   }
  },
  "errors": [],

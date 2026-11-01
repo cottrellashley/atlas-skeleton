@@ -1,0 +1,241 @@
+{
+ "identity": {
+  "id": "support.tickets",
+  "version": 1,
+  "title": "Support tickets",
+  "summary": "The support tickets of the workspaces you may read: id, workspace, title, status and when each was opened.",
+  "domain": "support",
+  "owner": "Acme Support Platform"
+ },
+ "properties": {
+  "family": "data",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": [
+   {
+    "name": "Keyed",
+    "critical": false
+   }
+  ]
+ },
+ "interactions": {
+  "fetch": {
+   "effect": "read",
+   "result": "table",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "request",
+   "returns": "result",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT1M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/data/support.tickets@v1:fetch",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "object",
+   "description": "Narrow the tickets by workspace or status.",
+   "additionalProperties": false,
+   "properties": {
+    "workspaces": {
+     "type": [
+      "array",
+      "null"
+     ],
+     "description": "Only these workspaces' tickets; every workspace you may read when null.",
+     "items": {
+      "type": "string",
+      "description": "A workspace's code.",
+      "x-atlas-scope": "workspace",
+      "minLength": 1,
+      "maxLength": 64
+     },
+     "minItems": 1,
+     "maxItems": 50,
+     "uniqueItems": true,
+     "default": null
+    },
+    "status": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "description": "Only tickets in this status; every status when null.",
+     "enum": [
+      "open",
+      "pending",
+      "closed",
+      null
+     ],
+     "x-atlas-enum": [
+      {
+       "value": "open",
+       "description": "Waiting for the support team."
+      },
+      {
+       "value": "pending",
+       "description": "Waiting for the customer."
+      },
+      {
+       "value": "closed",
+       "description": "Resolved."
+      }
+     ],
+     "default": null
+    }
+   }
+  },
+  "result": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "array",
+   "description": "One row per ticket of a workspace you may read, oldest first. Atlas reads the support desk as the gateway's own service identity and narrows every read to your workspaces.",
+   "items": {
+    "type": "object",
+    "description": "A ticket.",
+    "required": [
+     "id",
+     "workspace",
+     "title",
+     "status",
+     "opened_at"
+    ],
+    "properties": {
+     "id": {
+      "type": "string",
+      "description": "The desk's id of the ticket, unique across workspaces.",
+      "x-atlas-key": true
+     },
+     "workspace": {
+      "type": "string",
+      "description": "The workspace the ticket belongs to.",
+      "x-atlas-scope": "workspace"
+     },
+     "title": {
+      "type": "string",
+      "description": "The ticket's title, as the customer wrote it."
+     },
+     "status": {
+      "type": "string",
+      "description": "Where the ticket stands.",
+      "enum": [
+       "open",
+       "pending",
+       "closed",
+       "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+       {
+        "value": "open",
+        "description": "Waiting for the support team."
+       },
+       {
+        "value": "pending",
+        "description": "Waiting for the customer."
+       },
+       {
+        "value": "closed",
+        "description": "Resolved."
+       },
+       {
+        "value": "UNKNOWN",
+        "description": "A status this version of the contract does not name."
+       }
+      ]
+     },
+     "opened_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the ticket was opened, in UTC."
+     }
+    }
+   }
+  }
+ },
+ "errors": [
+  {
+   "code": "desk_unavailable",
+   "status": 503,
+   "retryable": true,
+   "description": "The support desk did not answer, or answered with a failure.",
+   "next": "Wait retry_after seconds, then repeat the call."
+  }
+ ],
+ "meaning": {
+  "grain": "ticket",
+  "keys": [
+   "id"
+  ],
+  "scope": "only the tickets of the workspaces in the caller's data scope",
+  "order": "by opened_at, then id",
+  "source": "the support desk's API, GET /tickets"
+ },
+ "compatibility": {
+  "request": "BACKWARD_TRANSITIVE",
+  "result": "FULL_TRANSITIVE"
+ },
+ "usage": {
+  "when": "You need the support tickets of a workspace you may read, or every workspace you may read.",
+  "when_not": "You need a ticket's conversation: this lists tickets only.",
+  "examples": [
+   {
+    "title": "Every ticket you may read",
+    "interaction": "fetch",
+    "request": {}
+   },
+   {
+    "title": "Open tickets of one workspace",
+    "interaction": "fetch",
+    "request": {
+     "workspaces": [
+      "acme-eu"
+     ],
+     "status": "open"
+    }
+   }
+  ],
+  "related": [],
+  "cost": "One request to the support desk."
+ },
+ "evolution": {
+  "lens": [],
+  "changelog": [
+   {
+    "date": "2026-11-01",
+    "change": "First published."
+   }
+  ]
+ }
+}

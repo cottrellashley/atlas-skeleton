@@ -63,7 +63,7 @@ var keywords = map[string]bool{
 	"title": true, "description": true, "default": true, "deprecated": true, "examples": true, "readOnly": true, "writeOnly": true,
 	"format":          true,
 	"x-atlas-logical": true, "x-atlas-key": true, "x-atlas-aliases": true, "x-atlas-reference": true,
-	"x-atlas-deprecated": true, "x-atlas-unit": true, "x-atlas-enum": true,
+	"x-atlas-deprecated": true, "x-atlas-unit": true, "x-atlas-enum": true, "x-atlas-scope": true,
 }
 
 // refSiblings are what may stand beside $ref: prose, and the Atlas keywords
@@ -72,6 +72,7 @@ var refSiblings = map[string]bool{
 	"$ref": true, "$comment": true, "title": true, "description": true, "default": true, "deprecated": true,
 	"examples": true, "readOnly": true, "writeOnly": true,
 	"x-atlas-key": true, "x-atlas-aliases": true, "x-atlas-reference": true, "x-atlas-deprecated": true,
+	"x-atlas-scope": true,
 }
 
 var jsonTypes = map[string]bool{"boolean": true, "object": true, "array": true, "number": true, "string": true, "integer": true}
@@ -160,6 +161,7 @@ type node struct {
 	readOnly    bool
 	writeOnly   bool
 	reference   string
+	scope       string // x-atlas-scope: the access dimension a value is a code of
 
 	source ijson.Value
 }
@@ -808,6 +810,41 @@ func (c *compiler) properties(n *node) {
 	}
 }
 
+// MaxDimension is the longest name of an access dimension.
+const MaxDimension = 64
+
+// scope reads x-atlas-scope, the access-dimension amendment (A-200): the
+// name of the access dimension a string's value is a code of, which the
+// deployment's registry of dimensions defines and its policy grants. It
+// stands on a string, or beside a $ref, which describes its property.
+func (c *compiler) scope(n *node, v ijson.Value) {
+	s, _ := v.(string)
+	if grammar.PropertyName(s) != nil || len(s) > MaxDimension {
+		c.fail(n.ptr+"/x-atlas-scope", "x-atlas-scope", "x-atlas-scope names an access dimension: a-z first, then a-z, 0-9 and _, at most %d bytes", MaxDimension)
+		return
+	}
+	if n.ref == "" && !n.stringly() {
+		c.fail(n.ptr+"/x-atlas-scope", "x-atlas-scope", "x-atlas-scope stands only on a string, a code of its dimension")
+		return
+	}
+	n.scope = s
+}
+
+// stringly reports whether a schema's values are strings, or null.
+func (n *node) stringly() bool {
+	has := false
+	for _, t := range n.types {
+		switch t {
+		case "string":
+			has = true
+		case "null":
+		default:
+			return false
+		}
+	}
+	return has
+}
+
 func (c *compiler) atlas(n *node, o *ijson.Object) {
 	if v, ok := o.Get("x-atlas-logical"); ok {
 		s, _ := v.(string)
@@ -851,6 +888,9 @@ func (c *compiler) atlas(n *node, o *ijson.Object) {
 	}
 	if v, ok := o.Get("x-atlas-deprecated"); ok {
 		c.deprecation(n, v)
+	}
+	if v, ok := o.Get("x-atlas-scope"); ok {
+		c.scope(n, v)
 	}
 	if v, ok := o.Get("x-atlas-unit"); ok {
 		s, _ := v.(string)

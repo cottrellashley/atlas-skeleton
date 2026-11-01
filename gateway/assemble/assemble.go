@@ -7,6 +7,7 @@
 package assemble
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -20,6 +21,7 @@ import (
 	"github.com/jhgonline/fi-app-atlas/gateway/ports"
 	"github.com/jhgonline/fi-app-atlas/gateway/views"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/clock"
+	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
 )
 
@@ -43,10 +45,18 @@ type Parts struct {
 	Clock      clock.Clock
 	Log        *slog.Logger
 
-	// Domains are the capabilities served; Exclude withholds pinned ids
-	// among them.
+	// Domains are warehouse view-model capabilities, served through
+	// DataSource as one module (views.Module). Modules are every other
+	// integration the deployment registers: a company's providers, each
+	// with its capabilities and its upstream (HANDOFF.md C1). Exclude
+	// withholds pinned ids among them all.
 	Domains []Domain
+	Modules []ports.Module
 	Exclude []string
+	// Dimensions are the access dimensions the deployment defines beyond
+	// the protocol's (A-200): what x-atlas-scope may name and a policy's
+	// scopes may grant. Defining one grants nobody anything.
+	Dimensions []ports.Dimension
 	// CursorKey signs listing cursors, shared by every replica: at least
 	// builtins.MinCursorKey bytes. PreviousCursorKey is the key it replaced,
 	// accepted for the hour its cursors live after a rotation (§6.7.9).
@@ -75,6 +85,7 @@ type Gateway struct {
 	Pipeline *pipeline.Pipeline
 	Edge     *edge.Server
 	parts    Parts
+	modules  []ports.Module
 }
 
 // DefaultClients are what atlas.clients lists when the deployment names
@@ -102,11 +113,44 @@ func New(p Parts) (*Gateway, error) {
 	if p.Log == nil {
 		p.Log = slog.Default()
 	}
-	reg := registry.New()
+	dims, err := ports.NewDimensions(p.Dimensions...)
+	if err != nil {
+		return nil, fmt.Errorf("assemble: %w", err)
+	}
+	reg := registry.NewWith(dims)
 	policy := checkedPolicy(p, reg)
-	var upstreams map[string]int
-	if p.WarehouseConcurrency > 0 {
-		upstreams = map[string]int{warehouse: p.WarehouseConcurrency}
+	var files []views.Files
+	for _, d := range p.Domains {
+		fs, err := d()
+		if err != nil {
+			return nil, err
+		}
+		for _, f := range fs {
+			// Left out before its model is built: what is withheld because
+			// it is not ready never stops the start.
+			if !slices.Contains(p.Exclude, f.Name) {
+				files = append(files, f)
+			}
+		}
+	}
+	modules := slices.Clone(p.Modules)
+	if len(files) > 0 {
+		if p.DataSource == nil {
+			return nil, errors.New("assemble: view-model capabilities need a data source")
+		}
+		m, err := views.Module(views.Warehouse, p.DataSource, views.Options{Clock: p.Clock}, p.WarehouseConcurrency, files...)
+		if err != nil {
+			return nil, err
+		}
+		modules = append([]ports.Module{m}, modules...)
+	}
+	upstreams, err := upstreamsOf(p, modules)
+	if err != nil {
+		return nil, err
+	}
+	more, err := entriesOf(modules, p.Exclude)
+	if err != nil {
+		return nil, err
 	}
 	pipe, err := pipeline.New(pipeline.Options{
 		Environment: p.Environment, Registry: reg, Authenticator: p.Authenticator, Policy: policy, Audit: p.Audit, Clock: p.Clock, Log: p.Log,
@@ -128,85 +172,142 @@ func New(p Parts) (*Gateway, error) {
 	if err != nil {
 		return nil, err
 	}
-	var files []views.Files
-	for _, d := range p.Domains {
-		fs, err := d()
-		if err != nil {
-			return nil, err
-		}
-		for _, f := range fs {
-			if !slices.Contains(p.Exclude, f.Name) {
-				files = append(files, f)
-			}
-		}
-	}
-	more, err := capabilities(p.DataSource, p.Clock, files)
-	if err != nil {
-		return nil, err
-	}
+	// One generation: every module's capabilities with the built-ins, held to
+	// the gate together, before the policy is checked against them.
 	if err := reg.Register(append(entries, more...)...); err != nil {
 		return nil, err
 	}
 	if err := startPolicy(policy); err != nil {
 		return nil, err
 	}
-	g := &Gateway{Registry: reg, Pipeline: pipe, parts: p}
+	g := &Gateway{Registry: reg, Pipeline: pipe, parts: p, modules: modules}
 	if g.Edge, err = edge.Open(edge.Options{Pipeline: pipe, URL: p.URL, SignIn: p.SignIn, Clock: p.Clock, Log: p.Log, Serving: p.Serving}); err != nil {
 		return nil, err
 	}
 	return g, nil
 }
 
-// Add serves more capabilities while the gateway runs (constitution rule 4):
-// the next snapshot holds them, and no client is released to use them.
+// Add serves more view-model capabilities while the gateway runs
+// (constitution rule 4): the next snapshot holds them, and no client is
+// released to use them.
 func (g *Gateway) Add(files ...views.Files) error {
-	entries, err := capabilities(g.parts.DataSource, g.parts.Clock, files)
+	if len(files) == 0 {
+		return nil
+	}
+	if g.parts.DataSource == nil {
+		return errors.New("assemble: view-model capabilities need a data source")
+	}
+	m, err := views.Module(views.Warehouse, g.parts.DataSource, views.Options{Clock: g.parts.Clock}, g.parts.WarehouseConcurrency, files...)
+	if err != nil {
+		return err
+	}
+	entries, err := entriesOf([]ports.Module{m}, nil)
 	if err != nil {
 		return err
 	}
 	return g.Registry.Register(entries...)
 }
 
-// capabilities are view-model capabilities, one provider serving them all.
-// Each is registered with the profiles it replaced within its version, so
-// the gate classifies its change against them and a request written under
-// one is still resolved forward.
-func capabilities(src ports.DataSource, clk clock.Clock, files []views.Files) ([]registry.Entry, error) {
-	if len(files) == 0 {
+// Health is each module's own health, by name: a module without a Health
+// check is absent. A failing module costs its own capabilities, never the
+// gateway's readiness (constitution rule 13).
+func (g *Gateway) Health(ctx context.Context) map[string]error {
+	out := map[string]error{}
+	for _, m := range g.modules {
+		if m.Health != nil {
+			out[m.Name] = m.Health(ctx)
+		}
+	}
+	return out
+}
+
+// Close releases what every module holds.
+func (g *Gateway) Close() error {
+	var errs []error
+	for _, m := range g.modules {
+		if m.Close != nil {
+			if err := m.Close(); err != nil {
+				errs = append(errs, fmt.Errorf("assemble: closing %s: %w", m.Name, err))
+			}
+		}
+	}
+	return errors.Join(errs...)
+}
+
+// upstreamsOf are the bulkheads the deployment's upstreams need: the
+// warehouse's, whenever the deployment sets it, so view-model capabilities
+// added later keep it, and each module's. Two that give one upstream
+// different concurrencies are refused.
+func upstreamsOf(p Parts, modules []ports.Module) (map[string]int, error) {
+	upstreams := map[string]int{}
+	if p.WarehouseConcurrency > 0 {
+		upstreams[views.Warehouse] = p.WarehouseConcurrency
+	}
+	for _, m := range modules {
+		if m.Concurrency < 0 {
+			return nil, fmt.Errorf("assemble: the module %s's concurrency is negative", m.Name)
+		}
+		if m.Concurrency == 0 {
+			continue
+		}
+		upstream := m.Upstream
+		if upstream == "" {
+			upstream = m.Name
+		}
+		if n, set := upstreams[upstream]; set && n != m.Concurrency {
+			return nil, fmt.Errorf("assemble: the upstream %s is given a concurrency of %d and of %d", upstream, n, m.Concurrency)
+		}
+		upstreams[upstream] = m.Concurrency
+	}
+	if len(upstreams) == 0 {
 		return nil, nil
 	}
-	if src == nil {
-		return nil, errors.New("assemble: view-model capabilities need a data source")
-	}
-	var bindings []views.Binding
-	var chains [][]*profile.Profile
-	for _, f := range files {
-		var chain []*profile.Profile
-		for _, doc := range append(slices.Clone(f.Previous), f.Profile) {
-			p, err := registry.Load(doc)
-			if err != nil {
-				return nil, fmt.Errorf("assemble: %s: %w", f.Name, err)
+	return upstreams, nil
+}
+
+// entriesOf are the registry entries of modules, each capability with the
+// profiles it replaced within its version, so the gate classifies its
+// change against them and a request written under one is still resolved
+// forward. A capability excluded by its pinned id is left out. A module
+// with no name, one named twice, or one with capabilities and no provider,
+// is refused.
+func entriesOf(modules []ports.Module, exclude []string) ([]registry.Entry, error) {
+	var entries []registry.Entry
+	names := map[string]bool{}
+	for _, m := range modules {
+		switch {
+		case m.Name == "":
+			return nil, errors.New("assemble: a module has a name")
+		case names[m.Name]:
+			return nil, fmt.Errorf("assemble: two modules are named %q", m.Name)
+		case m.Provider == nil && len(m.Capabilities) > 0:
+			return nil, fmt.Errorf("assemble: the module %s has capabilities and no provider", m.Name)
+		}
+		names[m.Name] = true
+		upstream := m.Upstream
+		if upstream == "" {
+			upstream = m.Name
+		}
+		reach := registry.AsGateway
+		if m.AsCaller {
+			reach = registry.AsCaller
+		}
+		provider := pipeline.Through(upstream, m.Provider)
+		for _, c := range m.Capabilities {
+			var chain []*profile.Profile
+			for _, doc := range append(slices.Clone(c.Previous), c.Profile) {
+				p, err := registry.Load(doc)
+				if err != nil {
+					return nil, fmt.Errorf("assemble: %s: %s: %w", m.Name, c.Name, err)
+				}
+				chain = append(chain, p)
 			}
-			chain = append(chain, p)
+			cur := chain[len(chain)-1]
+			if slices.Contains(exclude, grammar.Pinned{ID: cur.ID, Version: cur.Version}.String()) {
+				continue
+			}
+			entries = append(entries, registry.Entry{Profiles: chain, Provider: provider, Reach: reach})
 		}
-		m, err := views.ParseModel(f.Model)
-		if err != nil {
-			return nil, fmt.Errorf("assemble: %s: %w", f.Name, err)
-		}
-		bindings = append(bindings, views.Binding{Profile: chain[len(chain)-1], Model: m})
-		chains = append(chains, chain)
-	}
-	provider, err := views.Build(src, views.Options{Clock: clk}, bindings...)
-	if err != nil {
-		return nil, err
-	}
-	entries := make([]registry.Entry, len(chains))
-	for i, chain := range chains {
-		entries[i] = registry.Entry{Profiles: chain, Provider: pipeline.Through(warehouse, provider)}
 	}
 	return entries, nil
 }
-
-// warehouse is the upstream every view-model capability reaches, so they
-// share its bulkhead, those added later included (06-7 §6.7.5).
-const warehouse = "warehouse"

@@ -374,10 +374,8 @@ func dimensions(s *schema.Schema) []string {
 		if s == nil || depth > 32 {
 			return
 		}
-		if name, _, _, ok := s.Logical(); ok {
-			if dim, scoped := ports.DimensionOf(name); scoped && !slices.Contains(out, dim) {
-				out = append(out, dim)
-			}
+		if dim, scoped := ports.DimensionOf(s); scoped && !slices.Contains(out, dim) {
+			out = append(out, dim)
 		}
 		visit(s.Items(), depth+1)
 		for _, n := range s.Properties() {

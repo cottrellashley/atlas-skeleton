@@ -2,6 +2,7 @@ package schema
 
 import (
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
@@ -139,6 +140,54 @@ func (s *Schema) Unit() (units.Unit, bool) {
 
 // Key reports whether the property is part of its row's key.
 func (s *Schema) Key() bool { return s.any(func(n *node) bool { return n.key }) }
+
+// Scope is the access dimension the schema's value is a code of, as
+// x-atlas-scope names it, here or along its $ref chain (A-200).
+func (s *Schema) Scope() (string, bool) {
+	if d := s.first(func(n *node) bool { return n.scope != "" }); d != nil {
+		return d.scope, true
+	}
+	return "", false
+}
+
+// Opaque are the subschemas a value reaches other than through properties
+// and items, by the pointer of each from s and the keyword that holds it:
+// anyOf, oneOf, prefixItems, additionalProperties, allOf, if, then, else.
+// What reads a value property by property and item by item (scope, R05)
+// never sees what these hold, so it can refuse what they hold.
+func (s *Schema) Opaque() []Applied {
+	d := s.def()
+	var out []Applied
+	add := func(keyword, ptr string, n *node) {
+		if n != nil {
+			out = append(out, Applied{Keyword: keyword, Pointer: ptr, Schema: wrap(n)})
+		}
+	}
+	for i, n := range d.anyOf {
+		add("anyOf", "/anyOf/"+strconv.Itoa(i), n)
+	}
+	for i, n := range d.oneOf {
+		add("oneOf", "/oneOf/"+strconv.Itoa(i), n)
+	}
+	for i, n := range d.prefix {
+		add("prefixItems", "/prefixItems/"+strconv.Itoa(i), n)
+	}
+	for i, n := range d.allOf {
+		add("allOf", "/allOf/"+strconv.Itoa(i), n)
+	}
+	add("additionalProperties", "/additionalProperties", d.additional)
+	add("if", "/if", d.ifN)
+	add("then", "/then", d.thenN)
+	add("else", "/else", d.elseN)
+	return out
+}
+
+// Applied is a subschema an applicator holds.
+type Applied struct {
+	Keyword string
+	Pointer string
+	Schema  *Schema
+}
 
 // Deprecated reports whether the property is deprecated.
 func (s *Schema) Deprecated() bool { return s.any(func(n *node) bool { return n.deprecated }) }

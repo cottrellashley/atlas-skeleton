@@ -2,6 +2,7 @@ package assemble
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -353,7 +354,9 @@ func TestRequestsAndHeaders(t *testing.T) {
 func TestAuditFacts(t *testing.T) {
 	r := newRig(t)
 	ok := r.call("dev-alice", "/v1/data/portfolio.list@v1:fetch", `{}`)
-	facts := r.audit.Of(ok.header.Get(protocol.HeaderRequestID))
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+	defer cancel()
+	facts, _ := r.audit.Await(ctx, ok.header.Get(protocol.HeaderRequestID), 3)
 	if len(facts) != 3 || facts[0].Kind != ports.Admission || facts[1].Kind != ports.Outcome || facts[1].Rows != 4 || facts[0].RequestDigest == "" || facts[0].PolicyRevision != "dev-2026-10-31.1" {
 		t.Fatalf("facts %+v", facts)
 	}
@@ -404,5 +407,54 @@ func TestACapabilityAddedLater(t *testing.T) {
 	var rows []map[string]any
 	if err := json.Unmarshal(a.body, &rows); err != nil || len(rows) != 2 || rows[0]["as_of"] != "2026-10-29" || rows[1]["positions"] != 4.0 {
 		t.Fatalf("%d %s", a.status, a.body)
+	}
+}
+
+// The review of C1: a capability the deployment excludes is left out
+// before its view model is built or checked against the warehouse, as it
+// was before modules: what is withheld because it is not ready never stops
+// the start.
+func TestC1AnExcludedCapabilityIsNotBuilt(t *testing.T) {
+	broken := func() ([]views.Files, error) {
+		fs, err := portfolio.Capabilities()
+		if err != nil {
+			return nil, err
+		}
+		for i := range fs {
+			if fs[i].Name == "portfolio.holdings-dates@v1" {
+				fs[i].Model = []byte("not a view model")
+			}
+		}
+		return fs, nil
+	}
+	pol, err := fixtures.Policy()
+	if err != nil {
+		t.Fatal(err)
+	}
+	tables, err := fixtures.Harbour()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = New(Parts{
+		Environment: "local", URL: "http://127.0.0.1:1",
+		SignIn:        edge.SignIn{Authority: "http://127.0.0.1:1", ClientID: "atlas-cli", Scopes: []string{"api://atlas/.default"}, TokenEndpoint: "http://127.0.0.1:1/oauth/token"},
+		Authenticator: fakes.NewTokens(clock.System), Policy: fakes.NewPolicy(pol), Audit: &fakes.Audit{}, DataSource: fakes.NewDataSource(tables...),
+		Log:     slog.New(slog.NewTextHandler(io.Discard, nil)),
+		Domains: []Domain{broken, datastatus.Capabilities}, Exclude: []string{"portfolio.holdings-dates@v1"},
+	})
+	if err != nil {
+		t.Fatalf("an excluded capability's model stopped the start: %v", err)
+	}
+}
+
+// The review of C1: the warehouse's bulkhead is the deployment's whether
+// its view-model capabilities come at start or are added later.
+func TestC1TheWarehouseBulkheadIsKeptForLaterCapabilities(t *testing.T) {
+	got, err := upstreamsOf(Parts{WarehouseConcurrency: 3}, nil)
+	if err != nil || got[views.Warehouse] != 3 {
+		t.Fatalf("upstreams %v, %v", got, err)
+	}
+	if _, err := upstreamsOf(Parts{WarehouseConcurrency: 3}, []ports.Module{{Name: "w2", Upstream: views.Warehouse, Concurrency: 5}}); err == nil {
+		t.Fatal("a module gave the warehouse another concurrency")
 	}
 }

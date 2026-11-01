@@ -280,13 +280,11 @@ func walk(s *schema.Schema, v any, ptr string, out *[]Value) {
 	if s == nil || v == nil {
 		return
 	}
-	if name, _, _, ok := s.Logical(); ok {
-		if dim, scoped := ports.DimensionOf(name); scoped {
-			if str, isString := v.(string); isString {
-				*out = append(*out, Value{ptr, dim, str})
-			}
-			return
+	if dim, scoped := ports.DimensionOf(s); scoped {
+		if str, isString := v.(string); isString {
+			*out = append(*out, Value{ptr, dim, str})
 		}
+		return
 	}
 	switch x := v.(type) {
 	case []any:
@@ -334,15 +332,13 @@ func evidence(s *schema.Schema, v any, ptr string, required bool, out *[]Value, 
 	if depth > schema.MaxDepth {
 		return ptr, false
 	}
-	if name, _, _, ok := s.Logical(); ok {
-		if dim, scoped := ports.DimensionOf(name); scoped {
-			str, isString := v.(string)
-			if !isString {
-				return ptr, false
-			}
-			*out = append(*out, Value{ptr, dim, str})
-			return "", true
+	if dim, scoped := ports.DimensionOf(s); scoped {
+		str, isString := v.(string)
+		if !isString {
+			return ptr, false
 		}
+		*out = append(*out, Value{ptr, dim, str})
+		return "", true
 	}
 	switch x := v.(type) {
 	case []any:
@@ -380,10 +376,8 @@ func scopedAt(s *schema.Schema, depth int) bool {
 	if s == nil || depth > schema.MaxDepth {
 		return false
 	}
-	if name, _, _, ok := s.Logical(); ok {
-		if _, is := ports.DimensionOf(name); is {
-			return true
-		}
+	if _, is := ports.DimensionOf(s); is {
+		return true
 	}
 	for _, name := range s.Properties() {
 		if p, ok := s.Property(name); ok && scopedAt(p, depth+1) {
@@ -400,10 +394,8 @@ func dimensionsOf(s *schema.Schema) []string {
 		if s == nil || depth > 32 {
 			return
 		}
-		if name, _, _, ok := s.Logical(); ok {
-			if dim, scoped := ports.DimensionOf(name); scoped && !slices.Contains(dims, dim) {
-				dims = append(dims, dim)
-			}
+		if dim, scoped := ports.DimensionOf(s); scoped && !slices.Contains(dims, dim) {
+			dims = append(dims, dim)
 		}
 		visit(s.Items(), depth+1)
 		for _, n := range s.Properties() {

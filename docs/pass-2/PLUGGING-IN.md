@@ -103,6 +103,50 @@ The development gateway also serves a directory as it changes:
 - `-catalog DIR` adds each new `profiles/` and `views/` pair it finds, with `history/` beside them, with no restart and no client released.
 - `tests/e2e/acceptance.py` adds `portfolio.holdings-dates@v1` this way.
 
+## Add any other integration: a module
+
+A capability that is not a warehouse view (a vendor API, an internal service, a job scheduler) is a `ports.Module`, written in the company's own package or Go module. Nothing in Atlas changes. The worked example is `extensions/support/`: `support.tickets@v1` over a support desk's HTTP API, scoped by Acme's own `workspace` dimension.
+
+```go
+m := ports.Module{
+	Name:         "support-desk",
+	Capabilities: []ports.Capability{{Name: "support.tickets@v1", Profile: profileJSON}},
+	Provider:     provider,      // a ports.Provider: Serve(ctx, *ports.Invocation)
+	Concurrency:  4,             // the desk's bulkhead; Upstream defaults to Name
+	Health:       provider.ping, // the module's own; never the gateway's readiness
+}
+g, err := assemble.New(assemble.Parts{ /* identity, policy, audit, ... */
+	Modules:    []ports.Module{m},
+	Dimensions: []ports.Dimension{{Name: "workspace", Description: "An Acme support workspace, by its code."}},
+})
+```
+
+- **The profile** is written to the handbook's page contract, as any capability's is. It passes the gate when it is registered.
+- **The provider** gets a request that is already validated, normalised and inside the caller's scope. `inv.Scope` holds the caller's scope in each dimension, so the provider can narrow its source's read. The pipeline still holds every row it returns to the contract and to the scope.
+- **Every outbound call** takes the call's context, which carries its deadline. Every answer read is bounded. A failure the profile declares is returned as `protocol.Declared{...}.Problem(detail)`.
+- **Registration is atomic.** Every module's capabilities register with the built-ins as one generation, then the policy is checked against them all. A policy may already name a module's capability.
+- Warehouse view models are one constructor of a module, `views.Module`, which the assembly builds from `Parts.Domains`.
+
+### A company's own access dimension
+
+A property whose values are codes of a company dimension says so with `x-atlas-scope`:
+
+```json
+"workspace": {"type": "string", "description": "The ticket's workspace.", "x-atlas-scope": "workspace"}
+```
+
+The deployment defines the dimension in `Parts.Dimensions`, and its policy grants values of it:
+
+```json
+"scopes": {"eu-agents": {"workspace": ["acme-eu"]}}
+```
+
+- **Defining a dimension grants nobody anything.** A caller with no scope in a dimension can read none of it.
+- **The gateway refuses to start** if a profile names an undefined dimension, or a policy scopes one.
+- **Enforcement is the same as for `portfolio`:** request values outside the scope are refused before the provider runs, a result row without its required scope value is withheld, and `atlas.whoami` lists the caller's scope in every dimension.
+
+This is a proposed amendment to the protocol (`ASSUMPTIONS.md` A-200).
+
 ## Plug in a real system: implement a port, pass its suite
 
 The core needs five things of the world. Each is an interface in `gateway/ports`, and each has a suite in `gateway/porttest` that every implementation runs: the fake, the adapter, and yours.

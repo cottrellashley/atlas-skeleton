@@ -36,6 +36,47 @@ The log of the work on branch `handoff`, made from `pass-2` at `7f876ea`, follow
 
 **Next.** C1.
 
+## C1. Generic providers and company access dimensions (2026-11-01)
+
+**Done.**
+- **Generic registration.** Any provider is a `ports.Module`: its capabilities with their history, its provider, its upstream and concurrency, and whether it reaches its system as the caller. It may add a health check and a close. Warehouse view models are now one constructor of it (`views.Module`). `assemble.Parts` takes `Modules` and `Dimensions`. All modules register with the built-ins as one generation, then the policy is checked against them. Upstream bulkheads come from the modules; the assembly no longer names `warehouse`. `Gateway.Health` gives each module's health and `Gateway.Close` closes them. A module's health never feeds `/readyz` (constitution rule 13).
+- **Company access dimensions** (proposed amendment A-200):
+  - `x-atlas-scope` in the protocol's schema package (`schema.Schema.Scope`);
+  - `ports.DimensionOf(schema)`, read from the schema alone (the annotation, or a protocol code type), and used by the access engine, the pipeline's request and result checks, views and the port suites;
+  - an immutable `ports.Dimensions` registry held by `registry.NewWith` and given to every snapshot;
+  - registration refuses an undefined or inconsistent dimension;
+  - the policy check refuses a scope in an undefined dimension, so the gateway does not start;
+  - `whoami` lists every defined dimension. The references' `whoami_result` has no `scope`, so the built-in profile now declares it inline as part of the amendment, and the pin test admits exactly that one member.
+- **The exit test.** It lives in a separate company module, `extensions/` (`example.com/acme/atlas-extensions`). Its `support` package registers `support.tickets@v1`, served by a provider over a fake HTTP desk (`support/fakedesk`) and scoped by Acme's `workspace` dimension. `TestC1ACompanyModuleScopedByItsOwnDimension` proves:
+  - the standard assembly starts with a policy that already names the capability;
+  - both granted callers discover it, and an ungranted caller does not;
+  - each caller sees only their own workspace, and the provider narrows the desk's read to it;
+  - an out-of-scope request is `not_granted` and never reaches the desk;
+  - whoami shows the workspace scope;
+  - a desk that ignores the filter leaks nothing, because the core's result check holds;
+  - a failing desk is the capability's declared `desk_unavailable`.
+
+  `TestC1APolicyInAnUndefinedDimensionStopsTheStart` proves the start refusal. The company module imports only Atlas's public packages (`ports`, `assemble`, `edge`, `fakes`, `protocol`), and no shared file was edited for it.
+- **`tools/modcheck`** refused any module outside `github.com/jhgonline`, so it refused the company module. It now allows one, and is stricter than before: every in-repo module, private or not, may be required only through a `replace` to its directory. The jhgonline guarantee is unchanged (`TestTheCheckRefuses` has the new cases).
+- **Also fixed:** a flaky `TestAuditFacts`. It read the settlement fact before the settler had written it. `fakes.Audit.Await` now waits on a signal, bounded by a context; the test passed 20 of 20 runs under `-race`.
+
+**The review.** A fresh reviewer probed the C1 diff in a copy of the tree. It confirmed two scope holes and two regressions, all now fixed with tests that failed first:
+1. **Scope under applicators was never read.** An `x-atlas-scope`, or a portfolio or index code, under `anyOf`, `oneOf`, `prefixItems`, `additionalProperties`, `allOf` or `if/then/else` went unread by the scope checks, so an undefined dimension could start and those values went unenforced. Registration now refuses a scoped value in any of them (`schema.Schema.Opaque`, `ports.Dimensions.Check`). Scope is read only through properties and items.
+2. **`$ref` siblings were type-unchecked.** An `x-atlas-scope` beside a `$ref` whose target is not a string was admitted. Annotating an object could even hide a nested portfolio code from the request check. Registration now checks the resolved type.
+3. **Exclude ran too late.** Excluded warehouse capabilities were built and checked against the warehouse before being dropped. They are now left out first (`TestC1AnExcludedCapabilityIsNotBuilt`).
+4. **The warehouse bulkhead could be lost.** Capabilities added later lost it when the gateway started with no domains. `upstreamsOf` now always seeds it (`TestC1TheWarehouseBulkheadIsKeptForLaterCapabilities`).
+
+It also strengthened the exit test. The leak case now asserts the withheld problem, not just the body. A granted caller with no workspace scope gets no rows and the desk is not asked. An ungranted caller's `fetch` is refused. Checked type assertions in the provider, and the development root's `Close` now closes the modules too.
+
+**Evidence level.** Hermetic: fakes for identity, policy and audit, and a fake desk over real HTTP. The prebuilt CLI, Python and Node clients have **not** yet called `support.tickets`; that is Gate A (C4).
+
+**What remains for the gates.**
+- `gateway/cmd/gateway` is a `main` package, so a company cannot add modules to the production root without editing or copying it. C4 extracts it into an importable package under `gateway/cmd/`, which a company root calls with its modules and dimensions.
+- The amendment needs the references owner's agreement: `x-atlas-scope` in `atlas-schema.schema.json`, and `scope` in `builtins.schema.json`'s `whoami_result`.
+- C1's rules also ask for revocation on open streams and nested values in a new dimension. They use the same code path as `portfolio` (`Rows.current`, `access.Evidence`), and are tested for `portfolio` only.
+
+**Next.** C2.
+
 ## Decisions taken
 
 | # | Decision | Why | Recorded in |
@@ -44,3 +85,7 @@ The log of the work on branch `handoff`, made from `pass-2` at `7f876ea`, follow
 | D-1 | Take `docs/source/` by merging `origin/pass-2` into `handoff` | Ashley added it to `pass-2` mid-work; a merge rewrites nothing | This file |
 | D-2 | R3-01: the scope evidence is the scoped values the contract *requires*; an optional scoped member may be absent | An existing test profile has an optional, nullable scoped member, and HANDOFF.md says evidence is refused "where scope applies" | A-195 |
 | D-3 | R3-03: send `scope` with `client_id` | Entra v2 lists both for a refresh; the scopes are the binding's own | A-196 |
+| D-4 | Access dimensions: an `x-atlas-scope` annotation plus an immutable deployment registry; defining one grants nothing | The default the brief sets, and HANDOFF.md's recommendation | A-200 (proposed amendment) |
+| D-5 | `whoami`'s `scope` is declared in the gateway's built-in profile, inline, since the references' schema lacks it | C1 requires whoami to show scope; the pipeline withholds undeclared members (R106), so it was never sent | A-200 |
+| D-6 | A module's health is its own and never feeds `/readyz` | Constitution rule 13: a dependency's failure costs its own capabilities, never the catalogue | A-201 |
+| D-7 | The company module's path is `example.com/acme/atlas-extensions`, resolved by `replace` and `go.work` | A company's module is not under jhgonline; nothing fetches it | This file |

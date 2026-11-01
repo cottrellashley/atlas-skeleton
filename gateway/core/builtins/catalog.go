@@ -33,7 +33,7 @@ func (p *Provider) whoami(v *view) map[string]any {
 	out := map[string]any{
 		"principal": v.s.Identity.Principal, "name": v.s.Identity.Name, "kind": v.s.Identity.Kind, "roles": roles,
 		"environment": p.opt.Environment, "available_domains": domains, "house_rules": v.houseRules(nil),
-		"scope": scopeOf(v.s.Scope),
+		"scope": scopeOf(v.snap.Dimensions(), v.s.Scope),
 	}
 	if t := v.s.Identity.Tenant; t != "" {
 		out["tenant"] = t
@@ -44,30 +44,15 @@ func (p *Provider) whoami(v *view) map[string]any {
 	return out
 }
 
-// dimensions are the data dimensions scope is kept in, sorted: one for each
-// of atlas/1.0's code types (§9.2.3), as the ports name them. The protocol
-// fixes the code types, so the list changes only with it; a test holds it
-// to the protocol's own list of logical types.
-func dimensions() []string {
-	var out []string
-	for _, logical := range []string{"IndexCode", "PortfolioCode"} {
-		if d, ok := ports.DimensionOf(logical); ok && !slices.Contains(out, d) {
-			out = append(out, d)
-		}
-	}
-	slices.Sort(out)
-	return out
-}
-
 // scopeOf is the caller's data scope (R05) as whoami says it: every
-// dimension scope is kept in, each with its values sorted, ["*"] when it is
+// dimension the deployment defines (A-200), each with its values sorted, ["*"] when it is
 // open whole, and none when the caller may read nothing in it, as the
 // gateway enforces it (ScopeFor: "a dimension they have no scope in as
 // none"). So no dimension reads as unrestricted by being left out, and one
 // a policy names that is no dimension, which nothing enforces, is not shown.
-func scopeOf(s ports.Scope) map[string]any {
+func scopeOf(dims *ports.Dimensions, s ports.Scope) map[string]any {
 	out := map[string]any{}
-	for _, dim := range dimensions() {
+	for _, dim := range dims.Names() {
 		if s.Open(dim) {
 			out[dim] = []string{ports.AllValues}
 			continue

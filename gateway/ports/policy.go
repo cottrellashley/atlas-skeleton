@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
+	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
 )
 
 // Policy is one revision of who may do what, and over which data
@@ -206,8 +207,8 @@ func (p *Policy) problems() []string {
 		}
 		scope := p.Scopes[subject]
 		for _, dim := range sortedKeys(scope) {
-			if !IsDimension(dim) {
-				bad("scopes[%q]: %q is not a dimension: scope is kept in %s", subject, dim, strings.Join(dimensionNames(), " and "))
+			if grammar.PropertyName(dim) != nil || len(dim) > schema.MaxDimension {
+				bad("scopes[%q]: %q is not a dimension's name; which dimensions the deployment defines is checked against its catalogue", subject, dim)
 			}
 			for _, v := range scope[dim] {
 				if v == "" {

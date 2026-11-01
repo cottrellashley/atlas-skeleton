@@ -119,11 +119,14 @@ func TestTheCheckRefuses(t *testing.T) {
 		t.Fatal(err)
 	}
 	for name, b := range map[string]string{
-		"no replace":         "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\n",
-		"a module version":   "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => github.com/jhgonline/fi-app-atlas/a v1.0.0\n",
-		"the wrong place":    "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => ../c\n",
-		"an unknown module":  "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/zzz v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/zzz => ../zzz\n",
-		"outside the prefix": "module example.com/b\n",
+		"no replace":        "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\n",
+		"a module version":  "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => github.com/jhgonline/fi-app-atlas/a v1.0.0\n",
+		"the wrong place":   "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => ../c\n",
+		"an unknown module": "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/zzz v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/zzz => ../zzz\n",
+		// A company's module outside the private organisation (HANDOFF.md
+		// C1) is held to the same rules: it reaches an in-repo module only
+		// through a replace to its directory.
+		"outside, requiring with no replace": "module example.com/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\n",
 	} {
 		if got := Check(".", []Module{a, parse("b", b)}, work); len(got) == 0 {
 			t.Errorf("%s: accepted", name)
@@ -132,6 +135,16 @@ func TestTheCheckRefuses(t *testing.T) {
 	good := parse("b", "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => ../a\n")
 	if got := Check(".", []Module{a, good}, work); len(got) != 0 {
 		t.Errorf("a module replaced by its directory: %v", got)
+	}
+	company := parse("b", "module example.com/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => ../a\n")
+	if got := Check(".", []Module{a, company}, work); len(got) != 0 {
+		t.Errorf("a company module that reaches in-repo modules by their directories: %v", got)
+	}
+	// Any in-repo module, outside the organisation too, is required only
+	// through a replace, so the go command asks no one for it.
+	needsCompany := parse("a", "module github.com/jhgonline/fi-app-atlas/a\nrequire example.com/b v0.0.0\n")
+	if got := Check(".", []Module{needsCompany, parse("b", "module example.com/b\n")}, work); len(got) == 0 {
+		t.Error("an in-repo company module required with no replace: accepted")
 	}
 	lacking, _ := modfile.ParseWork("go.work", []byte("go 1.25.0\n\nuse ./a\n"), nil)
 	if got := Check(".", []Module{a, good}, lacking); len(got) != 1 || !strings.Contains(got[0], "leaves out b") {

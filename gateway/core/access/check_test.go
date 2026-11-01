@@ -8,7 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jhgonline/fi-app-atlas/gateway/core/registry"
 	"github.com/jhgonline/fi-app-atlas/gateway/ports"
+	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
 )
 
 // journeyCatalogue serves four portfolio and data capabilities, each
@@ -72,6 +74,8 @@ func TestR040APolicyIsHeldToItsCatalogue(t *testing.T) {
 		}, "granted by name only"},
 		{"a grant of a built-in", func(p *ports.Policy) { p.Grants[0].Capabilities = []string{"atlas.whoami@v1"} }, "every authenticated caller's"},
 		{"a deny of a built-in", func(p *ports.Policy) { p.Denies[0].Capabilities = []string{"atlas.*"} }, "every authenticated caller's"},
+		// A-200: scope is granted only in a dimension the deployment defines.
+		{"a scope in no dimension", func(p *ports.Policy) { p.Scopes = map[string]ports.Scope{"hy": {"portfolios": {"147HYC"}}} }, `scopes["hy"]: "portfolios" is no dimension the deployment defines (it defines index, portfolio)`},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			p := goodPolicy()
@@ -145,5 +149,32 @@ func TestR040TheCheckedSourceRefusesWhatFails(t *testing.T) {
 	}
 	if Checked(nil, func() Catalogue { return cat }, nil) != nil {
 		t.Fatal("no source is still no source")
+	}
+}
+
+// C1, A-200: a dimension the deployment defines may be granted in policy,
+// and one it does not define is refused before the policy decides
+// anything. Defining a dimension grants nobody anything.
+func TestC1APolicyScopesOnlyDefinedDimensions(t *testing.T) {
+	dims, err := ports.NewDimensions(ports.Dimension{Name: "workspace", Description: "A support workspace."})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := registry.NewWith(dims)
+	if err := r.Register(registry.Entry{Profiles: []*profile.Profile{capability(t, "support.tickets", "listed", "read")}, Provider: nobody{}}); err != nil {
+		t.Fatal(err)
+	}
+	cat := Catalogue{Served: r.Snapshot()}
+	p := &ports.Policy{Revision: "r1", Scopes: map[string]ports.Scope{"agents": {"workspace": {"acme"}}}}
+	if reasons := Check(p, cat); len(reasons) > 0 {
+		t.Fatalf("a scope in a defined dimension: %v", reasons)
+	}
+	p.Scopes["agents"]["desk"] = []string{"fx"}
+	if reasons := Check(p, cat); !strings.Contains(strings.Join(reasons, "\n"), `"desk" is no dimension the deployment defines (it defines index, portfolio, workspace)`) {
+		t.Fatalf("a scope in an undefined dimension: %v", reasons)
+	}
+	s := ResolveIn(&ports.Policy{Revision: "r1"}, alice, r.Snapshot())
+	if !s.Scope.Open("workspace") && len(s.Scope["workspace"]) > 0 {
+		t.Fatalf("a defined dimension granted something by itself: %v", s.Scope)
 	}
 }

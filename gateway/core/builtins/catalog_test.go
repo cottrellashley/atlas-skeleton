@@ -14,6 +14,7 @@ import (
 	"github.com/jhgonline/fi-app-atlas/gateway/ports"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/documents"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
+	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
 )
 
 func pageOf(t *testing.T, w *World, c Call) *ijson.Object {
@@ -222,18 +223,21 @@ func TestR020TheScopesDimensionsAreTheProtocols(t *testing.T) {
 	walk(doc)
 	var want []string
 	for _, l := range logicals {
-		if d, ok := ports.DimensionOf(l); ok && !slices.Contains(want, d) {
+		doc, err := ijson.Parse([]byte(`{"$schema": "https://json-schema.org/draft/2020-12/schema", "$vocabulary": {"https://json-schema.org/draft/2020-12/vocab/core": true, "https://json-schema.org/draft/2020-12/vocab/applicator": true, "https://json-schema.org/draft/2020-12/vocab/validation": true, "https://json-schema.org/draft/2020-12/vocab/meta-data": true, "https://json-schema.org/draft/2020-12/vocab/format-assertion": true, "https://atlas.jhg.com/vocab/2026-10": false}, "type": "string", "x-atlas-logical": "` + l + `"}`))
+		if err != nil {
+			t.Fatal(err)
+		}
+		s, err := schema.Compile(doc, schema.Open)
+		if err != nil {
+			continue // a logical type that is no string is no code
+		}
+		if d, ok := ports.DimensionOf(s); ok && !slices.Contains(want, d) {
 			want = append(want, d)
 		}
 	}
 	slices.Sort(want)
-	if got := dimensions(); len(logicals) == 0 || !slices.Equal(got, want) {
-		t.Fatalf("whoami's dimensions %v; the protocol's %v (of %d code types)", got, want, len(logicals))
-	}
-	for _, d := range dimensions() {
-		if !ports.IsDimension(d) {
-			t.Errorf("%s is no dimension the ports keep scope in", d)
-		}
+	if got := ports.DefaultDimensions().Names(); len(logicals) == 0 || !slices.Equal(got, want) {
+		t.Fatalf("the protocol's dimensions %v; its code types name %v (of %d logical types)", got, want, len(logicals))
 	}
 }
 

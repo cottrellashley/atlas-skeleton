@@ -3,7 +3,6 @@ package ports
 import (
 	"context"
 	"io"
-	"slices"
 	"time"
 
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
@@ -50,46 +49,6 @@ type Invocation struct {
 	MaxRows int
 	// Features are what the calling client declared it implements.
 	Features protocol.Features
-}
-
-// dimensions are the data dimensions scope is enforced in, by the logical
-// type that marks a value of one: a request member or a result column whose
-// type is PortfolioCode names a portfolio, one whose type is IndexCode an
-// index. They are atlas/1.0's two code types (§9.2.3), fixed by the
-// protocol: a typed rule, not a policy language (R05, R071), shared by the
-// pipeline, which checks every value a request names and a result returns,
-// and by providers, which narrow their source's reads to the scope. A new
-// dimension is a new logical type, never a table a deployment edits.
-var dimensions = map[string]string{
-	"PortfolioCode": "portfolio",
-	"IndexCode":     "index",
-}
-
-// DimensionOf is the data dimension a value of a logical type names, and
-// whether scope is enforced in it.
-func DimensionOf(logical string) (dimension string, ok bool) {
-	dimension, ok = dimensions[logical]
-	return dimension, ok
-}
-
-// IsDimension reports whether scope is enforced in a dimension.
-func IsDimension(dimension string) bool {
-	for _, d := range dimensions {
-		if d == dimension {
-			return true
-		}
-	}
-	return false
-}
-
-// dimensionNames are the dimensions, sorted.
-func dimensionNames() []string {
-	var out []string
-	for _, d := range dimensions {
-		out = append(out, d)
-	}
-	slices.Sort(out)
-	return out
 }
 
 // AllValues is a dimension of a Scope that is open whole.

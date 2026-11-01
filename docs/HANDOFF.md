@@ -13,7 +13,8 @@ It adopts the core handoff plan and the peer review of 2026-11-01 ([`docs/source
 | Package | Status |
 |---|---|
 | C0 | Done: R3-01 to R3-05 fixed, each with a regression shown to fail first |
-| C1 to C6 | Not started |
+| C1 | Done: generic `ports.Module` registration and company access dimensions (proposed amendment A-200); exit test in `extensions/support` |
+| C2 to C6 | Not started |
 
 ---
 
