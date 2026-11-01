@@ -86,3 +86,27 @@ def test_arrow_is_the_same_answer(connect):
     for a, b in zip(arrow_rows, rows):
         assert a["security_id"] == b["security_id"]
         assert a["market_value"]["amount"] == b["market_value"]["amount"]
+
+
+def test_r3_06_a_call_waiting_for_the_engine_keeps_its_deadline(connect):
+    """R3-06, HANDOFF.md C2: one deadline for the whole call. A call waiting
+    for the engine, which another call holds, waits no longer than its own
+    deadline: the wait comes out of it, and the call is deadline_exceeded."""
+    import time
+
+    from fiatlas._engine import shared
+    from fiatlas.errors import AtlasProblem
+
+    alice = connect("dev-alice")
+    alice.call("portfolio.list@v1:fetch", {})  # connected
+    engine = shared(alice._path)
+    engine._lock.acquire()  # another call has the engine
+    try:
+        start = time.monotonic()
+        with pytest.raises(AtlasProblem) as e:
+            alice.call("portfolio.list@v1:fetch", {}, deadline=0.3)
+        assert e.value.code == "deadline_exceeded"
+        assert time.monotonic() - start < 2, "the call waited past its deadline for the engine"
+    finally:
+        engine._lock.release()
+    assert alice.call("portfolio.list@v1:fetch", {}).rows

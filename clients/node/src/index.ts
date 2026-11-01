@@ -381,6 +381,9 @@ export class Client {
 
   /** Call one interaction once (ATLAS-CORE §6, §9.7.4). */
   async call(address: string, request: unknown = {}, opts: CallOptions = {}): Promise<Result> {
+    // One absolute deadline for the whole public call (R3-06): discovery,
+    // the request and its answer all come out of it.
+    const start = this.clock.now();
     const addr = grammar.parseAddress(address);
     if (!addr) throw problem('invalid_request', `${address} is not an address: <id>@v<N>:<interaction>`, { target: 'address' });
     let body: Obj;
@@ -421,6 +424,8 @@ export class Client {
     let ms = opts.deadlineMs ?? grammar.durationMs(String(deadline.default)) ?? DEFAULT_DEADLINE_MS;
     const max = grammar.durationMs(String(deadline.max));
     if (max !== undefined && max > 0 && ms > max) ms = max; // CORE-DEADLINE-001: never past the maximum
+    ms = start + ms - this.clock.now(); // what discovery left of it
+    if (ms <= 0) throw problem('deadline_exceeded', 'the call reached its deadline before its request was sent', { next: 'Repeat the call with a later deadline.' });
     const headers: Record<string, string> = { 'atlas-profile-expect': formatString(p.exact) };
     if (inter.effect !== 'read') headers['idempotency-key'] = formatIdempotencyKey(opts.idempotencyKey ?? randomUUID())!;
     const encodings = (Array.isArray(binding.encodings) ? binding.encodings : ['json']).map(String);

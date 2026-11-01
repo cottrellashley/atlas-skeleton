@@ -162,38 +162,51 @@ class Engine:
     def usable(self) -> bool:
         return not self._broken and self.owner == os.getpid() and self._proc.poll() is None
 
-    def run(self, op: str, args: dict[str, Any] | None = None, *, timeout: float | None = None, results: str | None = None) -> dict[str, Any]:
+    def run(self, op: str, args: dict[str, Any] | None = None, *, timeout: float | None = None, until: float | None = None,
+            results: str | None = None) -> dict[str, Any]:
         """Send one command and wait for its answer, and for its stream when
-        it names one. timeout is the call's deadline: past it and GRACE the
-        engine is stopped. Ctrl+C cancels the command and raises
-        KeyboardInterrupt once the engine has ended it."""
-        with self._lock:
-            if not self.usable():
-                raise self._gone("atlas-engine is not running")
-            cid = next(self._ids)
-            command: dict[str, Any] = {"id": cid, "op": op, "args": args or {}}
-            if results:
-                command["results"] = results
-            self._send(command)
-            box: dict[str, Any] = {}
-            done = threading.Event()
-            self._reader = threading.Thread(target=self._receive, args=(cid, box, done), daemon=True)
-            self._reader.start()
-            limit = None if timeout is None else time.monotonic() + timeout + GRACE
-            try:
-                # Wait in short steps, so Ctrl+C is seen whichever thread the
-                # signal lands on.
-                while not done.wait(0.05):
-                    if limit is not None and time.monotonic() > limit:
-                        self.stop()
-                        raise problem({"code": "deadline_exceeded", "detail": "atlas-engine did not end the call at its deadline, so it was stopped"})
-                self._reader.join()  # a call leaves no thread behind, so a fork after it copies none
-            except KeyboardInterrupt:
-                self._cancel(cid, done)
-                raise
-            if "error" in box:
-                raise box["error"]
-            return _checked(box["answer"])
+        it names one. until is the call's deadline, on time.monotonic()'s
+        clock (timeout, in seconds from now, is the same): the wait for the
+        engine comes out of it (R3-06), and past it and GRACE the engine is
+        stopped. Ctrl+C cancels the command and raises KeyboardInterrupt
+        once the engine has ended it."""
+        if until is None and timeout is not None:
+            until = time.monotonic() + timeout
+        wait = -1 if until is None else max(0.0, until - time.monotonic())
+        if not self._lock.acquire(timeout=wait):
+            raise problem({"code": "deadline_exceeded", "detail": "the call reached its deadline while another call had the engine"})
+        try:
+            return self._run(op, args, until, results)
+        finally:
+            self._lock.release()
+
+    def _run(self, op: str, args: dict[str, Any] | None, until: float | None, results: str | None) -> dict[str, Any]:
+        if not self.usable():
+            raise self._gone("atlas-engine is not running")
+        cid = next(self._ids)
+        command: dict[str, Any] = {"id": cid, "op": op, "args": args or {}}
+        if results:
+            command["results"] = results
+        self._send(command)
+        box: dict[str, Any] = {}
+        done = threading.Event()
+        self._reader = threading.Thread(target=self._receive, args=(cid, box, done), daemon=True)
+        self._reader.start()
+        limit = None if until is None else until + GRACE
+        try:
+            # Wait in short steps, so Ctrl+C is seen whichever thread the
+            # signal lands on.
+            while not done.wait(0.05):
+                if limit is not None and time.monotonic() > limit:
+                    self.stop()
+                    raise problem({"code": "deadline_exceeded", "detail": "atlas-engine did not end the call at its deadline, so it was stopped"})
+            self._reader.join()  # a call leaves no thread behind, so a fork after it copies none
+        except KeyboardInterrupt:
+            self._cancel(cid, done)
+            raise
+        if "error" in box:
+            raise box["error"]
+        return _checked(box["answer"])
 
     def _send(self, command: dict[str, Any]) -> None:
         try:

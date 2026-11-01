@@ -36,6 +36,9 @@ Found by a static review (`docs/source/atlas-spec/review/PEER-REVIEW-2026-11-01.
 | R3-03 | P1 | Refresh requests omit `client_id`, in Go and Node | **FIXED** (C0) | `TestR3_03RefreshNamesTheBoundApplication` in Go and Node; the fakes' token endpoints now refuse a missing or wrong `client_id`, so every refresh test checks it; A-196. **Untested live against Entra** |
 | R3-04 | P1 | The audit log drops `Claimed`, `Client`, `Expected`, `Step` and `Source` | **FIXED** (C0) | `TestR3_04EveryFieldOfAFactIsPersisted` (the stored bytes and the decoded fact); `porttest.AuditSink` now compares every member and refuses to run unless its facts set every member of `ports.Fact` |
 | R3-05 | P1 | A pre-aborted Node caller leaves a failing refresh's rejection unhandled | **FIXED** (C0) | `TestR3_05ACancelledCallerLeavesNoUnhandledRejection`: pre-aborted, aborted at start, aborted during a failing refresh, and a second caller that continues |
+| R3-06 | P2 | A call's deadline does not cover its whole lifetime (Node discovery, Python connect and engine lock, Go refresh mutex) | **FIXED** (C2), in the three cases the review names | Go `TestR3_06AWaiterBehindARefreshKeepsItsOwnDeadline` (hung before the fix); Node `TestR3_06DiscoveryComesOutOfTheCallsDeadline`; Python `test_r3_06_a_call_waiting_for_the_engine_keeps_its_deadline` (hung before the fix) |
+| R3-07 | P2 | Record failures audited as success; negotiation after dispatch | **FIXED** (C2) | `TestR3_07NegotiationComesBeforeAdmission`; `TestR3_07EveryOutcomeIsWhatTheCallerReceived` (records and tables: delivered, refused, caller gone). A table read whole and then not delivered was also recorded as a success; it is now a cancellation |
+| R3-08 | P2 | Old URLs fail negotiation | **FIXED** (C2) | `TestR3_08AnOldAddressIsNegotiatedAgainstItsOwnBinding`: three addresses across two compatible updates, each served and audited under the current profile |
 
 The review's architecture gaps (HANDOFF.md §4):
 

@@ -11,6 +11,7 @@ as Python warnings (§9.7.4 step 11).
 from __future__ import annotations
 
 import os
+import time
 import warnings as _warnings
 from decimal import Decimal
 from typing import Any, Iterator
@@ -201,18 +202,33 @@ class FIAtlas:
             raise AttributeError(name)
         return _Domain(self, name)
 
-    def _run(self, op: str, args: dict[str, Any] | None = None, **kw: Any) -> dict[str, Any]:
+    def _run(self, op: str, args: dict[str, Any] | None = None, *, until: float | None = None, **kw: Any) -> dict[str, Any]:
+        """Run op on the engine, connecting first when needed. until is the
+        public call's one deadline (R3-06, on time.monotonic()'s clock): the
+        connection, the wait for the engine and the call all come out of it,
+        and the deadline the call sends is what is left of it."""
         engine = shared(self._path)
         if engine is not self._engine:
-            answer = engine.run("connect", self._connect)
+            answer = engine.run("connect", self._connect, until=until)
             self._engine, self._connection = engine, answer["value"]["connection"]
-        return engine.run(op, {**(args or {}), "connection": self._connection}, **kw)
+        args = {**(args or {}), "connection": self._connection}
+        if until is not None and isinstance(args.get("options"), dict):
+            left = until - time.monotonic()
+            if left <= 0:
+                raise problem({"code": "deadline_exceeded", "detail": "the call reached its deadline before its request was sent"})
+            args["options"] = {**args["options"], "deadline_ms": max(1, int(left * 1000))}
+        return engine.run(op, args, until=until, **kw)
+
+    @staticmethod
+    def _until(deadline: float | None) -> float | None:
+        return None if deadline is None else time.monotonic() + deadline
 
     def call(self, address: str, request: dict[str, Any] | None = None, *, deadline: float | None = None,
              accept: list[str] | None = None, idempotency_key: str | None = None) -> Result:
         """Execute one interaction: the request is checked against its contract
         before anything is sent, and the answer as it is read. deadline, in
         seconds, bounds the whole call."""
+        until = self._until(deadline)
         opts: dict[str, Any] = {}
         if deadline is not None:
             opts["deadline_ms"] = int(deadline * 1000)
@@ -220,7 +236,7 @@ class FIAtlas:
             opts["accept"] = accept
         if idempotency_key is not None:
             opts["idempotency_key"] = idempotency_key
-        answer = self._run("call", {"address": address, "request": request or {}, "options": opts}, timeout=deadline)
+        answer = self._run("call", {"address": address, "request": request or {}, "options": opts}, until=until)
         result = Result(answer)
         _emit(result.warnings)
         return result
@@ -233,12 +249,13 @@ class FIAtlas:
             import pyarrow  # noqa: F401
         except ImportError as e:
             raise ImportError("fetch() reads Arrow and needs pyarrow: pip install fiatlas[arrow], or use call()") from e
+        until = self._until(deadline)
         if ":" not in address:
             address += ":fetch"
         opts: dict[str, Any] = {}
         if deadline is not None:
             opts["deadline_ms"] = int(deadline * 1000)
-        answer = self._run("call", {"address": address, "request": request or {}, "options": opts}, timeout=deadline, results="arrow")
+        answer = self._run("call", {"address": address, "request": request or {}, "options": opts}, until=until, results="arrow")
         if "table" not in answer:
             raise problem({"code": "invalid_document", "detail": f"{address} is not a table"})
         table = Table(answer["table"], answer)

@@ -77,6 +77,26 @@ It also strengthened the exit test. The leak case now asserts the withheld probl
 
 **Next.** C2.
 
+## C2. One call lifecycle (2026-11-01)
+
+**Done**, each with a test that failed first:
+- **Negotiation before admission (R3-07).** The pipeline implements `RunNegotiated`. The edge chooses the representation after access is decided and before the request is validated, a limit taken or the work admitted. An unsupported `Accept` runs no provider, admits nothing, and leaves one refusal at the new `negotiate` step. A caller without access is refused before negotiation, as before (PR08 still passes). The edge's after-dispatch fallback is gone.
+- **One outcome path (R3-07).** The edge ends records and tables the same way: `Result.Gone` for a caller who went away, `Result.Fail` for the edge's own problem. A table's *success* is now recorded only once the edge has delivered it. A failure is recorded at once. Before, a JSON-array table read whole and then not delivered was recorded as a success, as was a record whose caller went away mid-write. `TestR3_07EveryOutcomeIsWhatTheCallerReceived` covers delivered, refused-before-dispatch and caller-gone, in record and table form, with provider call counts.
+- **Matched bindings (R3-08).** The edge negotiates against the binding the address matched, an older profile's included. `TestR3_08AnOldAddressIsNegotiatedAgainstItsOwnBinding` serves three addresses across two compatible updates, each audited under the current profile.
+- **One deadline per call (R3-06):**
+  - **Go:** the token store's lock is now one that a waiter abandons when its context ends.
+  - **Node:** a call's budget is measured from the public call's start, so discovery comes out of it, and no request is sent once it has passed.
+  - **Python:** one monotonic deadline per public call bounds the wait for the engine's lock, the connect and the call, and the `deadline_ms` sent is what is left.
+
+**What remains of C2's exit matrix.** These cases are not yet asserted in one matrix, though existing tests touch some of them:
+- a stalled upstream (`R042` deadline tests, in tables only);
+- a queued call that expires (the bulkhead tests);
+- a Node or Python cancelled refresh waiter (Go's is proved; Node's sharing is in R002 and R3-05);
+- the audit sink's regular-file and non-pollable fallback paths within the matrix (proved separately by R012 and R3-04);
+- R3-06 beyond the three cases the review named: the Go client's discovery and bootstrap budgets, and Python's stream consumption. The review's reviewer is checking these now.
+
+**Next.** C3.
+
 ## Decisions taken
 
 | # | Decision | Why | Recorded in |
@@ -89,3 +109,5 @@ It also strengthened the exit test. The leak case now asserts the withheld probl
 | D-5 | `whoami`'s `scope` is declared in the gateway's built-in profile, inline, since the references' schema lacks it | C1 requires whoami to show scope; the pipeline withholds undeclared members (R106), so it was never sent | A-200 |
 | D-6 | A module's health is its own and never feeds `/readyz` | Constitution rule 13: a dependency's failure costs its own capabilities, never the catalogue | A-201 |
 | D-7 | The company module's path is `example.com/acme/atlas-extensions`, resolved by `replace` and `go.work` | A company's module is not under jhgonline; nothing fetches it | This file |
+| D-8 | A refusal at negotiation is a new audit step, `negotiate`, between access and request | HANDOFF.md C2's lifecycle puts negotiation third, after access and before validation | `ports.StepNegotiate` |
+| D-9 | A table's success outcome waits for delivery; a failure is recorded at once | The outcome is what the caller received (R09, R138); a failure cannot become more delivered | `Rows.record` |

@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 
-import { readIdempotencyKey } from '../src/headers.ts';
+import { formatDeadline, readIdempotencyKey } from '../src/headers.ts';
 import { AtlasError, AtlasProblem, atlas, type Client, fingerprint, signIn, type Warning } from '../src/index.ts';
 import { FakeClock } from './fakeclock.ts';
 import { conformanceRow, endLine, problemDoc, sendJSON, sendNDJSON, sendProblem, StandIn, type StandInOptions } from './standin.ts';
@@ -623,4 +623,22 @@ test('TestR3_05ACancelledCallerLeavesNoUnhandledRejection', async (t) => {
     assert.equal(refreshes(gw), 1);
   }
   assert.deepEqual(unhandled, [], 'no refresh rejection was left unhandled');
+});
+
+// R3-06, HANDOFF.md C2: one absolute deadline per public call. The time discovery takes comes out of the call's own
+// deadline, so a slow describe never earns the request a fresh budget: the request's Atlas-Deadline is the call's start
+// plus its deadline. A discovery that uses the whole deadline sends no request at all.
+test('TestR3_06DiscoveryComesOutOfTheCallsDeadline', async (t) => {
+  const r = await rig(t);
+  const start = r.clock.now();
+  r.gw.on('atlas.describe:fetch', (seen, res) => { r.clock.advance(900); (r.gw as any).serve(seen, res); });
+  await r.client.call('conformance.echo@v1:fetch', { text: 'hi' }, { deadlineMs: 1500 });
+  const sent = r.gw.to('conformance.echo@v1:fetch');
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].headers['atlas-deadline'], formatDeadline(start + 1500), 'the request carries the call\'s own deadline');
+
+  const late = await rig(t);
+  late.gw.on('atlas.describe:fetch', (seen, res) => { late.clock.advance(1600); (late.gw as any).serve(seen, res); });
+  await assert.rejects(late.client.call('conformance.echo@v1:fetch', { text: 'hi' }, { deadlineMs: 1500 }), problemIs('deadline_exceeded'));
+  assert.equal(late.gw.to('conformance.echo@v1:fetch').length, 0, 'nothing is sent once the deadline has passed');
 });

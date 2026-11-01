@@ -538,8 +538,28 @@ type tokenStore struct {
 	signIn             signIn // its bootstrap's sign_in
 	clock              clock.Clock
 	http               *http.Client
-	mu                 sync.Mutex
+	mu                 ctxLock
 }
+
+// ctxLock is a mutex that a waiter gives up on when its context ends, so a
+// call waiting behind another call's refresh waits no longer than its own
+// deadline (R3-06).
+type ctxLock struct {
+	once sync.Once
+	c    chan struct{}
+}
+
+func (l *ctxLock) lock(ctx context.Context) error {
+	l.once.Do(func() { l.c = make(chan struct{}, 1) })
+	select {
+	case l.c <- struct{}{}:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func (l *ctxLock) unlock() { <-l.c }
 
 type tokenFile struct {
 	AccessToken  string   `json:"access_token"`
@@ -560,8 +580,10 @@ func (t *tokenStore) token(ctx context.Context, failed string) (string, error) {
 	if t.explicit != "" {
 		return t.explicit, nil
 	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	if err := t.mu.lock(ctx); err != nil {
+		return "", protocol.NewProblem(protocol.CodeDeadlineExceeded, "the call's deadline passed while another call renewed the sign-in")
+	}
+	defer t.mu.unlock()
 	f, err := t.usable()
 	if err != nil {
 		return "", err
