@@ -1,0 +1,209 @@
+{
+ "identity": {
+  "id": "data.status",
+  "version": 1,
+  "title": "Data freshness",
+  "summary": "Each source's latest date, the date expected, and whether it is current.",
+  "domain": "data",
+  "owner": "Data Platform"
+ },
+ "properties": {
+  "family": "data",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": [
+   {
+    "name": "Keyed",
+    "critical": false
+   }
+  ]
+ },
+ "interactions": {
+  "fetch": {
+   "effect": "read",
+   "result": "table",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "request",
+   "returns": "result",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/data/data.status@v1:fetch",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "object",
+   "description": "Which sources; every source when null.",
+   "additionalProperties": false,
+   "properties": {
+    "sources": {
+     "type": [
+      "array",
+      "null"
+     ],
+     "default": null,
+     "uniqueItems": true,
+     "description": "Source names, as this capability returns them: harbour.holdings.",
+     "items": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A source's name."
+     }
+    }
+   }
+  },
+  "result": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "array",
+   "description": "One row per source, by name.",
+   "items": {
+    "type": "object",
+    "description": "A source's freshness.",
+    "required": [
+     "source",
+     "latest_date",
+     "expected_date",
+     "status",
+     "checked_at"
+    ],
+    "properties": {
+     "source": {
+      "type": "string",
+      "description": "The source: what landed, such as harbour.holdings.",
+      "x-atlas-key": true
+     },
+     "latest_date": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "date",
+      "description": "The latest business date that has landed; null before the first."
+     },
+     "expected_date": {
+      "type": "string",
+      "format": "date",
+      "description": "The business date that should have landed by now."
+     },
+     "status": {
+      "type": "string",
+      "description": "Whether the source is current.",
+      "enum": [
+       "current",
+       "late",
+       "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+       {
+        "value": "current",
+        "description": "The expected date has landed."
+       },
+       {
+        "value": "late",
+        "description": "The expected date has not landed."
+       },
+       {
+        "value": "UNKNOWN",
+        "description": "A value this reader does not know (§9.5.5)."
+       }
+      ]
+     },
+     "checked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the status was last checked."
+     }
+    }
+   }
+  }
+ },
+ "errors": [
+  {
+   "code": "warehouse_suspended",
+   "status": 503,
+   "retryable": true,
+   "description": "The warehouse that serves Harbour's views is suspended or unreachable.",
+   "next": "Wait retry_after seconds, then repeat the call."
+  }
+ ],
+ "meaning": {
+  "grain": "source",
+  "keys": [
+   "source"
+  ],
+  "current": "a source is current when its latest date is on or after its expected date",
+  "history": "the latest state of each source, not a history of every landing",
+  "source": "the platform's load register, HARBOUR.OPS.LOADS_V"
+ },
+ "compatibility": {
+  "request": "BACKWARD_TRANSITIVE",
+  "result": "FULL_TRANSITIVE"
+ },
+ "usage": {
+  "when": "You need to know how fresh a source is before trusting its latest answer: for portfolio.holdings@v1, the source harbour.holdings.",
+  "when_not": "You need a source's history of landings: no capability offers it yet.",
+  "examples": [
+   {
+    "title": "Every source",
+    "interaction": "fetch",
+    "request": {}
+   },
+   {
+    "title": "Holdings",
+    "interaction": "fetch",
+    "request": {
+     "sources": [
+      "harbour.holdings"
+     ]
+    }
+   }
+  ],
+  "related": [
+   "portfolio.holdings@v1"
+  ],
+  "cost": "One small warehouse query."
+ },
+ "evolution": {
+  "lens": [],
+  "changelog": [
+   {
+    "date": "2026-10-31",
+    "change": "First published."
+   }
+  ]
+ }
+}

@@ -22,6 +22,8 @@ import (
 	"os/signal"
 	"sync/atomic"
 	"syscall"
+
+	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
 )
 
 type actor struct {
@@ -42,14 +44,18 @@ func (g *Group) Add(execute func() error, interrupt func(error)) {
 }
 
 // Run starts every actor, waits for the first one to return, interrupts the
-// rest, waits for all of them, and returns the first error.
+// rest, waits for all of them, and returns the first error. ATLAS: each
+// actor runs through kit/conc, so one that panics returns a
+// *conc.PanicError and the others are interrupted and drained, rather than
+// the panic ending the process (ATLAS-MECH-012).
 func (g *Group) Run() error {
 	if len(g.actors) == 0 {
 		return nil
 	}
 	errs := make(chan error, len(g.actors))
 	for _, a := range g.actors {
-		go func(a actor) { errs <- a.execute() }(a)
+		wait := conc.Go(a.execute)
+		conc.Go(func() error { errs <- wait(); return nil })
 	}
 	err := <-errs
 	for _, a := range g.actors {

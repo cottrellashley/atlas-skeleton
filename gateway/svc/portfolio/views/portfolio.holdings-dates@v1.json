@@ -1,0 +1,60 @@
+{
+ "interaction": "fetch",
+ "object": "HARBOUR.HOLDINGS.VALUATIONS_V",
+ "columns": {
+  "portfolio": {
+   "column": "PORTFOLIO_CODE",
+   "type": "string"
+  },
+  "as_of": {
+   "column": "AS_OF_DATE",
+   "type": "date"
+  },
+  "positions": {
+   "column": "POSITION_COUNT",
+   "type": "integer"
+  },
+  "market_value": {
+   "money": {
+    "amount": "TOTAL_MV",
+    "currency": "BASE_CCY"
+   }
+  },
+  "loaded_at": {
+   "column": "LOADED_AT",
+   "type": "timestamp",
+   "zone": "UTC"
+  }
+ },
+ "filters": {
+  "portfolios": {
+   "column": "PORTFOLIO_CODE",
+   "op": "in",
+   "type": "string"
+  },
+  "from": {
+   "column": "AS_OF_DATE",
+   "op": "gte",
+   "type": "date"
+  },
+  "to": {
+   "column": "AS_OF_DATE",
+   "op": "lte",
+   "type": "date"
+  }
+ },
+ "scope": {
+  "portfolio": "PORTFOLIO_CODE"
+ },
+ "order": [
+  "PORTFOLIO_CODE",
+  "AS_OF_DATE"
+ ],
+ "exists": {
+  "request": "portfolios",
+  "object": "HARBOUR.REF.PORTFOLIOS_V",
+  "column": "PORTFOLIO_CODE",
+  "error": "portfolio_not_found"
+ },
+ "unavailable": "warehouse_suspended"
+}

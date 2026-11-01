@@ -1,0 +1,101 @@
+{
+ "identity": {
+  "id": "atlas.catalog",
+  "version": 1,
+  "title": "atlas.catalog",
+  "summary": "The built-in atlas.catalog (§9.3.2).",
+  "domain": "atlas",
+  "owner": "Atlas"
+ },
+ "properties": {
+  "family": "data",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": []
+ },
+ "interactions": {
+  "fetch": {
+   "effect": "read",
+   "result": "collection",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "catalog_request",
+   "returns": "catalog_page",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/atlas/atlas.catalog:fetch",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "catalog_request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/catalog_request"
+  },
+  "catalog_page": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/catalog-page.schema.json"
+  }
+ },
+ "errors": [],
+ "meaning": {
+  "grain": "fixed by atlas/1.0",
+  "source": "the gateway"
+ },
+ "usage": {
+  "when": "You need the capabilities you can use here and now, a page at a time, by domain, family or effect class.",
+  "when_not": "You have the person's words: atlas.search@v1 ranks against them. You want what you cannot use, and why: atlas.access@v1.",
+  "examples": [
+   {
+    "title": "What you can use, fifty at a time",
+    "interaction": "fetch",
+    "request": {
+     "page_size": 50
+    }
+   },
+   {
+    "title": "Only what changes something",
+    "interaction": "fetch",
+    "request": {
+     "effect": "write"
+    }
+   }
+  ],
+  "related": [
+   "atlas.search@v1",
+   "atlas.guide@v1",
+   "atlas.access@v1"
+  ]
+ }
+}

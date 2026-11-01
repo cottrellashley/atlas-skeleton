@@ -1,0 +1,116 @@
+{
+ "interaction": "fetch",
+ "object": "HARBOUR.HOLDINGS.POSITIONS_V",
+ "columns": {
+  "portfolio": {
+   "column": "PORTFOLIO_CODE",
+   "type": "string"
+  },
+  "security_id": {
+   "column": "SECURITY_ID",
+   "type": "string"
+  },
+  "as_of": {
+   "column": "AS_OF_DATE",
+   "type": "date"
+  },
+  "isin": {
+   "column": "ISIN",
+   "type": "string"
+  },
+  "title": {
+   "column": "SECURITY_NAME",
+   "type": "string"
+  },
+  "asset_class": {
+   "column": "ASSET_CLASS",
+   "type": "string",
+   "values": {
+    "CREDIT": "credit",
+    "RATES": "rates",
+    "CASH": "cash"
+   }
+  },
+  "quantity": {
+   "column": "QUANTITY",
+   "type": "decimal"
+  },
+  "market_value": {
+   "money": {
+    "amount": "MARKET_VALUE",
+    "currency": "CURRENCY"
+   }
+  },
+  "weight": {
+   "column": "WEIGHT",
+   "type": "float"
+  },
+  "oas": {
+   "column": "OAS_BP",
+   "type": "float"
+  },
+  "status": {
+   "column": "POSITION_STATUS",
+   "type": "string",
+   "values": {
+    "OPEN": "open",
+    "CLOSED": "closed"
+   }
+  },
+  "loaded_at": {
+   "column": "LOADED_AT",
+   "type": "timestamp",
+   "zone": "UTC"
+  }
+ },
+ "filters": {
+  "portfolios": {
+   "column": "PORTFOLIO_CODE",
+   "op": "in",
+   "type": "string"
+  },
+  "asset_class": {
+   "column": "ASSET_CLASS",
+   "op": "eq",
+   "type": "string",
+   "values": {
+    "credit": "CREDIT",
+    "rates": "RATES",
+    "cash": "CASH"
+   }
+  }
+ },
+ "latest": {
+  "request": "as_of",
+  "column": "AS_OF_DATE",
+  "per": [
+   "PORTFOLIO_CODE"
+  ],
+  "within": [
+   "portfolios"
+  ]
+ },
+ "scope": {
+  "portfolio": "PORTFOLIO_CODE"
+ },
+ "order": [
+  "PORTFOLIO_CODE",
+  "SECURITY_ID",
+  "AS_OF_DATE"
+ ],
+ "exists": {
+  "request": "portfolios",
+  "object": "HARBOUR.REF.PORTFOLIOS_V",
+  "column": "PORTFOLIO_CODE",
+  "error": "portfolio_not_found"
+ },
+ "valued": {
+  "request": "portfolios",
+  "as_of": "as_of",
+  "object": "HARBOUR.HOLDINGS.VALUATIONS_V",
+  "column": "PORTFOLIO_CODE",
+  "date": "AS_OF_DATE",
+  "error": "no_valuation"
+ },
+ "unavailable": "warehouse_suspended"
+}

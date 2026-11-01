@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/operation.schema.json",
+  "title": "Operation",
+  "description": "Long-running work (§4.1, D15): every operation delivery answers one at once (202, Operation-Location); atlas.operation gets, lists, cancels and watches them. Kept at least 24 hours after it ends.",
+  "type": "object",
+  "required": [
+    "name",
+    "address",
+    "state",
+    "created",
+    "updated"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^operations/[a-z0-9][a-z0-9-]*$",
+      "description": "operations/<id>."
+    },
+    "address": {
+      "type": "string",
+      "format": "address",
+      "description": "The `<id>@vN:<interaction>` it runs."
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "running",
+        "succeeded",
+        "failed",
+        "cancelled",
+        "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+        {
+          "value": "pending"
+        },
+        {
+          "value": "running"
+        },
+        {
+          "value": "succeeded"
+        },
+        {
+          "value": "failed"
+        },
+        {
+          "value": "cancelled"
+        },
+        {
+          "value": "UNKNOWN",
+          "description": "A value this reader does not know (§9.5.5)."
+        }
+      ],
+      "description": "pending, running, then succeeded, failed or cancelled."
+    },
+    "progress": {
+      "description": "Optional, in the profile's terms."
+    },
+    "result": {
+      "description": "When succeeded: the result, in the writer profile `profile`; for a transfer delivery, a transfer document."
+    },
+    "result_location": {
+      "type": "string",
+      "format": "uri",
+      "description": "When the result is larger than 1 MiB: where to GET it, with the same Authorization (§9.6.5)."
+    },
+    "profile": {
+      "type": "string",
+      "format": "exact-id",
+      "description": "The writer profile of `result` (Q-DOC-11)."
+    },
+    "problem": {
+      "$ref": "https://atlas.jhg.com/protocol/1.0/problem.schema.json"
+    },
+    "owner": {
+      "type": "string",
+      "description": "Who started it."
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "state"
+        ],
+        "properties": {
+          "state": {
+            "const": "succeeded"
+          }
+        }
+      },
+      "then": {
+        "anyOf": [
+          {
+            "required": [
+              "result"
+            ]
+          },
+          {
+            "required": [
+              "result_location"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "state"
+        ],
+        "properties": {
+          "state": {
+            "const": "failed"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "problem"
+        ]
+      }
+    }
+  ]
+}

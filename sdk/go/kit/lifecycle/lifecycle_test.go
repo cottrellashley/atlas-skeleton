@@ -9,7 +9,10 @@ import (
 	"errors"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"time"
+
+	"github.com/jhgonline/fi-app-atlas/sdk/go/kit/conc"
 )
 
 func TestGroupInterruptsEveryoneWhenOneReturns(t *testing.T) {
@@ -60,4 +63,24 @@ func TestReadiness(t *testing.T) {
 	if !r.Ready() {
 		t.Fatal("expected ready")
 	}
+}
+
+// ATLAS-MECH-012 (ATLAS): an actor that panics stops the group as an
+// error, with the panic and its stack, instead of crashing the process
+// past every other actor's drain.
+func TestGroupTurnsAnActorsPanicIntoItsError(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		var g Group
+		stop := make(chan struct{})
+		var drained atomic.Bool
+		g.Add(func() error { <-stop; drained.Store(true); return nil }, func(error) { close(stop) })
+		g.Add(func() error { panic("an actor's defect") }, func(error) {})
+		var p *conc.PanicError
+		if err := g.Run(); !errors.As(err, &p) || p.Value != "an actor's defect" || len(p.Stack) == 0 {
+			t.Fatalf("got %v", err)
+		}
+		if !drained.Load() {
+			t.Fatal("the other actor was not interrupted and waited for")
+		}
+	})
 }

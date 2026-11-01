@@ -1,0 +1,94 @@
+{
+ "identity": {
+  "id": "atlas.describe",
+  "version": 1,
+  "title": "atlas.describe",
+  "summary": "The built-in atlas.describe (§9.3.2).",
+  "domain": "atlas",
+  "owner": "Atlas"
+ },
+ "properties": {
+  "family": "data",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": []
+ },
+ "interactions": {
+  "fetch": {
+   "effect": "read",
+   "result": "record",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "describe_request",
+   "returns": "describe",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/atlas/atlas.describe:fetch",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "describe_request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/describe_request"
+  },
+  "describe": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/describe.schema.json"
+  }
+ },
+ "errors": [],
+ "meaning": {
+  "grain": "fixed by atlas/1.0",
+  "source": "the gateway"
+ },
+ "usage": {
+  "when": "A program needs a capability's exact contract: its profile, your governance of it, whether it can be served now, and the bindings your client can use.",
+  "when_not": "A person or an agent needs to know how to use it: atlas.guide@v1 says so in words, in your client's syntax.",
+  "examples": [
+   {
+    "title": "The current contract of a capability",
+    "interaction": "fetch",
+    "request": {
+     "by": "id",
+     "id": "atlas.whoami@v1"
+    }
+   }
+  ],
+  "related": [
+   "atlas.guide@v1",
+   "atlas.access@v1"
+  ]
+ }
+}

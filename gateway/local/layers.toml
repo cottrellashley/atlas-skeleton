@@ -1,0 +1,19 @@
+# The development gateway: DuckDB, the fixture, development sign-in.
+# It may choose adapters and fakes, as any deployable does.
+
+adapters = "gateway/adapter/..."
+adapter_importers = ["gateway/local/..."]
+
+[layers]
+0 = ["sdk/go/protocol/...", "sdk/go/kit/...", "sqlglot/...", "gateway/ports/..."]
+1 = ["gateway/fakes/...", "gateway/porttest/...", "gateway/fixtures/..."]
+2 = ["gateway/core/...", "gateway/views/..."]
+3 = ["gateway/adapter/...", "gateway/svc/...", "gateway/local/duckwh/..."]
+4 = ["gateway/edge/..."]
+5 = ["gateway/assemble/...", "gateway/local/devgateway/..."]
+6 = ["gateway/local/cmd/..."]
+
+[[external]]
+from = "gateway/local/duckwh/..."
+allow = ["github.com/duckdb/duckdb-go/v2/...", "github.com/apache/arrow-go/v18/..."]
+why = "the development warehouse is DuckDB, and answers Arrow batches as the Snowflake engine does (ports.DataSource, §6.4.1)"

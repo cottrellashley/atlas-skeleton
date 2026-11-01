@@ -1,0 +1,299 @@
+{
+ "identity": {
+  "id": "portfolio.list",
+  "version": 1,
+  "title": "Portfolios",
+  "summary": "The portfolios you may read: code, name, region, asset class and base currency.",
+  "domain": "portfolio",
+  "owner": "QFI"
+ },
+ "properties": {
+  "family": "data",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": [
+   {
+    "name": "Keyed",
+    "critical": false
+   }
+  ]
+ },
+ "interactions": {
+  "fetch": {
+   "effect": "read",
+   "result": "table",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "request",
+   "returns": "result",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/data/portfolio.list@v1:fetch",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "object",
+   "description": "Narrow the list by region or asset class.",
+   "additionalProperties": false,
+   "properties": {
+    "region": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "description": "Only portfolios managed in this region; every region when null.",
+     "enum": [
+      "americas",
+      "emea",
+      "apac",
+      null
+     ],
+     "x-atlas-enum": [
+      {
+       "value": "americas",
+       "description": "The Americas."
+      },
+      {
+       "value": "emea",
+       "description": "Europe, the Middle East and Africa."
+      },
+      {
+       "value": "apac",
+       "description": "Asia-Pacific."
+      }
+     ],
+     "default": null
+    },
+    "asset_class": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "description": "Only portfolios of this asset class; every class when null.",
+     "enum": [
+      "credit",
+      "rates",
+      "multi",
+      null
+     ],
+     "x-atlas-enum": [
+      {
+       "value": "credit",
+       "description": "Credit portfolios."
+      },
+      {
+       "value": "rates",
+       "description": "Rates portfolios."
+      },
+      {
+       "value": "multi",
+       "description": "Multi-asset portfolios."
+      }
+     ],
+     "default": null
+    }
+   }
+  },
+  "result": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "array",
+   "description": "One row per portfolio you may read, by code.",
+   "items": {
+    "type": "object",
+    "description": "A portfolio.",
+    "required": [
+     "code",
+     "name",
+     "region",
+     "asset_class",
+     "base_currency",
+     "status"
+    ],
+    "properties": {
+     "code": {
+      "type": "string",
+      "description": "The portfolio's code: what other capabilities take.",
+      "x-atlas-logical": "PortfolioCode",
+      "x-atlas-key": true
+     },
+     "name": {
+      "type": "string",
+      "description": "The portfolio's name."
+     },
+     "region": {
+      "type": "string",
+      "description": "Where it is managed.",
+      "enum": [
+       "americas",
+       "emea",
+       "apac",
+       "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+       {
+        "value": "americas",
+        "description": "The Americas."
+       },
+       {
+        "value": "emea",
+        "description": "Europe, the Middle East and Africa."
+       },
+       {
+        "value": "apac",
+        "description": "Asia-Pacific."
+       },
+       {
+        "value": "UNKNOWN",
+        "description": "A value this reader does not know (§9.5.5)."
+       }
+      ]
+     },
+     "asset_class": {
+      "type": "string",
+      "description": "What it invests in.",
+      "enum": [
+       "credit",
+       "rates",
+       "multi",
+       "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+       {
+        "value": "credit",
+        "description": "Credit."
+       },
+       {
+        "value": "rates",
+        "description": "Rates."
+       },
+       {
+        "value": "multi",
+        "description": "Several asset classes."
+       },
+       {
+        "value": "UNKNOWN",
+        "description": "A value this reader does not know (§9.5.5)."
+       }
+      ]
+     },
+     "base_currency": {
+      "type": "string",
+      "x-atlas-logical": "Currency",
+      "description": "The currency its weights and totals are in."
+     },
+     "status": {
+      "type": "string",
+      "description": "Whether it is live.",
+      "enum": [
+       "active",
+       "closed",
+       "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+       {
+        "value": "active",
+        "description": "Live and valued daily."
+       },
+       {
+        "value": "closed",
+        "description": "Closed; its history remains."
+       },
+       {
+        "value": "UNKNOWN",
+        "description": "A value this reader does not know (§9.5.5)."
+       }
+      ]
+     }
+    }
+   }
+  }
+ },
+ "errors": [
+  {
+   "code": "warehouse_suspended",
+   "status": 503,
+   "retryable": true,
+   "description": "The warehouse that serves Harbour's views is suspended or unreachable.",
+   "next": "Wait retry_after seconds, then repeat the call."
+  }
+ ],
+ "meaning": {
+  "grain": "portfolio",
+  "keys": [
+   "code"
+  ],
+  "scope": "only the portfolios in the caller's data scope",
+  "order": "by code",
+  "source": "Harbour's portfolio register, HARBOUR.REF.PORTFOLIOS_V"
+ },
+ "compatibility": {
+  "request": "BACKWARD_TRANSITIVE",
+  "result": "FULL_TRANSITIVE"
+ },
+ "usage": {
+  "when": "You need the codes of the portfolios you may read, or their region, asset class or base currency.",
+  "when_not": "You have a portfolio's name but not its code: use portfolio.search@v1.",
+  "examples": [
+   {
+    "title": "Every portfolio you may read",
+    "interaction": "fetch",
+    "request": {}
+   },
+   {
+    "title": "Credit portfolios",
+    "interaction": "fetch",
+    "request": {
+     "asset_class": "credit"
+    }
+   }
+  ],
+  "related": [
+   "portfolio.search@v1",
+   "portfolio.holdings@v1"
+  ],
+  "cost": "One small warehouse query."
+ },
+ "evolution": {
+  "lens": [],
+  "changelog": [
+   {
+    "date": "2026-10-31",
+    "change": "First published."
+   }
+  ]
+ }
+}

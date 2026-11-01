@@ -23,7 +23,7 @@ var pathLike = regexp.MustCompile(`^(path|file|filename|dir|directory|folder)$|_
 // checks what spans the profile. Every finding is Breaking: a profile that
 // fails is not served. The atlas.* built-ins are fixed by the protocol and
 // not linted (assumption A-016).
-func Lint(p *profile.Profile, cat Catalogue, now time.Time) []Finding {
+func Lint(p *profile.Profile, cat Catalogue) []Finding {
 	if grammar.Builtin(p.ID) {
 		return nil
 	}
@@ -106,9 +106,21 @@ func Lint(p *profile.Profile, cat Catalogue, now time.Time) []Finding {
 		}
 	}
 	if p.Lifecycle == "deprecated" {
-		if lc, ok := p.Doc.Get("properties"); ok {
-			if v, ok := lc.(*ijson.Object).Get("sunset"); !ok || !afterMinimum(v, now) {
-				refuse("/properties/sunset", "a deprecated version has a sunset at least 90 days on")
+		// The notice is measured from the deprecation the profile records,
+		// never from the day it is checked, so a profile admitted once is
+		// admitted unchanged until its sunset.
+		props, _ := p.Doc.Get("properties")
+		o, _ := props.(*ijson.Object)
+		since, hasSince := o.Get("deprecated")
+		sunset, hasSunset := o.Get("sunset")
+		switch {
+		case !hasSince:
+			refuse("/properties/deprecated", "a deprecated version records the date it was deprecated, which Deprecation reports (§3.3.9)")
+		case !hasSunset:
+			refuse("/properties/sunset", "a deprecated version has a sunset (§3.3.9)")
+		default:
+			if notice, ok := noticeOf(since, sunset); !ok || notice < MinimumSunset {
+				refuse("/properties/sunset", "a sunset is at least 90 days after the deprecation (§3.3.9)")
 			}
 		}
 	}
@@ -145,26 +157,22 @@ func checkSunset(v ijson.Value, ptr string, refuse func(string, string, ...any))
 	if !has {
 		return
 	}
+	if notice, ok := noticeOf(since, sunset); ok && notice < MinimumSunset {
+		refuse(ptr+"/sunset", "a sunset is at least 90 days after the deprecation (§3.3.9)")
+	}
+}
+
+// noticeOf is the time from a deprecation's date to its sunset's, both
+// dates; ok is false when either is not a date.
+func noticeOf(since, sunset ijson.Value) (time.Duration, bool) {
 	s1, _ := since.(string)
 	s2, _ := sunset.(string)
 	d1, err1 := grammar.ParseDate(s1)
 	d2, err2 := grammar.ParseDate(s2)
 	if err1 != nil || err2 != nil {
-		return
+		return 0, false
 	}
 	t1 := time.Date(d1.Year, d1.Month, d1.Day, 0, 0, 0, 0, time.UTC)
 	t2 := time.Date(d2.Year, d2.Month, d2.Day, 0, 0, 0, 0, time.UTC)
-	if t2.Sub(t1) < MinimumSunset {
-		refuse(ptr+"/sunset", "a sunset is at least 90 days after the deprecation (§3.3.9)")
-	}
-}
-
-func afterMinimum(v ijson.Value, now time.Time) bool {
-	s, _ := v.(string)
-	d, err := grammar.ParseDate(s)
-	if err != nil {
-		t, err := grammar.ParseDateTime(s)
-		return err == nil && t.Sub(now) >= MinimumSunset
-	}
-	return time.Date(d.Year, d.Month, d.Day, 0, 0, 0, 0, time.UTC).Sub(now) >= MinimumSunset
+	return t2.Sub(t1), true
 }

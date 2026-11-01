@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/governance.schema.json",
+  "title": "Governance",
+  "description": "The caller's access, limits and approvals for one capability (§3.1.1), served beside its profile by atlas.describe, never part of it or its fingerprint.",
+  "type": "object",
+  "required": [
+    "capability",
+    "governance_revision",
+    "for_caller"
+  ],
+  "properties": {
+    "capability": {
+      "type": "string",
+      "format": "pinned-id"
+    },
+    "governance_revision": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Recorded in every audit record; Atlas-Governance-Revision."
+    },
+    "for_caller": {
+      "type": "object",
+      "required": [
+        "interactions",
+        "limits",
+        "approval"
+      ],
+      "properties": {
+        "interactions": {
+          "type": "object",
+          "description": "How the caller holds each interaction it may use.",
+          "propertyNames": {
+            "pattern": "^[a-z](-?[a-z0-9])*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "held_by"
+            ],
+            "properties": {
+              "held_by": {
+                "type": "string",
+                "description": "`role:<name>`, `user:<oid>` or `everyone`."
+              }
+            }
+          }
+        },
+        "limits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/limit"
+          }
+        },
+        "approval": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "The approval policy, or null."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "limit": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "interaction": {
+          "type": "string",
+          "pattern": "^[a-z](-?[a-z0-9])*$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "rate",
+            "concurrency",
+            "output",
+            "budget",
+            "confirmation",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "rate"
+            },
+            {
+              "value": "concurrency"
+            },
+            {
+              "value": "output"
+            },
+            {
+              "value": "budget"
+            },
+            {
+              "value": "confirmation"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ],
+          "description": "§6.2.6."
+        },
+        "per_minute": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "remaining": {
+          "type": "number"
+        },
+        "amount": {
+          "type": "string",
+          "format": "decimal"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        },
+        "set_by": {
+          "type": "string",
+          "description": "Who set it: `role:<name>`, `user:<oid>`."
+        },
+        "resets": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

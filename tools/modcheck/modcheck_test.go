@@ -1,0 +1,140 @@
+package modcheck
+
+import (
+	"os"
+	"path/filepath"
+	"regexp"
+	"slices"
+	"strings"
+	"testing"
+
+	"golang.org/x/mod/modfile"
+)
+
+const root = "../.."
+
+// Every module this repository holds resolves locally, so nothing ever asks
+// anyone for a path under the private organisation.
+func TestNothingFetchesThePrivateOrganisation(t *testing.T) {
+	mods, err := Modules(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(mods) < 2 {
+		t.Fatalf("found %d modules", len(mods))
+	}
+	work, err := Work(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range Check(root, mods, work) {
+		t.Error(v)
+	}
+}
+
+// The Makefile fences the private paths off, so that a replace that is
+// missing fails on this machine.
+func TestTheMakefileFencesThePrivateOrganisation(t *testing.T) {
+	b, err := os.ReadFile(filepath.Join(root, "Makefile"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, line := range []string{"export GOPRIVATE := github.com/jhgonline", "export GOVCS := github.com/jhgonline:off"} {
+		if !strings.Contains(string(b), line+"\n") {
+			t.Errorf("the Makefile does not say %q", line)
+		}
+	}
+}
+
+// Nothing tells a reader, a caller or an agent to fetch a private path:
+// no document, and no string in code or data either (atlas.clients once
+// answered every caller with a go install from it).
+// fetch matches an instruction that would reach the private organisation.
+var fetch = regexp.MustCompile(`go (get|install|run)\s+[^\s"'\x60]*github\.com/jhgonline|git (clone|pull|fetch|push|remote add)[^\n]*jhgonline|github\.com[:/]jhgonline/[^\s"'\x60]*\.git`)
+
+// The pattern catches what atlas.clients once told every caller, and lets
+// through building from a checkout and plain import paths.
+func TestTheFetchPatternItself(t *testing.T) {
+	for _, bad := range []string{
+		"go install github.com/jhgonline/fi-app-atlas/clients/cli/cmd/atlas@latest",
+		"go get github.com/jhgonline/fi-app-atlas/sdk/go",
+		"go run github.com/jhgonline/fi-app-atlas/tools/reqs@v0.1.0",
+		"git clone https://github.com/jhgonline/fi-app-atlas.git",
+		"git remote add origin git@github.com:jhgonline/fi-app-atlas.git",
+	} {
+		if !fetch.MatchString(bad) {
+			t.Errorf("not caught: %q", bad)
+		}
+	}
+	for _, good := range []string{
+		"From a checkout of the Atlas repository: go -C clients/cli install ./cmd/atlas",
+		`import "github.com/jhgonline/fi-app-atlas/sdk/go"`,
+		"module github.com/jhgonline/fi-app-atlas/gateway",
+		"replace github.com/jhgonline/fi-app-atlas/sdk/go => ../sdk/go",
+	} {
+		if fetch.MatchString(good) {
+			t.Errorf("refused: %q", good)
+		}
+	}
+}
+
+func TestNothingTellsAnyoneToFetchThePrivateOrganisation(t *testing.T) {
+	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() && (skipped[d.Name()] || d.Name() == "spec") {
+			return filepath.SkipDir
+		}
+		scanned := d.Name() == "Makefile" || slices.ContainsFunc([]string{".md", ".sh", ".go", ".py", ".ts", ".js", ".json", ".toml"}, func(ext string) bool { return strings.HasSuffix(path, ext) })
+		if d.IsDir() || !scanned || strings.HasSuffix(path, "modcheck_test.go") {
+			return nil
+		}
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		if m := fetch.Find(b); m != nil {
+			t.Errorf("%s tells someone to fetch the private organisation: %q", path, m)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// The check itself refuses what it is there to refuse.
+func TestTheCheckRefuses(t *testing.T) {
+	parse := func(dir, text string) Module {
+		f, err := modfile.Parse(dir+"/go.mod", []byte(text), nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return Module{Dir: dir, Path: f.Module.Mod.Path, File: f}
+	}
+	a := parse("a", "module github.com/jhgonline/fi-app-atlas/a\n")
+	work, err := modfile.ParseWork("go.work", []byte("go 1.25.0\n\nuse (\n\t./a\n\t./b\n)\n"), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, b := range map[string]string{
+		"no replace":         "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\n",
+		"a module version":   "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => github.com/jhgonline/fi-app-atlas/a v1.0.0\n",
+		"the wrong place":    "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => ../c\n",
+		"an unknown module":  "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/zzz v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/zzz => ../zzz\n",
+		"outside the prefix": "module example.com/b\n",
+	} {
+		if got := Check(".", []Module{a, parse("b", b)}, work); len(got) == 0 {
+			t.Errorf("%s: accepted", name)
+		}
+	}
+	good := parse("b", "module github.com/jhgonline/fi-app-atlas/b\nrequire github.com/jhgonline/fi-app-atlas/a v0.0.0\nreplace github.com/jhgonline/fi-app-atlas/a => ../a\n")
+	if got := Check(".", []Module{a, good}, work); len(got) != 0 {
+		t.Errorf("a module replaced by its directory: %v", got)
+	}
+	lacking, _ := modfile.ParseWork("go.work", []byte("go 1.25.0\n\nuse ./a\n"), nil)
+	if got := Check(".", []Module{a, good}, lacking); len(got) != 1 || !strings.Contains(got[0], "leaves out b") {
+		t.Errorf("a module go.work leaves out: %v", got)
+	}
+}

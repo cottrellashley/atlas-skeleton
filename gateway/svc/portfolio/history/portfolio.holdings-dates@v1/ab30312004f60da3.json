@@ -1,0 +1,222 @@
+{
+ "identity": {
+  "id": "portfolio.holdings-dates",
+  "version": 1,
+  "title": "Valuation dates",
+  "summary": "The dates a portfolio was valued: its positions and total market value on each.",
+  "domain": "portfolio",
+  "owner": "QFI"
+ },
+ "properties": {
+  "family": "data",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": [
+   {
+    "name": "Keyed",
+    "critical": false
+   }
+  ]
+ },
+ "interactions": {
+  "fetch": {
+   "effect": "read",
+   "result": "table",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "request",
+   "returns": "result",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/data/portfolio.holdings-dates@v1:fetch",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "object",
+   "description": "Which portfolios, between which dates.",
+   "additionalProperties": false,
+   "required": [
+    "portfolios"
+   ],
+   "properties": {
+    "portfolios": {
+     "type": "array",
+     "description": "Portfolio codes, as portfolio.list names them: one to a hundred, each once.",
+     "minItems": 1,
+     "maxItems": 100,
+     "uniqueItems": true,
+     "items": {
+      "type": "string",
+      "description": "A portfolio code.",
+      "x-atlas-logical": "PortfolioCode",
+      "x-atlas-reference": "portfolio.list@v1"
+     }
+    },
+    "from": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "format": "date",
+     "default": null,
+     "description": "The first date, inclusive; the first valuation when null."
+    },
+    "to": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "format": "date",
+     "default": null,
+     "description": "The last date, inclusive; the latest valuation when null."
+    }
+   }
+  },
+  "result": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "array",
+   "description": "One row per portfolio and valuation date, oldest first.",
+   "items": {
+    "type": "object",
+    "description": "A portfolio's valuation on a date.",
+    "required": [
+     "portfolio",
+     "as_of",
+     "positions",
+     "market_value"
+    ],
+    "properties": {
+     "portfolio": {
+      "type": "string",
+      "description": "The portfolio's code.",
+      "x-atlas-logical": "PortfolioCode",
+      "x-atlas-key": true
+     },
+     "as_of": {
+      "type": "string",
+      "format": "date",
+      "description": "The valuation date: an as_of portfolio.holdings@v1 answers for.",
+      "x-atlas-key": true
+     },
+     "positions": {
+      "type": "integer",
+      "minimum": 0,
+      "x-atlas-unit": "count",
+      "description": "The rows portfolio.holdings@v1 returns for the portfolio on this date."
+     },
+     "market_value": {
+      "type": "object",
+      "x-atlas-logical": "Money",
+      "description": "The portfolio's total market value on the date, in its base currency."
+     }
+    }
+   }
+  }
+ },
+ "errors": [
+  {
+   "code": "portfolio_not_found",
+   "status": 404,
+   "retryable": false,
+   "description": "No portfolio has one of the codes asked for.",
+   "next": "Call portfolio.search@v1:fetch to find the code, or portfolio.list@v1:fetch for the codes you may use."
+  },
+  {
+   "code": "warehouse_suspended",
+   "status": 503,
+   "retryable": true,
+   "description": "The warehouse that serves Harbour's views is suspended or unreachable.",
+   "next": "Wait retry_after seconds, then repeat the call."
+  }
+ ],
+ "meaning": {
+  "grain": "portfolio × date",
+  "keys": [
+   "portfolio",
+   "as_of"
+  ],
+  "dates": "every date the portfolio was valued between from and to, inclusive",
+  "scope": "a portfolio outside the caller's data scope is refused",
+  "order": "by portfolio, then as_of",
+  "source": "Harbour's valuations view, HARBOUR.HOLDINGS.VALUATIONS_V"
+ },
+ "compatibility": {
+  "request": "BACKWARD_TRANSITIVE",
+  "result": "FULL_TRANSITIVE"
+ },
+ "usage": {
+  "when": "You need the dates a portfolio has holdings for, before asking portfolio.holdings@v1 for one of them, or a portfolio's total value over time.",
+  "when_not": "You need the positions themselves: use portfolio.holdings@v1.",
+  "examples": [
+   {
+    "title": "Every valuation date",
+    "interaction": "fetch",
+    "request": {
+     "portfolios": [
+      "147HYC"
+     ]
+    }
+   },
+   {
+    "title": "A window",
+    "interaction": "fetch",
+    "request": {
+     "portfolios": [
+      "147HYC",
+      "GLOBAL-CREDIT"
+     ],
+     "from": "2026-10-28",
+     "to": "2026-10-30"
+    }
+   }
+  ],
+  "related": [
+   "portfolio.holdings@v1",
+   "portfolio.list@v1"
+  ],
+  "cost": "One small warehouse query."
+ },
+ "evolution": {
+  "lens": [],
+  "changelog": [
+   {
+    "date": "2026-10-31",
+    "change": "First published."
+   }
+  ]
+ }
+}

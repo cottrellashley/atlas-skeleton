@@ -3,7 +3,6 @@ package gate
 import (
 	"fmt"
 	"slices"
-	"time"
 
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
@@ -11,14 +10,19 @@ import (
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/resolve"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/schema"
-	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/units"
 )
 
 // Classify names every difference between the last published profile of a
-// version and a new one, by §3.3.3 to §3.3.7. Prose is not compared: it is
-// not part of the contract.
-func Classify(old, new *profile.Profile, now time.Time) []Finding {
-	c := &classifier{old: old, new: new, now: now}
+// version and a new one, by §3.3.3 to §3.3.7 as the design review narrows
+// them (R03, docs/pass-2/REVIEW.md). Within a version a request may only
+// widen, a result may only add a field with a defined missing value, and
+// a rename keeps its old name as an alias. A removal, a unit change, a type
+// change, a result field made non-null and a changed default are a new
+// major version: an old reader could not hold what the new writer sends,
+// or a new reader what was written before. Prose is not compared: it is not
+// part of the contract.
+func Classify(old, new *profile.Profile) []Finding {
+	c := &classifier{old: old, new: new}
 	c.common()
 	c.schemas()
 	c.meaning()
@@ -27,7 +31,6 @@ func Classify(old, new *profile.Profile, now time.Time) []Finding {
 
 type classifier struct {
 	old, new *profile.Profile
-	now      time.Time
 	out      []Finding
 }
 
@@ -106,59 +109,98 @@ func (c *classifier) common() {
 	}
 }
 
-// schemas compares every schema the two profiles share, each by its role:
-// what an interaction takes is held BACKWARD (the gateway reads every
-// earlier request), everything else FULL (§3.3.2a).
+// schemas compares the schemas each interaction uses, interaction by
+// interaction and whatever they are named, so pointing an interaction at
+// another schema cannot escape the comparison. What an interaction takes
+// is held BACKWARD: the gateway reads every earlier request, resolved
+// forward. What it returns is held FULL: an earlier reader reads what the
+// new writer sends, and a new reader reads what was written before
+// (§3.3.2a, R03).
 func (c *classifier) schemas() {
-	for name, os := range c.old.Schemas {
-		ns, ok := c.new.Schemas[name]
-		if !ok {
-			continue // its interaction's removal is classified above
+	seen := map[string]bool{}
+	for _, name := range c.old.Order {
+		oi, ni := c.old.Interactions[name], c.new.Interactions[name]
+		if ni == nil {
+			continue // its removal is classified in common
 		}
-		part := c.part(name)
-		c.record(os, ns, "/schemas/"+name, part, true)
-	}
-}
-
-// part is a schema's role, for the rules that differ by it.
-type part struct {
-	name    string // request, result, resource, plan, receipt, payload
-	request bool
-	table   bool
-}
-
-func (c *classifier) part(name string) part {
-	p := part{name: name}
-	for _, in := range c.new.Interactions {
-		if in.Takes == name {
-			p.request = true
-			p.name = "request"
-		}
-		if in.Returns == name && in.Result == "table" {
-			p.table = true
-		}
-	}
-	if !p.request {
+		c.role(seen, name, "takes", oi.Takes, ni.Takes, part{name: "request", request: true})
+		p := part{name: "result", table: ni.Result == "table"}
 		switch c.new.Family {
 		case "resource":
 			p.name = "resource"
 		case "event":
 			p.name = "payload"
 		}
+		c.role(seen, name, "returns", oi.Returns, ni.Returns, p)
 	}
-	return p
 }
 
-// record compares two record schemas, or anything nested in one.
-func (c *classifier) record(o, n *schema.Schema, ptr string, p part, top bool) {
-	if items, nitems := o.Items(), n.Items(); items != nil && nitems != nil {
-		c.record(items, nitems, ptr+"/items", p, top)
+// role compares what one interaction takes, or returns, before and after.
+func (c *classifier) role(seen map[string]bool, interaction, member, oldName, newName string, p part) {
+	os, oHas := c.old.Schemas[oldName]
+	ns, nHas := c.new.Schemas[newName]
+	ptr := "/interactions/" + interaction + "/" + member
+	switch {
+	case !oHas && !nHas:
+		return
+	case !oHas && p.request && ns.Valid(ijson.NewObject()):
+		return // an earlier caller sent {}, which the new request still accepts
+	case !oHas:
+		c.add(Breaking, ptr, "the interaction now %s a schema it did not: declare @v%d", member, c.new.Version+1)
+		return
+	case !nHas:
+		c.add(Breaking, ptr, "the interaction no longer %s the schema it did: declare @v%d", member, c.new.Version+1)
 		return
 	}
-	if len(o.Properties()) == 0 || len(n.Properties()) == 0 {
-		c.value(o, n, ptr, p)
+	key := oldName + "\x00" + newName + "\x00" + p.name
+	if seen[key] {
 		return
 	}
+	seen[key] = true
+	c.compare(os, ns, "/schemas/"+newName, p, true)
+}
+
+// part is a schema's role, for the rules that differ by it.
+type part struct {
+	name    string // request, result, resource, payload
+	request bool
+	table   bool
+}
+
+// compare compares two schemas in a role. Every level is compared, the
+// root included: first the schema's own keywords (its type, nullability,
+// unit, enum, bounds and every other assertion), then what it holds, an
+// array's items and an object's properties. A constraint on an enclosing
+// schema, such as maxProperties on a request, is classified like any other.
+func (c *classifier) compare(o, n *schema.Schema, ptr string, p part, top bool) {
+	if !c.value(o, n, ptr, p) {
+		return // a different type: nothing within it compares
+	}
+	oi, ni := o.Items(), n.Items()
+	if oi != nil && ni != nil {
+		c.compare(oi, ni, ptr+"/items", p, top)
+	}
+	if len(o.Properties()) > 0 || len(n.Properties()) > 0 {
+		c.properties(o, n, ptr, p, top)
+	}
+}
+
+// missingValue reports whether a reader holding s has a value for a
+// property that a record lacks: none is needed where it is optional, and
+// otherwise it is its default, or null where it allows null (§9.5.2 steps
+// 8 to 10).
+func missingValue(s *schema.Schema, name string, ps *schema.Schema) bool {
+	if !s.Required(name) {
+		return true
+	}
+	_, hasDefault := ps.Default()
+	return hasDefault || ps.Nullable()
+}
+
+// properties compares an object's properties: the ones kept, renamed,
+// added and removed, and what each side requires of the other's records.
+func (c *classifier) properties(o, n *schema.Schema, ptr string, p part, top bool) {
+	v := c.new.Version + 1
 	renamed := map[string]string{} // old name → new name
 	for _, name := range n.Properties() {
 		np, _ := n.Property(name)
@@ -176,28 +218,39 @@ func (c *classifier) record(o, n *schema.Schema, ptr string, p part, top bool) {
 	for _, name := range n.Properties() {
 		np, _ := n.Property(name)
 		at := ptr + "/properties/" + name
-		op, existed := o.Property(name)
-		if !existed {
-			if from := keyOf(renamed, name); from != "" {
-				c.renamed(from, name, at, p, top)
-				op, _ = o.Property(from)
-				c.value(op, np, at, p)
-				continue
-			}
-			_, hasDefault := np.Default()
-			mustHave := n.Required(name) && !np.Nullable() && !hasDefault
-			switch {
-			case p.request && mustHave:
-				c.add(Breaking, at, "%s property '%s' became required: declare @v%d", p.name, name, c.new.Version+1)
-			case !p.request && !p.table && mustHave:
-				c.add(Breaking, at, "%s field '%s' is required, and earlier %ss lack it: give it a default, or declare @v%d", p.name, name, p.name, c.new.Version+1)
+		from, op := name, (*schema.Schema)(nil)
+		if x, existed := o.Property(name); existed {
+			op = x
+		} else if from = keyOf(renamed, name); from != "" {
+			c.renamed(from, name, at, p, top)
+			op, _ = o.Property(from)
+		}
+		if op == nil {
+			// A property neither side had: what was written before lacks it.
+			if !missingValue(n, name, np) {
+				if p.request {
+					c.add(Breaking, at, "%s property '%s' became required: declare @v%d", p.name, name, v)
+				} else {
+					c.add(Breaking, at, "%s field '%s' is required and has no missing value for what was written before it: make it optional, nullable or defaulted, or declare @v%d (R03)", p.name, name, v)
+				}
 			}
 			continue
 		}
-		c.value(op, np, at, p)
-		if !o.Required(name) && n.Required(name) && p.request {
-			if _, hasDefault := np.Default(); !hasDefault && !np.Nullable() {
-				c.add(Breaking, at, "%s property '%s' became required: declare @v%d", p.name, name, c.new.Version+1)
+		c.compare(op, np, at, p, false)
+		// What one side wrote without the property, the other side reads.
+		if !o.Required(from) && !missingValue(n, name, np) {
+			if p.request {
+				c.add(Breaking, at, "%s property '%s' became required: declare @v%d", p.name, name, v)
+			} else {
+				c.add(Breaking, at, "%s field '%s' became required with no default and no null, and what was written before may lack it: declare @v%d (R03)", p.name, name, v)
+			}
+		}
+		if !p.request && !n.Required(name) && !missingValue(o, from, op) {
+			c.add(Breaking, at, "%s field '%s' is no longer required, and earlier readers have no default or null for a record that lacks it: declare @v%d (R03)", p.name, name, v)
+		}
+		for _, a := range op.Aliases() {
+			if !slices.Contains(np.Aliases(), a) {
+				c.add(Breaking, at, "the alias '%s' was removed, so what was written under that name no longer reads: declare @v%d", a, v)
 			}
 		}
 	}
@@ -205,15 +258,12 @@ func (c *classifier) record(o, n *schema.Schema, ptr string, p part, top bool) {
 		if _, still := n.Property(name); still || renamed[name] != "" {
 			continue
 		}
-		op, _ := o.Property(name)
 		at := ptr + "/properties/" + name
-		if sunsetPassed(op, c.now) {
-			if top && !c.lensHas("drop", name) {
-				c.add(Dangerous, at, "'%s' was dropped after its sunset: the lens drops it", name)
-			}
+		if p.request {
+			c.add(Breaking, at, "the request no longer accepts '%s', which earlier requests send: declare @v%d", name, v)
 			continue
 		}
-		c.add(Breaking, at, "%s '%s' was dropped before its sunset: deprecate it first, or declare @v%d", p.name, name, c.new.Version+1)
+		c.add(Breaking, at, "%s field '%s' was removed: no default can give an earlier reader its value, so a removal is a new major version, @v%d (R03)", p.name, name, v)
 	}
 }
 
@@ -250,14 +300,17 @@ func (c *classifier) lensHas(op string, fields ...string) bool {
 	})
 }
 
-// value compares one property's schema: its type, nullability, unit, enum
-// and constraints.
-func (c *classifier) value(o, n *schema.Schema, ptr string, p part) {
+// value compares one schema's own keywords: its type, nullability, unit,
+// enum and constraints. It reports false when the types differ, so that
+// nothing within them is compared.
+func (c *classifier) value(o, n *schema.Schema, ptr string, p part) bool {
 	v := c.new.Version + 1
 	switch {
 	case o.Nullable() && !n.Nullable():
 		if p.request {
 			c.add(Breaking, ptr, "%s property no longer accepts null: declare @v%d", p.name, v)
+		} else {
+			c.add(Breaking, ptr, "%s field became non-null, and what was written before holds nulls: declare @v%d (R03)", p.name, v)
 		}
 	case !o.Nullable() && n.Nullable():
 		if !p.request {
@@ -268,23 +321,17 @@ func (c *classifier) value(o, n *schema.Schema, ptr string, p part) {
 	switch {
 	case ot == nt:
 	case promoted(ot, nt):
-		if p.request {
-			// a widening: every earlier request is still valid
-		} else {
-			c.add(Dangerous, ptr, "the type was promoted from %s to %s: resolution promotes it", ot, nt)
+		if !p.request { // a request's promotion widens it: every earlier request is still valid
+			c.add(Breaking, ptr, "the type changed from %s to %s: an earlier reader cannot hold every new value (1.5 in an integer), so declare @v%d (R03)", ot, nt, v)
 		}
 	default:
 		c.add(Breaking, ptr, "the type changed from %s to %s, which is no promotion: declare @v%d", ot, nt, v)
-		return
+		return false
 	}
 	ou, _ := o.Unit()
 	nu, _ := n.Unit()
 	if ou != nu {
-		if ou != "" && nu != "" && units.Convertible(ou, nu) {
-			c.add(Dangerous, ptr, "the unit changed from %s to %s: a convert_unit lens converts it", ou, nu)
-		} else {
-			c.add(Breaking, ptr, "the unit changed from %q to %q, across dimensions: declare @v%d", ou, nu, v)
-		}
+		c.add(Breaking, ptr, "the unit changed from %q to %q: a version keeps its units, so declare @v%d (R03)", ou, nu, v)
 	}
 	c.enum(o, n, ptr, p)
 	c.decimal(o, n, ptr, p)
@@ -294,15 +341,16 @@ func (c *classifier) value(o, n *schema.Schema, ptr string, p part) {
 	if !o.Deprecated() && n.Deprecated() {
 		c.add(Dangerous, ptr, "deprecated: every call that uses it returns Deprecation and Sunset")
 	}
+	if o.Reference() != n.Reference() {
+		c.add(Dangerous, ptr, "the capability that lists its values changed from %q to %q", o.Reference(), n.Reference())
+	}
 	od, oHas := o.Default()
 	nd, nHas := n.Default()
-	if p.request && oHas && (!nHas || !ijson.Equal(od, nd)) { // a default changed or removed
-		c.add(Breaking, ptr, "%s property's default changed: declare @v%d", p.name, v)
+	if oHas && (!nHas || !ijson.Equal(od, nd)) { // a default changed or removed
+		c.add(Breaking, ptr, "the %s's default changed: a version keeps its defaults, so declare @v%d", p.name, v)
 	}
 	c.constraints(o, n, ptr, p)
-	if len(o.Properties()) > 0 && len(n.Properties()) > 0 || o.Items() != nil && n.Items() != nil {
-		c.record(o, n, ptr, p, false)
-	}
+	return true
 }
 
 func typeName(s *schema.Schema) string {
@@ -331,9 +379,7 @@ func (c *classifier) enum(o, n *schema.Schema, ptr string, p part) {
 		return
 	}
 	if o.Enum() == nil {
-		if p.request {
-			c.add(Breaking, ptr, "an enum now narrows what the request accepts: declare @v%d", c.new.Version+1)
-		}
+		c.add(Breaking, ptr, "an enum now narrows what the %s holds: declare @v%d", p.name, c.new.Version+1)
 		return
 	}
 	for _, e := range n.Enum() {
@@ -363,8 +409,9 @@ func describe(v ijson.Value) string {
 	return string(b)
 }
 
-// decimal compares a Decimal(p,s)'s precision and scale: a request may
-// widen, a result may narrow.
+// decimal compares a Decimal(p,s)'s precision and scale. A request may
+// widen them. A result keeps them: narrowing refuses values written
+// before, and widening sends values an earlier reader refuses.
 func (c *classifier) decimal(o, n *schema.Schema, ptr string, p part) {
 	on, op, os, ok1 := o.Logical()
 	nn, np, ns, ok2 := n.Logical()
@@ -372,21 +419,35 @@ func (c *classifier) decimal(o, n *schema.Schema, ptr string, p part) {
 		return
 	}
 	wider := np-ns >= op-os && ns >= os
-	narrower := np-ns <= op-os && ns <= os
 	switch {
 	case p.request && !wider:
 		c.add(Breaking, ptr, "the request's Decimal(%d,%d) narrowed to Decimal(%d,%d): declare @v%d", op, os, np, ns, c.new.Version+1)
-	case !p.request && !narrower:
-		c.add(Breaking, ptr, "Decimal(%d,%d) widened to Decimal(%d,%d): earlier readers would refuse the new values", op, os, np, ns)
+	case !p.request:
+		c.add(Breaking, ptr, "Decimal(%d,%d) changed to Decimal(%d,%d): an earlier reader checks what the new writer sends, and a new reader what was written before, so a %s keeps its precision and scale: declare @v%d (R03)", op, os, np, ns, p.name, c.new.Version+1)
 	}
 }
 
-// constraints compares the bounds on a value: a request may only relax
-// them, and every other schema may only tighten them, because a reader
-// validates what it receives (§9.3 rule 1).
+// own are the keywords compare and value classify by their own rules, and
+// prose, which is not part of the contract. Every other keyword is
+// compared by constraints.
+var own = map[string]bool{
+	"$schema": true, "$vocabulary": true, "$id": true, "$defs": true, "$ref": true, "$comment": true,
+	"title": true, "description": true, "examples": true, "deprecated": true, "readOnly": true, "writeOnly": true,
+	"type": true, "format": true, "enum": true, "default": true, "properties": true, "required": true, "items": true,
+	"x-atlas-logical": true, "x-atlas-unit": true, "x-atlas-key": true, "x-atlas-aliases": true,
+	"x-atlas-reference": true, "x-atlas-deprecated": true, "x-atlas-enum": true,
+	"minimum": true, "exclusiveMinimum": true, "minLength": true, "minItems": true, "minProperties": true,
+	"maximum": true, "exclusiveMaximum": true, "maxLength": true, "maxItems": true, "maxProperties": true,
+}
+
+// constraints compares every other assertion on a value. A request may
+// only relax its bounds. Every other schema keeps them, because a reader
+// validates what it receives (§9.3 rule 1) and a new reader reads what was
+// written before. A keyword whose change the gate cannot show to be safe
+// (prefixItems, anyOf, oneOf) is breaking.
 func (c *classifier) constraints(o, n *schema.Schema, ptr string, p part) {
-	os, _ := o.Source().(*ijson.Object)
-	ns, _ := n.Source().(*ijson.Object)
+	os, _ := o.Definition().Source().(*ijson.Object)
+	ns, _ := n.Definition().Source().(*ijson.Object)
 	if os == nil || ns == nil {
 		return
 	}
@@ -396,15 +457,39 @@ func (c *classifier) constraints(o, n *schema.Schema, ptr string, p part) {
 	for _, k := range []string{"maximum", "exclusiveMaximum", "maxLength", "maxItems", "maxProperties"} {
 		c.bound(os, ns, k, ptr, p, false)
 	}
-	for _, k := range []string{"pattern", "multipleOf", "const"} {
-		ov, oHas := os.Get(k)
-		nv, nHas := ns.Get(k)
-		if oHas == nHas && (!oHas || ijson.Equal(ov, nv)) {
+	names := slices.Concat(os.Names(), ns.Names())
+	slices.Sort(names)
+	for _, k := range slices.Compact(names) {
+		if own[k] {
 			continue
 		}
-		relaxed := oHas && !nHas
-		c.bounded(k, relaxed, ptr, p)
+		ov, oHas := os.Get(k)
+		nv, nHas := ns.Get(k)
+		if oHas == nHas && (!oHas || sameSchema(ov, nv)) {
+			continue
+		}
+		_, oSchema := ov.(*ijson.Object)
+		_, nSchema := nv.(*ijson.Object)
+		switch {
+		case k == "pattern" || k == "multipleOf" || k == "const":
+			c.bounded(k, oHas && !nHas, ptr, p)
+		case k == "uniqueItems":
+			c.bounded(k, ov == true && nv != true, ptr, p)
+		case k == "additionalProperties" && !oSchema && !nSchema:
+			c.bounded(k, ov == false && (!nHas || nv == true), ptr, p)
+		default:
+			c.add(Breaking, ptr, "%s changed, and the gate cannot show that every value it held before still holds: declare @v%d", k, c.new.Version+1)
+		}
 	}
+}
+
+// sameSchema reports whether two keyword values say the same thing,
+// ignoring prose.
+func sameSchema(a, b ijson.Value) bool {
+	a, b = ijson.Clone(a), ijson.Clone(b)
+	protocol.StripSchema(a)
+	protocol.StripSchema(b)
+	return ijson.Equal(a, b)
 }
 
 func (c *classifier) bound(os, ns *ijson.Object, k, ptr string, p part, lower bool) {
@@ -430,7 +515,9 @@ func (c *classifier) bounded(k string, relaxed bool, ptr string, p part) {
 	case p.request && !relaxed:
 		c.add(Breaking, ptr, "the request's %s now refuses values it accepted: declare @v%d", k, c.new.Version+1)
 	case !p.request && relaxed:
-		c.add(Breaking, ptr, "%s relaxed: earlier readers would refuse the new values", k)
+		c.add(Breaking, ptr, "%s relaxed: earlier readers would refuse the new values: declare @v%d (R03)", k, c.new.Version+1)
+	case !p.request:
+		c.add(Breaking, ptr, "%s tightened: what was written before may not hold, and a new reader reads it: declare @v%d (R03)", k, c.new.Version+1)
 	}
 }
 
@@ -479,21 +566,6 @@ func longer(a, b ijson.Value) bool {
 	return e1 == nil && e2 == nil && db > da
 }
 
-func sunsetPassed(s *schema.Schema, now time.Time) bool {
-	src, _ := s.Source().(*ijson.Object)
-	if src == nil {
-		return false
-	}
-	d, ok := src.Get("x-atlas-deprecated")
-	if !ok {
-		return false
-	}
-	sunset, _ := d.(*ijson.Object).Get("sunset")
-	str, _ := sunset.(string)
-	date, err := grammar.ParseDate(str)
-	return err == nil && !time.Date(date.Year, date.Month, date.Day, 0, 0, 0, 0, time.UTC).After(now)
-}
-
 // lensConsistent is §3.3.12 step 6: every lens operation maps the previous
 // profile onto this one, and every alias names a field that existed.
 func lensConsistent(old, new *profile.Profile) []Finding {
@@ -525,12 +597,7 @@ func lensConsistent(old, new *profile.Profile) []Finding {
 				bad("renames to '%s', which this profile does not have", to)
 			}
 		case "drop":
-			if _, ok := has(old, op.Field); !ok {
-				bad("drops '%s', which the previous profile does not have", op.Field)
-			}
-			if _, ok := has(new, op.Field); ok {
-				bad("drops '%s', which this profile still has", op.Field)
-			}
+			bad("drops '%s': a removal is a new major version, @v%d (R03)", op.Field, new.Version+1)
 		case "default":
 			if _, ok := has(old, op.Field); ok {
 				bad("defaults '%s', which the previous profile already has", op.Field)
@@ -538,15 +605,9 @@ func lensConsistent(old, new *profile.Profile) []Finding {
 			if s, ok := has(new, op.Field); !ok || !s.Valid(op.Value) {
 				bad("defaults '%s' to a value this profile does not accept", op.Field)
 			}
-		case "convert_unit":
-			os, ok1 := has(old, op.Field)
-			ns, ok2 := has(new, op.Field)
-			ou, _ := os.Unit()
-			nu, _ := ns.Unit()
-			if !ok1 || !ok2 || ou != "" && string(ou) != op.From || nu != "" && string(nu) != op.To {
-				bad("converts '%s' from %v to %v, which the two profiles' units do not say", op.Field, op.From, op.To)
-			}
-		case "promote", "alias_value":
+		case "convert_unit", "promote":
+			bad("%s on '%s' changes a unit or a type, which a version keeps: declare @v%d. The resolver's %s is an experiment, not a client obligation (R03)", op.Op, op.Field, new.Version+1, op.Op)
+		case "alias_value":
 			_, ok1 := has(old, op.Field)
 			_, ok2 := has(new, op.Field)
 			if !ok1 || !ok2 {

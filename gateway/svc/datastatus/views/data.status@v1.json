@@ -1,0 +1,47 @@
+{
+ "interaction": "fetch",
+ "object": "HARBOUR.OPS.LOADS_V",
+ "columns": {
+  "source": {
+   "column": "SOURCE",
+   "type": "string"
+  },
+  "latest_date": {
+   "column": "LATEST_DATE",
+   "type": "date"
+  },
+  "expected_date": {
+   "column": "EXPECTED_DATE",
+   "type": "date"
+  },
+  "checked_at": {
+   "column": "CHECKED_AT",
+   "type": "timestamp",
+   "zone": "UTC"
+  }
+ },
+ "filters": {
+  "sources": {
+   "column": "SOURCE",
+   "op": "in",
+   "type": "string"
+  }
+ },
+ "scope": {},
+ "order": [
+  "SOURCE"
+ ],
+ "freshness": {
+  "status": "status",
+  "latest": "latest_date",
+  "expected": "expected_date",
+  "checked": "checked_at",
+  "within": "PT26H",
+  "values": {
+   "current": "current",
+   "late": "late",
+   "unchecked": "unchecked"
+  }
+ },
+ "unavailable": "warehouse_suspended"
+}

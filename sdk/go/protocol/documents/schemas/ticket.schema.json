@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/ticket.schema.json",
+  "title": "Ticket",
+  "description": "`:ticket` (§2.2, §6.3.4): a credential issued once and its planned work, for `client` execution. Deferred until its credential meets the credential rule (O54): no atlas/1.0 client declares Broker. Cache-Control: no-store.",
+  "type": "object",
+  "required": [
+    "kind",
+    "protocol",
+    "target",
+    "auth",
+    "rights",
+    "expires",
+    "profile",
+    "planned",
+    "operation"
+  ],
+  "properties": {
+    "kind": {
+      "const": "ticket"
+    },
+    "protocol": {
+      "type": "string",
+      "enum": [
+        "snowflake",
+        "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+        {
+          "value": "snowflake"
+        },
+        {
+          "value": "UNKNOWN",
+          "description": "A value this reader does not know (§9.5.5)."
+        }
+      ]
+    },
+    "target": {
+      "type": "object",
+      "description": "The one account the client connects to.",
+      "required": [
+        "account"
+      ],
+      "properties": {
+        "account": {
+          "type": "string",
+          "minLength": 1
+        },
+        "warehouse": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "description": "The ticket's credential, carried.",
+      "required": [
+        "kind",
+        "token"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "token",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "token"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ]
+        },
+        "token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expires": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "rights": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "read",
+          "UNKNOWN"
+        ],
+        "x-atlas-enum": [
+          {
+            "value": "read"
+          },
+          {
+            "value": "UNKNOWN",
+            "description": "A value this reader does not know (§9.5.5)."
+          }
+        ]
+      }
+    },
+    "expires": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "profile": {
+      "type": "string",
+      "format": "exact-id",
+      "description": "The writer profile the statement produces."
+    },
+    "planned": {
+      "type": "object",
+      "required": [
+        "statement",
+        "query_tag",
+        "result_schema"
+      ],
+      "properties": {
+        "statement": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The planned statement, run unchanged."
+        },
+        "dialect": {
+          "type": "string"
+        },
+        "query_tag": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The tag settlement matches."
+        },
+        "result_schema": {
+          "type": "object",
+          "description": "Its writer schema."
+        }
+      }
+    },
+    "operation": {
+      "type": "string",
+      "pattern": "^operations/[a-z0-9][a-z0-9-]*$",
+      "description": "The operation the run is settled against."
+    }
+  }
+}

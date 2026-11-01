@@ -1,0 +1,29 @@
+{
+ "revision": "dev-2026-10-31.1",
+ "roles": {
+  "credit-analysts": ["portfolio-analyst"],
+  "hy-analysts": ["portfolio-analyst"],
+  "risk-batch": ["risk-batch"]
+ },
+ "grants": [
+  {"id": "grant-portfolio-read", "role": "portfolio-analyst", "capabilities": ["portfolio.list@v1", "portfolio.search@v1", "portfolio.holdings@v1", "portfolio.holdings-dates@v1", "data.status@v1"]},
+  {"id": "grant-risk-batch", "role": "risk-batch", "capabilities": ["portfolio.holdings@v1", "portfolio.holdings-dates@v1", "data.status@v1"], "interactions": ["fetch"]}
+ ],
+ "denies": [
+  {"id": "deny-dave-holdings", "subject": "da7e0000-0000-4000-8000-000000000004", "capabilities": ["portfolio.holdings@v1", "portfolio.holdings-dates@v1"], "reason": "Dave is barred from holdings, and from their totals by date, while on the deal team."}
+ ],
+ "scopes": {
+  "credit-analysts": {"portfolio": ["147HYC", "GLOBAL-CREDIT", "EM-RATES", "EURO-IG"]},
+  "hy-analysts": {"portfolio": ["147HYC"]},
+  "risk-batch": {"portfolio": ["*"]}
+ },
+ "limits": [
+  {"subject": "*", "capability": "*", "max_rows": 100000},
+  {"subject": "*", "capability": "portfolio.*", "per_minute": 600, "concurrency": 16},
+  {"subject": "b0b00000-0000-4000-8000-000000000002", "capability": "portfolio.holdings@v1", "max_rows": 1000}
+ ],
+ "house_rules": [
+  {"text": "Holdings are confidential: do not paste them outside the firm.", "capabilities": ["portfolio.holdings@v1"]}
+ ],
+ "house_rules_revision": "house-2026-10-31"
+}

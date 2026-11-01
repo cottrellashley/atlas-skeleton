@@ -1,0 +1,70 @@
+# The gateway's layers, which tools/layercheck enforces (§6.5.9, AGENTS.md).
+#
+#   - A package imports only packages in its own layer or a lower one.
+#   - Adapters never import each other, and services never import each
+#     other: each is independent, so one can be replaced alone.
+#   - Only a deployable chooses an adapter.
+#   - Services never import the core: they are handed what they need.
+
+independent = ["gateway/adapter/*", "gateway/svc/*"]
+adapters = "gateway/adapter/..."
+adapter_importers = ["gateway/cmd/..."]
+
+[layers]
+# Shared with every Go module: the protocol, the kit, the SQL library.
+0 = ["sdk/go/protocol/...", "sdk/go/kit/...", "sqlglot/...", "gateway/ports/..."]
+# Stand-ins, the port suites, the development data, test helpers.
+1 = ["gateway/fakes/...", "gateway/porttest/...", "gateway/fixtures/...", "gateway/internal/..."]
+# The core, and the view-model engine data services are built on.
+2 = ["gateway/core/...", "gateway/views/..."]
+# Adapters to real systems, and the services of each domain.
+3 = ["gateway/adapter/...", "gateway/svc/..."]
+# The HTTP binding.
+4 = ["gateway/edge/..."]
+# The composition of a gateway from chosen parts.
+5 = ["gateway/assemble/..."]
+# Deployables.
+6 = ["gateway/cmd/..."]
+
+[[forbid]]
+from = "gateway/svc/..."
+imports = ["gateway/core/...", "gateway/edge/...", "gateway/assemble/..."]
+why = "a service never imports the core: it is handed its invocation (AGENTS.md)"
+
+[[forbid]]
+from = "gateway/core/..."
+imports = ["gateway/fakes/...", "gateway/porttest/...", "gateway/fixtures/..."]
+why = "the core runs on real systems: fakes and fixtures are for deployables and tests"
+
+[[forbid]]
+from = "gateway/cmd/..."
+imports = ["gateway/fakes/...", "gateway/porttest/...", "gateway/fixtures/...", "gateway/internal/...", "gateway/local/..."]
+why = "cmd/gateway has real adapters only: no fakes, fixtures, port suites, test helpers or development gateway (PLAN.md P2-4); the development root is gateway/local"
+
+[[external]]
+from = "gateway/ports/..."
+allow = ["github.com/apache/arrow-go/v18/..."]
+why = "the ports are interfaces over the standard library, the protocol and Apache Arrow, which DataSource's batches are (§6.4.1)"
+
+[[external]]
+from = "gateway/core/..."
+allow = ["github.com/apache/arrow-go/v18/..."]
+why = "the core depends on the protocol, the kit and its ports only; the ports carry Arrow record batches (ports.DataSource, ports.Answer), so the core reads them (§6.4.1)"
+
+[[external]]
+from = "gateway/edge/..."
+allow = ["github.com/apache/arrow-go/v18/..."]
+why = "the edge writes Arrow answers (§9.6.5)"
+
+# An adapter brings only the vendor SDK its system needs (§6.5.3), named in a
+# rule of its own; the most specific rule decides, so every other adapter
+# still brings none.
+[[external]]
+from = "gateway/adapter/..."
+allow = []
+why = "an adapter brings no third-party module its own rule does not name (§6.5.3)"
+
+[[external]]
+from = "gateway/adapter/snowflake/..."
+allow = ["github.com/apache/arrow-go/v18/..."]
+why = "the Snowflake DataSource answers Arrow batches in the writer schema (§6.5.3, §6.4.1); its driver, gosnowflake, is the nested module gosf's"

@@ -1,0 +1,91 @@
+{
+ "identity": {
+  "id": "atlas.setup",
+  "version": 1,
+  "title": "atlas.setup",
+  "summary": "The built-in atlas.setup (§9.3.2).",
+  "domain": "atlas",
+  "owner": "Atlas"
+ },
+ "properties": {
+  "family": "data",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": []
+ },
+ "interactions": {
+  "fetch": {
+   "effect": "read",
+   "result": "record",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "setup_request",
+   "returns": "setup_result",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/atlas/atlas.setup:fetch",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "setup_request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/setup_request"
+  },
+  "setup_result": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/setup_result"
+  }
+ },
+ "errors": [],
+ "meaning": {
+  "grain": "fixed by atlas/1.0",
+  "source": "the gateway"
+ },
+ "usage": {
+  "when": "You are setting a machine or a harness up for Atlas: which client, which sign-in, which skill.",
+  "when_not": "You are signed in and working: atlas.whoami@v1 orients you.",
+  "examples": [
+   {
+    "title": "What this machine still needs",
+    "interaction": "fetch",
+    "request": {}
+   }
+  ],
+  "related": [
+   "atlas.clients@v1",
+   "atlas.whoami@v1"
+  ]
+ }
+}

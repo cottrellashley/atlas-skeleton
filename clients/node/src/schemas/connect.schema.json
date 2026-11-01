@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/connect.schema.json",
+  "title": "Connect handover",
+  "description": "`subscribe` and `publish` of an event capability (§2.5, §9.6.5, §9.7.8): what the client needs to listen on, or send to, one Service Bus entity itself, as the person. No secret, except an emulator's connection string, which a client accepts only from a gateway whose environment is conformance or local. application/vnd.atlas.connect+json, Cache-Control: no-store.",
+  "type": "object",
+  "required": [
+    "kind",
+    "protocol",
+    "namespace",
+    "entity",
+    "auth",
+    "rights",
+    "profile",
+    "format",
+    "expires"
+  ],
+  "properties": {
+    "kind": {
+      "const": "connect"
+    },
+    "protocol": {
+      "type": "string",
+      "enum": [
+        "amqp",
+        "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+        {
+          "value": "amqp"
+        },
+        {
+          "value": "UNKNOWN",
+          "description": "A value this reader does not know (§9.5.5)."
+        }
+      ]
+    },
+    "namespace": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The Service Bus namespace's host name."
+    },
+    "entity": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The topic (send) or subscription (listen): `topic/subscriptions/<name>`."
+    },
+    "auth": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "entra-scope",
+            "emulator",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "entra-scope"
+            },
+            {
+              "value": "emulator"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ],
+          "description": "entra-scope: get a token for `scope` from the shared sign-in, silently, never sent to the gateway. emulator: use `connection_string` (conformance and local only)."
+        },
+        "scope": {
+          "type": "string",
+          "format": "uri",
+          "description": "The scope to get a token for."
+        },
+        "connection_string": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The emulator's connection string (Q-DOC-13)."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "entra-scope"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "scope"
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "emulator"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "connection_string"
+            ]
+          }
+        }
+      ]
+    },
+    "rights": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "listen",
+          "send",
+          "UNKNOWN"
+        ],
+        "x-atlas-enum": [
+          {
+            "value": "listen"
+          },
+          {
+            "value": "send"
+          },
+          {
+            "value": "UNKNOWN",
+            "description": "A value this reader does not know (§9.5.5)."
+          }
+        ]
+      }
+    },
+    "profile": {
+      "type": "string",
+      "format": "exact-id",
+      "description": "The event's profile."
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "cloudevents+json",
+        "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+        {
+          "value": "cloudevents+json"
+        },
+        {
+          "value": "UNKNOWN",
+          "description": "A value this reader does not know (§9.5.5)."
+        }
+      ]
+    },
+    "settle": {
+      "type": "string",
+      "enum": [
+        "peek-lock",
+        "receive-and-delete",
+        "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+        {
+          "value": "peek-lock"
+        },
+        {
+          "value": "receive-and-delete"
+        },
+        {
+          "value": "UNKNOWN",
+          "description": "A value this reader does not know (§9.5.5)."
+        }
+      ],
+      "description": "How received messages are settled."
+    },
+    "durable": {
+      "type": "boolean",
+      "description": "Whether the subscription outlives the connection."
+    },
+    "expires": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When to ask the gateway again."
+    }
+  }
+}

@@ -12,7 +12,7 @@ import (
 const head = `"$schema": "https://json-schema.org/draft/2020-12/schema",
 "$vocabulary": {"https://json-schema.org/draft/2020-12/vocab/core": true, "https://json-schema.org/draft/2020-12/vocab/applicator": true, "https://json-schema.org/draft/2020-12/vocab/validation": true, "https://json-schema.org/draft/2020-12/vocab/meta-data": true, "https://json-schema.org/draft/2020-12/vocab/format-assertion": true, "https://atlas.jhg.com/vocab/2026-10": false}`
 
-func parse(t *testing.T, doc string) ijson.Value {
+func parse(t testing.TB, doc string) ijson.Value {
 	t.Helper()
 	v, err := ijson.Parse([]byte(doc))
 	if err != nil {
@@ -23,7 +23,7 @@ func parse(t *testing.T, doc string) ijson.Value {
 
 // schemaOf builds a root schema from its members after $schema and
 // $vocabulary.
-func schemaOf(t *testing.T, members string) ijson.Value {
+func schemaOf(t testing.TB, members string) ijson.Value {
 	return parse(t, "{"+head+", "+members+"}")
 }
 
@@ -421,4 +421,81 @@ func FuzzPattern(f *testing.F) {
 		}
 		re.MatchString(s)
 	})
+}
+
+// $vocabulary names exactly §9.2.1's vocabularies: none missing, none
+// added, whatever the count.
+func TestVocabularyIsExact(t *testing.T) {
+	const core = `"https://json-schema.org/draft/2020-12/vocab/core": true`
+	five := core + `, "https://json-schema.org/draft/2020-12/vocab/applicator": true, "https://json-schema.org/draft/2020-12/vocab/validation": true, "https://json-schema.org/draft/2020-12/vocab/meta-data": true, "https://json-schema.org/draft/2020-12/vocab/format-assertion": true`
+	for name, vocab := range map[string]string{
+		"empty":       ``,
+		"one":         core,
+		"five":        five,
+		"seven":       five + `, "https://atlas.jhg.com/vocab/2026-10": false, "https://example.com/vocab": true`,
+		"one changed": five + `, "https://atlas.jhg.com/vocab/2026-10": true`,
+	} {
+		_, err := Compile(parse(t, `{"$schema": "https://json-schema.org/draft/2020-12/schema", "$vocabulary": {`+vocab+`}, "type": "object"}`), Open)
+		var e *Error
+		if !errors.As(err, &e) || e.Violations[0].Pointer != "/$vocabulary" {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+}
+
+// Money's amount is a decimal string and its currency a Currency: a
+// declaration of either that says otherwise is refused, so nothing
+// validates that the Arrow mapping cannot hold.
+func TestMoneyMembersAgree(t *testing.T) {
+	money := func(members string) string {
+		return `"type": "object", "properties": {"mv": {"type": "object", "x-atlas-logical": "Money", "properties": {` + members + `}}}`
+	}
+	for name, members := range map[string]string{
+		"booleans":             `"amount": {"type": "boolean"}, "currency": {"type": "boolean"}`,
+		"a nullable amount":    `"amount": {"type": ["string", "null"]}`,
+		"a number amount":      `"amount": {"type": "number"}`,
+		"a dated currency":     `"currency": {"type": "string", "format": "date"}`,
+		"a basis-point amount": `"amount": {"type": "number", "x-atlas-logical": "Bp"}`,
+		"a wide amount":        `"amount": {"type": "string", "x-atlas-logical": "Decimal(40,10)"}`,
+	} {
+		vs := refused(t, Open, money(members))
+		if !strings.HasPrefix(vs[0].Pointer, "/properties/mv/properties/") {
+			t.Errorf("%s: %v", name, vs)
+		}
+	}
+	for name, members := range map[string]string{
+		"a definition that is not a string": `"amount": {"$ref": "#/$defs/flag"}`,
+	} {
+		vs := refused(t, Open, `"$defs": {"flag": {"type": "boolean"}}, `+money(members))
+		if vs[0].Pointer != "/properties/mv/properties/amount/type" {
+			t.Errorf("%s: %v", name, vs)
+		}
+	}
+	narrow := compile(t, Open, money(`"amount": {"type": "string", "x-atlas-logical": "Decimal(18,2)"}`))
+	expect(t, narrow, `{"mv": {"amount": "1.23", "currency": "USD"}}`, "")
+	expect(t, narrow, `{"mv": {"amount": "1.234", "currency": "USD"}}`, "/mv/amount format")
+	expect(t, compile(t, Open, money(`"amount": {"type": "string", "description": "The amount."}`)), `{"mv": {"amount": false, "currency": false}}`, "/mv/amount type; /mv/currency type")
+}
+
+// A definition may refer to another: every accessor follows the whole
+// chain, as validation does.
+func TestRefChains(t *testing.T) {
+	s := compile(t, Open, `"$defs": {"price": {"type": ["string", "null"], "x-atlas-logical": "Decimal(18,6)", "default": null}, "px": {"$ref": "#/$defs/price", "x-atlas-aliases": ["p"]}},
+		"type": "object", "properties": {"close": {"$ref": "#/$defs/px", "description": "The close."}}`)
+	close, _ := s.Property("close")
+	name, p, sc, ok := close.Logical()
+	if !ok || name != "Decimal" || p != 18 || sc != 6 || close.Type() != "string" || close.Format() != "decimal" || !close.Nullable() {
+		t.Fatalf("a chain answers with its last definition: %v %d %d %v %q %q %v", name, p, sc, ok, close.Type(), close.Format(), close.Nullable())
+	}
+	if d, has := close.Default(); !has || d != nil || !slices.Equal(close.Aliases(), []string{"p"}) {
+		t.Fatalf("a chain's default and aliases: %v %v %v", d, has, close.Aliases())
+	}
+	expect(t, s, `{"close": "1.0000001"}`, "/close format")
+	expect(t, s, `{"close": "1.5"}`, "")
+	// A key through a chain to a nullable definition is refused.
+	vs := refused(t, Open, `"$defs": {"code": {"type": ["string", "null"]}, "c": {"$ref": "#/$defs/code"}},
+		"type": "object", "required": ["k"], "properties": {"k": {"$ref": "#/$defs/c", "x-atlas-key": true}}`)
+	if vs[0].Pointer != "/properties/k/x-atlas-key" {
+		t.Fatalf("a nullable key through a chain: %v", vs)
+	}
 }

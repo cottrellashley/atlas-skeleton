@@ -189,3 +189,19 @@ func FromGo(x any) (Value, error) {
 	}
 	return Parse(b)
 }
+
+// MarshalJSON writes the object with its members in their order, so an
+// *Object inside any Go value encoding/json marshals keeps its order.
+func (o *Object) MarshalJSON() ([]byte, error) { return Marshal(o) }
+
+// MarshalJSON writes the number as its own text, exactly.
+func (n Number) MarshalJSON() ([]byte, error) {
+	if _, err := Parse([]byte(n)); err != nil || !isNumber(string(n)) {
+		return nil, fmt.Errorf("ijson: %q is not a JSON number", string(n))
+	}
+	return []byte(n), nil
+}
+
+func isNumber(s string) bool {
+	return s != "" && strings.IndexFunc(s, func(r rune) bool { return !strings.ContainsRune("0123456789+-.eE", r) }) < 0
+}

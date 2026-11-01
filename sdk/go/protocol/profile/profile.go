@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol"
+	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/documents"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/resolve"
@@ -233,7 +234,14 @@ func Parse(doc *ijson.Object) (*Profile, error) {
 			if takes[name] {
 				kind = schema.Request
 			}
-			s, err := schema.Compile(v, kind)
+			// A built-in's schemas are the protocol's own documents, by
+			// reference (§9.3.2): 2020-12 schemas, outside the profile's
+			// rules (assumption A-016).
+			var opt schema.Options
+			if grammar.Builtin(p.ID) {
+				opt = schema.Options{Unchecked: true, Documents: documents.Set()}
+			}
+			s, err := schema.CompileWith(v, kind, opt)
 			if err != nil {
 				r.fail("/schemas/"+name, "%v", err)
 				return true

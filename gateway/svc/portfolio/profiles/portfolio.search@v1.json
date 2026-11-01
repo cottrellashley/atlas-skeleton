@@ -1,0 +1,183 @@
+{
+ "identity": {
+  "id": "portfolio.search",
+  "version": 1,
+  "title": "Find a portfolio",
+  "summary": "Portfolio codes for loose words, ranked, with the reason each matched.",
+  "domain": "portfolio",
+  "owner": "QFI"
+ },
+ "properties": {
+  "family": "data",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": []
+ },
+ "interactions": {
+  "fetch": {
+   "effect": "read",
+   "result": "table",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "request",
+   "returns": "result",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/data/portfolio.search@v1:fetch",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "object",
+   "description": "The words to match, and how many answers.",
+   "additionalProperties": false,
+   "required": [
+    "words"
+   ],
+   "properties": {
+    "words": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 200,
+     "description": "Words from a portfolio's name or code, in any case: \"global credit\", \"147\"."
+    },
+    "limit": {
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 50,
+     "default": 10,
+     "x-atlas-unit": "count",
+     "description": "The most answers to return."
+    }
+   }
+  },
+  "result": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "array",
+   "description": "The portfolios that match, best first.",
+   "items": {
+    "type": "object",
+    "description": "One match.",
+    "required": [
+     "code",
+     "name",
+     "score",
+     "why"
+    ],
+    "properties": {
+     "code": {
+      "type": "string",
+      "description": "The portfolio's code, for portfolio.holdings@v1.",
+      "x-atlas-logical": "PortfolioCode",
+      "x-atlas-key": true
+     },
+     "name": {
+      "type": "string",
+      "description": "The portfolio's name."
+     },
+     "score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "x-atlas-logical": "Fraction",
+      "description": "How well it matched: one for its exact code, otherwise the share of the words found in its code or name."
+     },
+     "why": {
+      "type": "string",
+      "description": "Which words matched, and where."
+     }
+    }
+   }
+  }
+ },
+ "errors": [
+  {
+   "code": "warehouse_suspended",
+   "status": 503,
+   "retryable": true,
+   "description": "The warehouse that serves Harbour's views is suspended or unreachable.",
+   "next": "Wait retry_after seconds, then repeat the call."
+  }
+ ],
+ "meaning": {
+  "grain": "portfolio",
+  "keys": [
+   "code"
+  ],
+  "ranking": "an exact code first; then the share of words found in the code or name, then by code",
+  "scope": "only the portfolios in the caller's data scope",
+  "source": "Harbour's portfolio register, HARBOUR.REF.PORTFOLIOS_V"
+ },
+ "compatibility": {
+  "request": "BACKWARD_TRANSITIVE",
+  "result": "FULL_TRANSITIVE"
+ },
+ "usage": {
+  "when": "You have a portfolio's name, or part of it or its code, and need the code other capabilities take.",
+  "when_not": "You want every portfolio you may read: use portfolio.list@v1.",
+  "examples": [
+   {
+    "title": "By name",
+    "interaction": "fetch",
+    "request": {
+     "words": "global credit"
+    }
+   },
+   {
+    "title": "By part of a code",
+    "interaction": "fetch",
+    "request": {
+     "words": "147",
+     "limit": 3
+    }
+   }
+  ],
+  "related": [
+   "portfolio.list@v1",
+   "portfolio.holdings@v1"
+  ],
+  "cost": "One small warehouse query."
+ },
+ "evolution": {
+  "lens": [],
+  "changelog": [
+   {
+    "date": "2026-10-31",
+    "change": "First published."
+   }
+  ]
+ }
+}

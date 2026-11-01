@@ -1,0 +1,104 @@
+{
+ "identity": {
+  "id": "atlas.guide",
+  "version": 1,
+  "title": "atlas.guide",
+  "summary": "The built-in atlas.guide (§9.3.2).",
+  "domain": "atlas",
+  "owner": "Atlas"
+ },
+ "properties": {
+  "family": "data",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": []
+ },
+ "interactions": {
+  "fetch": {
+   "effect": "read",
+   "result": "record",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "guide_request",
+   "returns": "guide_result",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/atlas/atlas.guide:fetch",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "guide_request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/guide_request"
+  },
+  "guide_result": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/guide_result"
+  }
+ },
+ "errors": [],
+ "meaning": {
+  "grain": "fixed by atlas/1.0",
+  "source": "the gateway"
+ },
+ "usage": {
+  "when": "You need to know how to use a capability you can use: what it is, when to use it, what to send and what comes back, examples in your client's syntax, its problems and your limits.",
+  "when_not": "A program needs the exact contract: atlas.describe@v1. You have not found the capability yet: atlas.search@v1.",
+  "examples": [
+   {
+    "title": "How to use a capability, in Python",
+    "interaction": "fetch",
+    "request": {
+     "by": "id",
+     "id": "atlas.search@v1",
+     "client": "python"
+    }
+   },
+   {
+    "title": "A short guide",
+    "interaction": "fetch",
+    "request": {
+     "by": "id",
+     "id": "atlas.catalog@v1",
+     "max_tokens": 600
+    }
+   }
+  ],
+  "related": [
+   "atlas.describe@v1",
+   "atlas.search@v1"
+  ]
+ }
+}

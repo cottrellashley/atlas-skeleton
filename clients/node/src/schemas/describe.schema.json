@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/describe.schema.json",
+  "title": "Describe answer",
+  "description": "atlas.describe (§9.3.2, §2.6): the profile, the caller's governance, its availability, and the calling client's eligibility per interaction.",
+  "type": "object",
+  "required": [
+    "profile",
+    "governance",
+    "availability",
+    "eligibility"
+  ],
+  "properties": {
+    "profile": {
+      "$ref": "https://atlas.jhg.com/protocol/1.0/profile.schema.json"
+    },
+    "governance": {
+      "$ref": "https://atlas.jhg.com/protocol/1.0/governance.schema.json"
+    },
+    "availability": {
+      "type": "string",
+      "enum": [
+        "available",
+        "unavailable",
+        "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+        {
+          "value": "available"
+        },
+        {
+          "value": "unavailable"
+        },
+        {
+          "value": "UNKNOWN",
+          "description": "A value this reader does not know (§9.5.5)."
+        }
+      ],
+      "description": "Whether it can be served now (§3.1.1)."
+    },
+    "eligibility": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/eligibility"
+      },
+      "description": "For the calling client, from its Atlas-Client-Features."
+    }
+  },
+  "$defs": {
+    "eligibility": {
+      "type": "object",
+      "required": [
+        "interaction",
+        "eligible",
+        "ineligible"
+      ],
+      "properties": {
+        "interaction": {
+          "type": "string",
+          "pattern": "^[a-z](-?[a-z0-9])*$"
+        },
+        "eligible": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "binding"
+            ],
+            "properties": {
+              "binding": {
+                "type": "string"
+              },
+              "encoding": {
+                "type": "string"
+              },
+              "limits": {
+                "type": "object"
+              }
+            }
+          },
+          "description": "Bindings it can use, in preference order."
+        },
+        "ineligible": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "binding",
+              "missing"
+            ],
+            "properties": {
+              "binding": {
+                "type": "string"
+              },
+              "missing": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "hint": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Bindings it cannot, and what is missing."
+        }
+      }
+    }
+  }
+}

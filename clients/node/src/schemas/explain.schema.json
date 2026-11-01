@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/explain.schema.json",
+  "title": "Explain answer",
+  "description": "Every data capability's `explain` (§2.2, §2.6): what `fetch` would do with this request, without doing it: the plan (for a SQL source the exact statement, byte for byte), the result schema of what would come back, the execution it would choose, and the estimate.",
+  "type": "object",
+  "required": [
+    "address",
+    "profile",
+    "plan",
+    "result_schema",
+    "execution",
+    "estimate"
+  ],
+  "properties": {
+    "address": {
+      "type": "string",
+      "format": "address",
+      "description": "The interaction it explains: `<id>@vN:fetch`."
+    },
+    "profile": {
+      "type": "string",
+      "format": "exact-id",
+      "description": "The writer profile the plan is made under."
+    },
+    "plan": {
+      "type": "object",
+      "required": [
+        "language"
+      ],
+      "properties": {
+        "language": {
+          "type": "string",
+          "enum": [
+            "sql",
+            "http",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "sql"
+            },
+            {
+              "value": "http"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ],
+          "description": "What the plan is written in."
+        },
+        "dialect": {
+          "type": "string",
+          "description": "For SQL: the engine's dialect (`snowflake`)."
+        },
+        "statement": {
+          "type": "string",
+          "description": "The exact statement `fetch` would run, every column aliased and cast."
+        },
+        "query_tag": {
+          "type": "string",
+          "description": "The tag the source records."
+        }
+      }
+    },
+    "result_schema": {
+      "type": "object",
+      "description": "The schema of what would come back (the requested columns), in the Atlas Schema profile."
+    },
+    "execution": {
+      "type": "string",
+      "enum": [
+        "gateway",
+        "handoff",
+        "client",
+        "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+        {
+          "value": "gateway"
+        },
+        {
+          "value": "handoff"
+        },
+        {
+          "value": "client"
+        },
+        {
+          "value": "UNKNOWN",
+          "description": "A value this reader does not know (§9.5.5)."
+        }
+      ],
+      "description": "The execution it would choose."
+    },
+    "estimate": {
+      "type": "object",
+      "required": [
+        "rows",
+        "bytes",
+        "cost"
+      ],
+      "properties": {
+        "rows": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cost": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "https://atlas.jhg.com/protocol/1.0/problem.schema.json#/$defs/estimate"
+            }
+          ]
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "text"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

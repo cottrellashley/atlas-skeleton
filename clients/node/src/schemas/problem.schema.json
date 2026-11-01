@@ -1,0 +1,498 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/problem.schema.json",
+  "title": "Problem",
+  "description": "Every failure (§4.1, §9.3.3): RFC 9457 with Atlas's members, sent as application/problem+json with Atlas-Error-Code equal to `code`. `type` is https://atlas.jhg.com/problems/<code>. A client treats a code it does not know by its status and retryable.",
+  "type": "object",
+  "required": [
+    "type",
+    "status",
+    "code",
+    "retryable",
+    "next",
+    "request_id"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "pattern": "^https://atlas\\.jhg\\.com/problems/[a-z][a-z0-9_]*$",
+      "description": "https://atlas.jhg.com/problems/<code>."
+    },
+    "title": {
+      "type": "string"
+    },
+    "status": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 599,
+      "description": "The HTTP status."
+    },
+    "detail": {
+      "type": "string"
+    },
+    "instance": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "A code of the registry ($defs/registry_code), or one the capability's profile declares under `errors`."
+    },
+    "retryable": {
+      "type": "boolean",
+      "description": "True only when repeating the same request is safe and may succeed."
+    },
+    "retry_after": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Seconds to wait, as Retry-After."
+    },
+    "target": {
+      "type": "string",
+      "description": "What it is about: a JSON Pointer into the request, a header name, a field mask entry, a resource name."
+    },
+    "next": {
+      "type": "string",
+      "description": "The step a person or agent can take, in words."
+    },
+    "details": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/detail"
+      },
+      "description": "Problems behind this one: one per failure for invalid_request (§9.2.5), one per hop the call passed (§4.1)."
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The call's id, as X-Request-Id."
+    },
+    "estimate": {
+      "$ref": "#/$defs/estimate"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "const": "confirmation_required"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "estimate"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "enum": [
+              "in_progress",
+              "limit_exceeded",
+              "unavailable"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "retry_after"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "registry_code": {
+      "type": "string",
+      "enum": [
+        "invalid_document",
+        "invalid_request",
+        "unauthenticated",
+        "not_granted",
+        "denied",
+        "budget_exceeded",
+        "approval_required",
+        "confirmation_required",
+        "not_found",
+        "not_in_environment",
+        "idempotency_conflict",
+        "in_progress",
+        "resume_gap",
+        "retired",
+        "precondition_failed",
+        "critical_trait_unsupported",
+        "resolution_failed",
+        "upgrade_required",
+        "limit_exceeded",
+        "output_limit_exceeded",
+        "internal",
+        "upstream_failed",
+        "unavailable",
+        "deadline_exceeded"
+      ],
+      "description": "The problem registry of §9.3.3."
+    },
+    "registry": {
+      "type": "object",
+      "description": "The registry's table (§9.3.3): each code's status and whether it is retryable. invalid_request is also sent with 406 for an Accept no binding serves (§9.6.4), and output_limit_exceeded only inside an end line or final frame (Q-DOC-8).",
+      "properties": {
+        "invalid_document": {
+          "type": "object",
+          "description": "A body is not I-JSON, or has duplicate members",
+          "properties": {
+            "status": {
+              "const": 400
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "invalid_request": {
+          "type": "object",
+          "description": "A request fails its schema; target is the first failing pointer",
+          "properties": {
+            "status": {
+              "const": 400
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "unauthenticated": {
+          "type": "object",
+          "description": "No valid token; WWW-Authenticate says how to sign in",
+          "properties": {
+            "status": {
+              "const": 401
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "not_granted": {
+          "type": "object",
+          "description": "A listed capability or interaction the caller holds no grant for",
+          "properties": {
+            "status": {
+              "const": 403
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "denied": {
+          "type": "object",
+          "description": "A deny refuses it",
+          "properties": {
+            "status": {
+              "const": 403
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "budget_exceeded": {
+          "type": "object",
+          "description": "Reserving the call would pass a budget",
+          "properties": {
+            "status": {
+              "const": 403
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "approval_required": {
+          "type": "object",
+          "description": "An action awaits another principal's approval",
+          "properties": {
+            "status": {
+              "const": 403
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "confirmation_required": {
+          "type": "object",
+          "description": "The call's estimated cost passes the caller's confirmation threshold; estimate holds it (amount, unit), and the call is repeated with Atlas-Confirm",
+          "properties": {
+            "status": {
+              "const": 428
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "not_found": {
+          "type": "object",
+          "description": "No such capability, version or resource, or a confidential one the caller does not hold",
+          "properties": {
+            "status": {
+              "const": 404
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "not_in_environment": {
+          "type": "object",
+          "description": "It exists, but not in this environment",
+          "properties": {
+            "status": {
+              "const": 404
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "idempotency_conflict": {
+          "type": "object",
+          "description": "The key was used for a different request",
+          "properties": {
+            "status": {
+              "const": 409
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "in_progress": {
+          "type": "object",
+          "description": "A request with this Idempotency-Key is still running; repeat it after retry_after to get its answer",
+          "properties": {
+            "status": {
+              "const": 409
+            },
+            "retryable": {
+              "const": true
+            }
+          }
+        },
+        "resume_gap": {
+          "type": "object",
+          "description": "A stream or subscription can no longer resume from the position given; the client reports the gap and starts again",
+          "properties": {
+            "status": {
+              "const": 409
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "retired": {
+          "type": "object",
+          "description": "The version was retired at its sunset",
+          "properties": {
+            "status": {
+              "const": 410
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "precondition_failed": {
+          "type": "object",
+          "description": "The ETag no longer matches",
+          "properties": {
+            "status": {
+              "const": 412
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "critical_trait_unsupported": {
+          "type": "object",
+          "description": "The client lacks a trait the capability marks critical",
+          "properties": {
+            "status": {
+              "const": 422
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "resolution_failed": {
+          "type": "object",
+          "description": "A payload could not be resolved (§9.5)",
+          "properties": {
+            "status": {
+              "const": 422
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "upgrade_required": {
+          "type": "object",
+          "description": "The client's protocol is below the gateway's minimum",
+          "properties": {
+            "status": {
+              "const": 426
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "limit_exceeded": {
+          "type": "object",
+          "description": "A rate or concurrency limit; retry_after",
+          "properties": {
+            "status": {
+              "const": 429
+            },
+            "retryable": {
+              "const": true
+            }
+          }
+        },
+        "output_limit_exceeded": {
+          "type": "object",
+          "description": "The answer was truncated at the caller's cap (status 200, in the end line or final frame)",
+          "properties": {
+            "status": {
+              "const": 200
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "internal": {
+          "type": "object",
+          "description": "A fault in the gateway",
+          "properties": {
+            "status": {
+              "const": 500
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        },
+        "upstream_failed": {
+          "type": "object",
+          "description": "The service's upstream failed in a way that may pass",
+          "properties": {
+            "status": {
+              "const": 502
+            },
+            "retryable": {
+              "const": true
+            }
+          }
+        },
+        "unavailable": {
+          "type": "object",
+          "description": "The service is unhealthy (its circuit is open); retry_after",
+          "properties": {
+            "status": {
+              "const": 503
+            },
+            "retryable": {
+              "const": true
+            }
+          }
+        },
+        "deadline_exceeded": {
+          "type": "object",
+          "description": "The call's deadline passed; its work was stopped",
+          "properties": {
+            "status": {
+              "const": 504
+            },
+            "retryable": {
+              "const": false
+            }
+          }
+        }
+      }
+    },
+    "detail": {
+      "type": "object",
+      "description": "One problem behind this one (Q-DOC-9).",
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "target": {
+          "type": "string",
+          "description": "For a validation failure: the instance's JSON Pointer."
+        },
+        "keyword": {
+          "type": "string",
+          "description": "For a validation failure: the keyword that failed (§9.2.5)."
+        },
+        "hop": {
+          "type": "string",
+          "description": "The hop that added this problem."
+        },
+        "status": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599
+        },
+        "title": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "challenge": {
+          "type": "string",
+          "description": "For unauthenticated: the WWW-Authenticate challenge (CORE-SIGNIN-004)."
+        }
+      }
+    },
+    "estimate": {
+      "type": "object",
+      "description": "confirmation_required: the call's estimated cost.",
+      "required": [
+        "amount",
+        "unit"
+      ],
+      "properties": {
+        "amount": {
+          "type": "string",
+          "format": "decimal",
+          "pattern": "^[0-9]{1,12}(\\.[0-9]{1,3})?$",
+          "description": "The estimated cost: a decimal Atlas-Confirm can carry (at most 12 integer and 3 fractional digits, Q-DOC-10)."
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Its unit (credits, a vendor's billed calls, USD)."
+        }
+      }
+    }
+  }
+}

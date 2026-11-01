@@ -1,0 +1,34 @@
+# The production gateway's own rules (PLAN.md P2-4), which tools/layercheck
+# enforces. They hold today, inside the gateway module, and they are the
+# rules of cmd/gateway's own module once it is split out to link the
+# Snowflake driver (gateway/adapter/snowflake/gosf) without making the
+# gateway module require it.
+#
+#   - Real adapters only: no fakes, fixtures, port suites, test helpers or
+#     development gateway.
+#   - Pure Go: nothing it links needs cgo, on the platforms it ships for,
+#     built as the release builds it (CGO_ENABLED=0 -tags minicore_disabled).
+
+independent = ["gateway/adapter/*", "gateway/svc/*"]
+adapters = "gateway/adapter/..."
+adapter_importers = ["gateway/cmd/..."]
+
+[layers]
+0 = ["sdk/go/protocol/...", "sdk/go/kit/...", "sqlglot/...", "gateway/ports/..."]
+1 = ["gateway/fakes/...", "gateway/porttest/...", "gateway/fixtures/...", "gateway/internal/..."]
+2 = ["gateway/core/...", "gateway/views/..."]
+3 = ["gateway/adapter/...", "gateway/svc/..."]
+4 = ["gateway/edge/..."]
+5 = ["gateway/assemble/..."]
+6 = ["gateway/cmd/..."]
+
+[[forbid]]
+from = "gateway/cmd/..."
+imports = ["gateway/fakes/...", "gateway/porttest/...", "gateway/fixtures/...", "gateway/internal/...", "gateway/local/..."]
+why = "cmd/gateway has real adapters only: no fakes, fixtures, port suites, test helpers or development gateway (PLAN.md P2-4); the development root is gateway/local"
+
+[[pure]]
+packages = ["gateway/cmd/gateway"]
+platforms = ["linux/amd64", "linux/arm64"]
+tags = ["minicore_disabled"]
+why = "production is pure Go and builds with CGO_ENABLED=0 (PLAN.md P2-4); gosnowflake's minicore is cgo unless tagged out with minicore_disabled"

@@ -1,0 +1,92 @@
+{
+ "identity": {
+  "id": "atlas.whoami",
+  "version": 1,
+  "title": "atlas.whoami",
+  "summary": "The built-in atlas.whoami (§9.3.2).",
+  "domain": "atlas",
+  "owner": "Atlas"
+ },
+ "properties": {
+  "family": "data",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": []
+ },
+ "interactions": {
+  "fetch": {
+   "effect": "read",
+   "result": "record",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "whoami_request",
+   "returns": "whoami_result",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/atlas/atlas.whoami:fetch",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "whoami_request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/whoami_request"
+  },
+  "whoami_result": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/whoami_result"
+  }
+ },
+ "errors": [],
+ "meaning": {
+  "grain": "fixed by atlas/1.0",
+  "source": "the gateway"
+ },
+ "usage": {
+  "when": "You start a session, or need to know who you are to the gateway: your identity, roles and environment, the data you may read, the domains with something for you, and the house rules.",
+  "when_not": "You want the capabilities themselves: atlas.catalog@v1 lists them, and atlas.search@v1 ranks them against the person's words.",
+  "examples": [
+   {
+    "title": "Who you are here",
+    "interaction": "fetch",
+    "request": {}
+   }
+  ],
+  "related": [
+   "atlas.catalog@v1",
+   "atlas.search@v1",
+   "atlas.access@v1"
+  ]
+ }
+}

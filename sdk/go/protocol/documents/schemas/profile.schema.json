@@ -1,0 +1,979 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/profile.schema.json",
+  "title": "Profile",
+  "description": "A capability's contract (§3.1), served by atlas.describe and cached forever by its fingerprint (§9.4). Governance and availability are served beside it, never in it. The schemas it holds are in the Atlas Schema profile (atlas-schema.schema.json), which the gate and registration check; a client validates the profile's structure here and does not refuse a newer profile's schemas (Q-DOC-3).",
+  "type": "object",
+  "required": [
+    "identity",
+    "properties",
+    "interactions",
+    "schemas",
+    "errors",
+    "meaning",
+    "fingerprint"
+  ],
+  "properties": {
+    "identity": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "domain",
+        "owner"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "capability-id",
+          "description": "The capability's id."
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Its major version: 1 for @v1."
+        },
+        "title": {
+          "type": "string",
+          "description": "Prose: removed by the projection (§9.4.1)."
+        },
+        "summary": {
+          "type": "string",
+          "description": "One sentence of at most 200 characters (§3.1.4a). Prose."
+        },
+        "domain": {
+          "type": "string",
+          "pattern": "^[a-z](-?[a-z0-9])*$",
+          "description": "The first segment of `id`."
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Who answers for its meaning. Prose."
+        }
+      }
+    },
+    "properties": {
+      "type": "object",
+      "required": [
+        "family",
+        "stability",
+        "lifecycle",
+        "visibility",
+        "traits"
+      ],
+      "properties": {
+        "family": {
+          "type": "string",
+          "enum": [
+            "data",
+            "resource",
+            "action",
+            "event",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "data"
+            },
+            {
+              "value": "resource"
+            },
+            {
+              "value": "action"
+            },
+            {
+              "value": "event"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ],
+          "description": "Its surface (§2.1.B)."
+        },
+        "stability": {
+          "type": "string",
+          "enum": [
+            "official",
+            "community",
+            "upstream",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "official"
+            },
+            {
+              "value": "community"
+            },
+            {
+              "value": "upstream"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ],
+          "description": "What it promises (§2.1.C)."
+        },
+        "lifecycle": {
+          "type": "string",
+          "enum": [
+            "preview",
+            "stable",
+            "deprecated",
+            "retired",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "preview"
+            },
+            {
+              "value": "stable"
+            },
+            {
+              "value": "deprecated"
+            },
+            {
+              "value": "retired"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ],
+          "description": "Where it is in its life."
+        },
+        "deprecated": {
+          "type": "string",
+          "format": "date",
+          "description": "When it was deprecated: what Deprecation reports (§3.3.9, Q-DOC-5)."
+        },
+        "sunset": {
+          "type": "string",
+          "format": "date",
+          "description": "When a deprecated version ends."
+        },
+        "replaced_by": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "capability-id"
+            },
+            {
+              "type": "string",
+              "format": "pinned-id"
+            }
+          ],
+          "description": "What replaces a deprecated version."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "listed",
+            "confidential",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "listed"
+            },
+            {
+              "value": "confidential"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ],
+          "description": "Whether a caller who cannot use it may learn it exists."
+        },
+        "traits": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/trait"
+          },
+          "description": "The uniform behaviours it implements (§2.1.E)."
+        }
+      }
+    },
+    "interactions": {
+      "type": "object",
+      "description": "Each interaction, by name.",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[a-z](-?[a-z0-9])*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/interaction"
+      }
+    },
+    "schemas": {
+      "type": "object",
+      "description": "The family's schemas by name, each in the Atlas Schema profile (§9.2). A table's Arrow schema is derived from its result schema (§9.2.7), not written here (Q-DOC-6).",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/error"
+      },
+      "description": "Every problem code it can return beyond the registry (§9.3.3)."
+    },
+    "meaning": {
+      "type": "object",
+      "description": "What changes only by a new version: for data its grain, keys, as-of rule and source; for a resource its name pattern and immutable fields; for an action its effects and policy; for an event when it is emitted, its subject, ordering, retention and history (§3.1.2)."
+    },
+    "compatibility": {
+      "type": "object",
+      "description": "The mode each schema is held to within the version (§3.3.2a).",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "enum": [
+          "BACKWARD",
+          "BACKWARD_TRANSITIVE",
+          "FORWARD",
+          "FORWARD_TRANSITIVE",
+          "FULL",
+          "FULL_TRANSITIVE",
+          "UNKNOWN"
+        ],
+        "x-atlas-enum": [
+          {
+            "value": "BACKWARD"
+          },
+          {
+            "value": "BACKWARD_TRANSITIVE"
+          },
+          {
+            "value": "FORWARD"
+          },
+          {
+            "value": "FORWARD_TRANSITIVE"
+          },
+          {
+            "value": "FULL"
+          },
+          {
+            "value": "FULL_TRANSITIVE"
+          },
+          {
+            "value": "UNKNOWN",
+            "description": "A value this reader does not know (§9.5.5)."
+          }
+        ]
+      }
+    },
+    "usage": {
+      "$ref": "#/$defs/usage"
+    },
+    "evolution": {
+      "$ref": "#/$defs/evolution"
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{16}$",
+      "description": "§9.4.2; a client recomputes it and refuses a mismatch."
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "The prose's revision: it moves without the fingerprint."
+    }
+  },
+  "$defs": {
+    "trait": {
+      "type": "object",
+      "required": [
+        "name",
+        "critical"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*$",
+          "description": "The trait's name (§2.1.E); a client declares the lowercased names it understands in Atlas-Client-Features."
+        },
+        "critical": {
+          "type": "boolean",
+          "description": "When true, a client that does not implement it must not call the capability (critical_trait_unsupported)."
+        }
+      }
+    },
+    "interaction": {
+      "type": "object",
+      "required": [
+        "effect",
+        "result",
+        "delivery",
+        "execution",
+        "deadline",
+        "bindings"
+      ],
+      "properties": {
+        "effect": {
+          "type": "string",
+          "enum": [
+            "read",
+            "write",
+            "external",
+            "irreversible",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "read"
+            },
+            {
+              "value": "write"
+            },
+            {
+              "value": "external"
+            },
+            {
+              "value": "irreversible"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ],
+          "description": "How careful a caller must be (§2.1.D)."
+        },
+        "result": {
+          "type": "string",
+          "enum": [
+            "table",
+            "record",
+            "collection",
+            "content",
+            "ticket",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "table"
+            },
+            {
+              "value": "record"
+            },
+            {
+              "value": "collection"
+            },
+            {
+              "value": "content"
+            },
+            {
+              "value": "ticket"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ],
+          "description": "The shape of what comes back."
+        },
+        "delivery": {
+          "type": "string",
+          "enum": [
+            "single",
+            "chunked",
+            "subscription",
+            "operation",
+            "transfer",
+            "UNKNOWN"
+          ],
+          "x-atlas-enum": [
+            {
+              "value": "single"
+            },
+            {
+              "value": "chunked"
+            },
+            {
+              "value": "subscription"
+            },
+            {
+              "value": "operation"
+            },
+            {
+              "value": "transfer"
+            },
+            {
+              "value": "UNKNOWN",
+              "description": "A value this reader does not know (§9.5.5)."
+            }
+          ],
+          "description": "How it comes back."
+        },
+        "execution": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "gateway",
+              "handoff",
+              "client",
+              "UNKNOWN"
+            ],
+            "x-atlas-enum": [
+              {
+                "value": "gateway"
+              },
+              {
+                "value": "handoff"
+              },
+              {
+                "value": "client"
+              },
+              {
+                "value": "UNKNOWN",
+                "description": "A value this reader does not know (§9.5.5)."
+              }
+            ]
+          },
+          "description": "Who does the work and moves the bytes."
+        },
+        "takes": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "The name of the schema in `schemas` its request is validated against."
+        },
+        "returns": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "The name of the schema in `schemas` its result is written in."
+        },
+        "deadline": {
+          "type": "object",
+          "required": [
+            "default",
+            "max"
+          ],
+          "properties": {
+            "default": {
+              "type": "string",
+              "format": "duration",
+              "description": "The deadline a call gets when it names none."
+            },
+            "max": {
+              "type": "string",
+              "format": "duration",
+              "description": "The longest deadline a call may have."
+            }
+          }
+        },
+        "encodings": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "json",
+              "ndjson",
+              "arrow",
+              "csv",
+              "parquet",
+              "cloudevents+json",
+              "UNKNOWN"
+            ],
+            "x-atlas-enum": [
+              {
+                "value": "json"
+              },
+              {
+                "value": "ndjson"
+              },
+              {
+                "value": "arrow"
+              },
+              {
+                "value": "csv"
+              },
+              {
+                "value": "parquet"
+              },
+              {
+                "value": "cloudevents+json"
+              },
+              {
+                "value": "UNKNOWN",
+                "description": "A value this reader does not know (§9.5.5)."
+              }
+            ]
+          },
+          "description": "For a transfer or export: the file formats it writes."
+        },
+        "bindings": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "https://atlas.jhg.com/protocol/1.0/binding.schema.json"
+          },
+          "description": "Where it is served, in preference order."
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "code",
+        "status",
+        "retryable"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "The problem code."
+        },
+        "status": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599,
+          "description": "Its HTTP status."
+        },
+        "retryable": {
+          "type": "boolean",
+          "description": "Whether the same request may succeed if repeated."
+        },
+        "description": {
+          "type": "string",
+          "description": "What it means. Prose."
+        },
+        "next": {
+          "type": "string",
+          "description": "The step to take. Prose."
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "description": "What atlas.guide is written from (§2.6); removed by the projection.",
+      "properties": {
+        "when": {
+          "type": "string",
+          "description": "When to use it. Prose."
+        },
+        "when_not": {
+          "type": "string",
+          "description": "When not to. Prose."
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "title",
+              "interaction",
+              "request"
+            ],
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "What the example does."
+              },
+              "interaction": {
+                "type": "string",
+                "pattern": "^[a-z](-?[a-z0-9])*$",
+                "description": "The interaction it calls."
+              },
+              "request": {
+                "type": "object",
+                "description": "A request valid against that interaction's request schema."
+              }
+            }
+          }
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "capability-id"
+              },
+              {
+                "type": "string",
+                "format": "pinned-id"
+              }
+            ],
+            "description": "A related capability."
+          }
+        },
+        "cost": {
+          "type": [
+            "string",
+            "object"
+          ],
+          "description": "What a call costs; for Metered, its unit and price."
+        },
+        "skill": {
+          "type": "string",
+          "description": "The agent's skill text, managed by administrators."
+        }
+      }
+    },
+    "evolution": {
+      "type": "object",
+      "properties": {
+        "previous_profile": {
+          "type": "string",
+          "format": "exact-id",
+          "description": "The profile this one replaces within the version."
+        },
+        "lens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lens_op"
+          },
+          "description": "The lens from previous_profile to this profile (§9.5.3)."
+        },
+        "previous_version": {
+          "type": "string",
+          "format": "pinned-id",
+          "description": "For a version after @v1: the version it replaces (§9.5.2 step 2)."
+        },
+        "version_lens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lens_op"
+          },
+          "description": "The lens from previous_version, where one can express it; only the gateway resolves across versions (Q-DOC-7)."
+        },
+        "changelog": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Why it changed. Prose: removed by the projection."
+        }
+      }
+    },
+    "lens_op": {
+      "description": "One lens operation (§9.5.3). An operation a reader does not know reads as `UNKNOWN`, and the gateway resolves for that reader (§9.5.6).",
+      "type": "object",
+      "required": [
+        "op"
+      ],
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "from",
+            "to"
+          ],
+          "properties": {
+            "op": {
+              "const": "rename"
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            },
+            "to": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "field",
+            "from",
+            "to"
+          ],
+          "properties": {
+            "op": {
+              "const": "alias_value"
+            },
+            "field": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "description": "A top-level property of the record (§9.5.1)."
+            },
+            "from": {},
+            "to": {}
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "field",
+            "from",
+            "to"
+          ],
+          "properties": {
+            "op": {
+              "const": "convert_unit"
+            },
+            "field": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "description": "A top-level property of the record (§9.5.1)."
+            },
+            "from": {
+              "type": "string",
+              "enum": [
+                "Bp",
+                "Percent",
+                "Fraction",
+                "Years",
+                "bp",
+                "percent",
+                "fraction",
+                "years",
+                "days",
+                "seconds",
+                "count",
+                "currency_unit",
+                "UNKNOWN"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "Bp"
+                },
+                {
+                  "value": "Percent"
+                },
+                {
+                  "value": "Fraction"
+                },
+                {
+                  "value": "Years"
+                },
+                {
+                  "value": "bp"
+                },
+                {
+                  "value": "percent"
+                },
+                {
+                  "value": "fraction"
+                },
+                {
+                  "value": "years"
+                },
+                {
+                  "value": "days"
+                },
+                {
+                  "value": "seconds"
+                },
+                {
+                  "value": "count"
+                },
+                {
+                  "value": "currency_unit"
+                },
+                {
+                  "value": "UNKNOWN",
+                  "description": "A value this reader does not know (§9.5.5)."
+                }
+              ]
+            },
+            "to": {
+              "type": "string",
+              "enum": [
+                "Bp",
+                "Percent",
+                "Fraction",
+                "Years",
+                "bp",
+                "percent",
+                "fraction",
+                "years",
+                "days",
+                "seconds",
+                "count",
+                "currency_unit",
+                "UNKNOWN"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "Bp"
+                },
+                {
+                  "value": "Percent"
+                },
+                {
+                  "value": "Fraction"
+                },
+                {
+                  "value": "Years"
+                },
+                {
+                  "value": "bp"
+                },
+                {
+                  "value": "percent"
+                },
+                {
+                  "value": "fraction"
+                },
+                {
+                  "value": "years"
+                },
+                {
+                  "value": "days"
+                },
+                {
+                  "value": "seconds"
+                },
+                {
+                  "value": "count"
+                },
+                {
+                  "value": "currency_unit"
+                },
+                {
+                  "value": "UNKNOWN",
+                  "description": "A value this reader does not know (§9.5.5)."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "field",
+            "from",
+            "to"
+          ],
+          "properties": {
+            "op": {
+              "const": "promote"
+            },
+            "field": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "description": "A top-level property of the record (§9.5.1)."
+            },
+            "from": {
+              "type": "string",
+              "enum": [
+                "integer",
+                "number",
+                "date",
+                "date-time",
+                "UNKNOWN"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "integer"
+                },
+                {
+                  "value": "number"
+                },
+                {
+                  "value": "date"
+                },
+                {
+                  "value": "date-time"
+                },
+                {
+                  "value": "UNKNOWN",
+                  "description": "A value this reader does not know (§9.5.5)."
+                }
+              ]
+            },
+            "to": {
+              "type": "string",
+              "enum": [
+                "integer",
+                "number",
+                "date",
+                "date-time",
+                "UNKNOWN"
+              ],
+              "x-atlas-enum": [
+                {
+                  "value": "integer"
+                },
+                {
+                  "value": "number"
+                },
+                {
+                  "value": "date"
+                },
+                {
+                  "value": "date-time"
+                },
+                {
+                  "value": "UNKNOWN",
+                  "description": "A value this reader does not know (§9.5.5)."
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "field",
+            "value"
+          ],
+          "properties": {
+            "op": {
+              "const": "default"
+            },
+            "field": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "description": "A top-level property of the record (§9.5.1)."
+            },
+            "value": {}
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "op",
+            "field"
+          ],
+          "properties": {
+            "op": {
+              "const": "drop"
+            },
+            "field": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "description": "A top-level property of the record (§9.5.1)."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "op"
+          ],
+          "properties": {
+            "op": {
+              "const": "UNKNOWN"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

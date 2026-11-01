@@ -1,0 +1,220 @@
+{
+ "identity": {
+  "id": "data.status",
+  "version": 1,
+  "title": "Data freshness",
+  "summary": "Each source's latest date, the date expected, and whether it is current.",
+  "domain": "data",
+  "owner": "Data Platform"
+ },
+ "properties": {
+  "family": "data",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": [
+   {
+    "name": "Keyed",
+    "critical": false
+   }
+  ]
+ },
+ "interactions": {
+  "fetch": {
+   "effect": "read",
+   "result": "table",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "request",
+   "returns": "result",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/data/data.status@v1:fetch",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "object",
+   "description": "Which sources; every source when null.",
+   "additionalProperties": false,
+   "properties": {
+    "sources": {
+     "type": [
+      "array",
+      "null"
+     ],
+     "default": null,
+     "uniqueItems": true,
+     "description": "Source names, as this capability returns them: harbour.holdings. At most 1000 in one call (invalid_request beyond); every source when null.",
+     "items": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A source's name."
+     }
+    }
+   }
+  },
+  "result": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "array",
+   "description": "One row per source, by name.",
+   "items": {
+    "type": "object",
+    "description": "A source's freshness.",
+    "required": [
+     "source",
+     "latest_date",
+     "expected_date",
+     "status",
+     "checked_at"
+    ],
+    "properties": {
+     "source": {
+      "type": "string",
+      "description": "The source: what landed, such as harbour.holdings.",
+      "x-atlas-key": true
+     },
+     "latest_date": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "date",
+      "description": "The latest business date that has landed; null before the first."
+     },
+     "expected_date": {
+      "type": "string",
+      "format": "date",
+      "description": "The business date that should have landed by the register's last check: Harbour's sources land once a business day (Monday to Friday, with no holiday calendar), by 06:00 UTC the next day."
+     },
+     "status": {
+      "type": "string",
+      "description": "Whether the source is current, as this call finds it: current when its latest date is on or after its expected date, late when it is before, and unchecked when the register has not checked it within 26 hours.",
+      "enum": [
+       "current",
+       "late",
+       "unchecked",
+       "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+       {
+        "value": "current",
+        "description": "The expected date has landed."
+       },
+       {
+        "value": "late",
+        "description": "The expected date has not landed."
+       },
+       {
+        "value": "unchecked",
+        "description": "The register has not checked the source within 26 hours, so whether its expected date has landed is not known."
+       },
+       {
+        "value": "UNKNOWN",
+        "description": "A value this reader does not know (§9.5.5)."
+       }
+      ]
+     },
+     "checked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the load register last checked the source. It checks every source once a day, at 06:00 UTC; a check more than 26 hours old leaves the status unchecked."
+     }
+    }
+   }
+  }
+ },
+ "errors": [
+  {
+   "code": "warehouse_suspended",
+   "status": 503,
+   "retryable": true,
+   "description": "The warehouse that serves Harbour's views is suspended or unreachable.",
+   "next": "Wait retry_after seconds, then repeat the call."
+  }
+ ],
+ "meaning": {
+  "grain": "source",
+  "keys": [
+   "source"
+  ],
+  "current": "a source is current when its latest date is on or after its expected date",
+  "history": "the latest state of each source, not a history of every landing",
+  "source": "the platform's load register, HARBOUR.OPS.LOADS_V"
+ },
+ "compatibility": {
+  "request": "BACKWARD_TRANSITIVE",
+  "result": "FULL_TRANSITIVE"
+ },
+ "usage": {
+  "when": "You need to know how fresh a source is before trusting its latest answer: for portfolio.holdings@v1, the source harbour.holdings. Freshness is per source: a portfolio's own latest valuation can lag its source, so read the as_of of each row you get.",
+  "when_not": "You need a source's history of landings: no capability offers it yet.",
+  "examples": [
+   {
+    "title": "Every source",
+    "interaction": "fetch",
+    "request": {}
+   },
+   {
+    "title": "Holdings",
+    "interaction": "fetch",
+    "request": {
+     "sources": [
+      "harbour.holdings"
+     ]
+    }
+   }
+  ],
+  "related": [
+   "portfolio.holdings@v1"
+  ],
+  "cost": "One small warehouse query."
+ },
+ "evolution": {
+  "previous_profile": "data.status@v1#20bb6d8ca4ec23dd",
+  "lens": [],
+  "changelog": [
+   {
+    "date": "2026-10-31",
+    "change": "First published."
+   },
+   {
+    "date": "2026-11-01",
+    "change": "Added the status unchecked: the status is now judged when a call asks, from the dates and how recently the register checked them. Stated the calendar, the register's checks and the most sources one call may name."
+   }
+  ]
+ },
+ "revision": 1
+}

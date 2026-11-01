@@ -8,7 +8,11 @@
 //   - is forbidden outright
 //   - brings in a third-party module the package's rules do not allow
 //
-// Only production code is checked; a test may assemble anything.
+// It also refuses cgo in what a pure package links (PLAN.md P2-4: production
+// stays pure Go). Only production code is checked; a test may assemble
+// anything. Every layers.toml in the repository is found, at any depth, so a
+// nested module (gateway/local, gateway/adapter/snowflake/gosf) is checked by
+// its own rules.
 package layercheck
 
 import (
@@ -16,7 +20,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -35,6 +42,7 @@ type Rules struct {
 	AdapterImporters []string            `toml:"adapter_importers"`
 	Forbid           []Forbid            `toml:"forbid"`
 	External         []External          `toml:"external"`
+	Pure             []Pure              `toml:"pure"`
 }
 
 // Forbid refuses the imports matching Imports from the packages matching From.
@@ -46,10 +54,24 @@ type Forbid struct {
 
 // External limits the third-party modules the packages matching From may
 // import to those matching Allow (the standard library is always allowed).
+// When several rules match a package, the most specific From decides, as it
+// does for layers: so an adapter's own rule names the vendor SDK it is
+// written against, and every other adapter still brings none.
 type External struct {
 	From  string   `toml:"from"`
 	Allow []string `toml:"allow"`
 	Why   string   `toml:"why"`
+}
+
+// Pure names packages that build without cgo: nothing they link, outside
+// the standard library (whose cgo is optional, and which CGO_ENABLED=0
+// builds without), has a cgo file on any of the platforms, built with the
+// tags given (as the release builds them).
+type Pure struct {
+	Packages  []string `toml:"packages"`
+	Platforms []string `toml:"platforms"`
+	Tags      []string `toml:"tags"`
+	Why       string   `toml:"why"`
 }
 
 // Package is a package with production code. Its path, and its imports from
@@ -69,7 +91,37 @@ func Load(path string) (Rules, error) {
 	if undecoded := md.Undecoded(); len(undecoded) > 0 {
 		return r, fmt.Errorf("%s: unknown keys %v", path, undecoded)
 	}
+	for _, p := range r.Pure {
+		if len(p.Packages) == 0 || len(p.Platforms) == 0 {
+			return r, fmt.Errorf("%s: a [[pure]] rule names its packages and platforms", path)
+		}
+	}
 	return r, nil
+}
+
+// Find is every layers.toml under root, at any depth, sorted. It does not
+// look where no Go module of the repository lives: hidden directories (.git,
+// .venv), node_modules, Python caches and testdata.
+func Find(root string) ([]string, error) {
+	var files []string
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			name := d.Name()
+			if path != root && (strings.HasPrefix(name, ".") || name == "node_modules" || name == "__pycache__" || name == "testdata") {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if d.Name() == "layers.toml" {
+			files = append(files, path)
+		}
+		return nil
+	})
+	slices.Sort(files)
+	return files, err
 }
 
 // Check lists every import the rules refuse.
@@ -118,14 +170,8 @@ func Check(r Rules, pkgs []Package) []string {
 
 // List runs go list in dir and returns its packages that have production code.
 func List(dir string) ([]Package, error) {
-	cmd := exec.Command("go", "list", "-json=ImportPath,GoFiles,Imports", "./...")
-	cmd.Dir = dir
-	out, err := cmd.Output()
+	out, err := goList(dir, nil, "list", "-json=ImportPath,GoFiles,Imports", "./...")
 	if err != nil {
-		var ee *exec.ExitError
-		if errors.As(err, &ee) {
-			return nil, fmt.Errorf("go list in %s: %v: %s", dir, err, ee.Stderr)
-		}
 		return nil, err
 	}
 	var pkgs []Package
@@ -152,6 +198,78 @@ func List(dir string) ([]Package, error) {
 	}
 }
 
+// CheckPure lists every package outside the standard library that a pure
+// rule's packages link and that has cgo files, for each platform the rule
+// names. dir is the module's directory. A pure package that go list cannot
+// load is an error.
+func CheckPure(r Rules, dir string) ([]string, error) {
+	var out []string
+	for _, p := range r.Pure {
+		for _, platform := range p.Platforms {
+			goos, goarch, ok := strings.Cut(platform, "/")
+			if !ok {
+				return nil, fmt.Errorf("layercheck: platform %q is not os/arch", platform)
+			}
+			args := []string{"list", "-deps", "-e", "-json=ImportPath,Standard,CgoFiles,Error"}
+			if len(p.Tags) > 0 {
+				args = append(args, "-tags", strings.Join(p.Tags, ","))
+			}
+			for _, pkg := range p.Packages {
+				args = append(args, Repo+pkg)
+			}
+			// CGO_ENABLED=1 shows the cgo files a package would use; whether it
+			// has them is what makes CGO_ENABLED=0 drop or break it. GOFLAGS is
+			// cleared so the build has exactly the rule's tags, never ones the
+			// caller's environment adds (the Makefile's minicore_disabled
+			// would hide the very file the rule is there to find).
+			b, err := goList(dir, []string{"GOOS=" + goos, "GOARCH=" + goarch, "CGO_ENABLED=1", "GOFLAGS="}, args...)
+			if err != nil {
+				return nil, err
+			}
+			dec := json.NewDecoder(strings.NewReader(string(b)))
+			for {
+				var q struct {
+					ImportPath string
+					Standard   bool
+					CgoFiles   []string
+					Error      *struct{ Err string }
+				}
+				if err := dec.Decode(&q); errors.Is(err, io.EOF) {
+					break
+				} else if err != nil {
+					return nil, err
+				}
+				switch {
+				case q.Error != nil:
+					return nil, fmt.Errorf("layercheck: %s on %s: %s", strings.TrimPrefix(q.ImportPath, Repo), platform, q.Error.Err)
+				case !q.Standard && len(q.CgoFiles) > 0:
+					out = append(out, fmt.Sprintf("%s links %s on %s, which needs cgo (%s): %s",
+						strings.Join(p.Packages, ", "), strings.TrimPrefix(q.ImportPath, Repo), platform, strings.Join(q.CgoFiles, ", "), p.Why))
+				}
+			}
+		}
+	}
+	return out, nil
+}
+
+// goList runs the go command in dir, with env added to the process's.
+func goList(dir string, env []string, args ...string) ([]byte, error) {
+	cmd := exec.Command("go", args...)
+	cmd.Dir = dir
+	if len(env) > 0 {
+		cmd.Env = append(os.Environ(), env...)
+	}
+	out, err := cmd.Output()
+	if err != nil {
+		var ee *exec.ExitError
+		if errors.As(err, &ee) {
+			return nil, fmt.Errorf("go %s in %s: %v: %s", args[0], dir, err, ee.Stderr)
+		}
+		return nil, fmt.Errorf("go %s in %s: %w", args[0], dir, err)
+	}
+	return out, nil
+}
+
 // forbidden is why from may not import imp at all; "" when it may.
 func (r Rules) forbidden(from, imp string) string {
 	for _, f := range r.Forbid {
@@ -162,10 +280,18 @@ func (r Rules) forbidden(from, imp string) string {
 	return ""
 }
 
-// foreign is why from may not import the third-party package imp; "" when it may.
+// foreign is why from may not import the third-party package imp; "" when it
+// may. Of the rules whose From matches, the most specific decide; several
+// equally specific rules must each allow the import.
 func (r Rules) foreign(from, imp string) string {
+	best := -1
 	for _, e := range r.External {
-		if match(e.From, from) && !slices.ContainsFunc(e.Allow, func(pat string) bool { return match(pat, imp) }) {
+		if match(e.From, from) && len(e.From) > best {
+			best = len(e.From)
+		}
+	}
+	for _, e := range r.External {
+		if len(e.From) == best && match(e.From, from) && !slices.ContainsFunc(e.Allow, func(pat string) bool { return match(pat, imp) }) {
 			return e.Why
 		}
 	}
@@ -224,7 +350,7 @@ func match(pat, path string) bool {
 // first element has no dot, and it is not the standard library.
 func ours(imp string) bool {
 	first, _, _ := strings.Cut(imp, "/")
-	return !strings.Contains(first, ".") && (first == "sdk" || first == "gateway" || first == "clients" || first == "tools")
+	return !strings.Contains(first, ".") && (first == "sdk" || first == "gateway" || first == "clients" || first == "tools" || first == "sqlglot")
 }
 
 // stdlib reports whether imp is the standard library: no dot in its first element.

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/chunk-end.schema.json",
+  "title": "NDJSON end line",
+  "description": "The last line of every NDJSON answer, and the JSON of the `atlas:end` metadata of an Arrow stream's final zero-row batch (§9.6.5). A body that ends without it is incomplete: upstream_failed. A problem after the first row is reported here; output_limit_exceeded with `truncated` is a warning, any other problem is raised after the rows (Q-DOC-15).",
+  "type": "object",
+  "required": [
+    "$atlas",
+    "rows",
+    "truncated",
+    "usage",
+    "problem"
+  ],
+  "properties": {
+    "$atlas": {
+      "const": "end"
+    },
+    "rows": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Rows sent."
+    },
+    "truncated": {
+      "type": "boolean",
+      "description": "Whether the answer was cut at the caller's output cap."
+    },
+    "usage": {
+      "type": "object",
+      "description": "What the call used."
+    },
+    "problem": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "https://atlas.jhg.com/protocol/1.0/problem.schema.json"
+        }
+      ]
+    }
+  }
+}

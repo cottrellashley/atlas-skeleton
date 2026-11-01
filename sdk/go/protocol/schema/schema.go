@@ -126,6 +126,12 @@ type node struct {
 	prefix     []*node
 	anyOf      []*node
 	oneOf      []*node
+	// What only the protocol's own documents use (2020-12, outside the
+	// Atlas profile): allOf, if/then/else and propertyNames.
+	allOf             []*node
+	ifN, thenN, elseN *node
+	names             *node
+	external          string // an absolute $ref, linked once its document is known
 
 	minimum, maximum, exMinimum, exMaximum *float64
 	multipleOf                             float64
@@ -171,6 +177,11 @@ type Options struct {
 	// rules, for validating with 2020-12's semantics alone: every keyword
 	// still applies, and only a schema that cannot be applied is refused.
 	Unchecked bool
+	// Documents resolve a $ref to another document by its $id: the
+	// protocol's own documents (§9.3.1), which the built-ins' profiles
+	// refer to. Without them such a $ref is refused, since an Atlas schema
+	// holds everything it uses.
+	Documents *Set
 }
 
 type compiler struct {
@@ -180,6 +191,13 @@ type compiler struct {
 	defs       map[string]*node
 	defSources map[string]ijson.Value
 	tooDeep    bool
+	// building is CompileSet's: absolute $refs wait in pending until every
+	// document of the set is compiled.
+	building bool
+	pending  []*node
+	// after are the checks that read a property through its $ref chain,
+	// run once resolveRefs has linked every $ref.
+	after []func()
 }
 
 // fail records a rule of the profile the schema breaks.
@@ -239,6 +257,9 @@ func CompileWith(v ijson.Value, kind Kind, opt Options) (*Schema, error) {
 	}
 	n := c.walk(root, "", 1, false)
 	c.resolveRefs(n)
+	for _, check := range c.after {
+		check()
+	}
 	if len(c.violations) == 0 {
 		c.checkDefaults(n, map[*node]bool{})
 	}
@@ -261,7 +282,8 @@ func MustCompile(v ijson.Value, kind Kind) *Schema {
 func (c *compiler) checkVocabulary(root *ijson.Object) {
 	v, _ := root.Get("$vocabulary")
 	m, ok := v.(*ijson.Object)
-	if ok && m.Len() == len(vocabularies) {
+	ok = ok && m.Len() == len(vocabularies) // not one more, not one fewer
+	if ok {
 		m.Each(func(uri string, b ijson.Value) bool {
 			want, known := vocabularies[uri]
 			ok = ok && known && b == want
@@ -325,6 +347,23 @@ func (c *compiler) walk(v ijson.Value, ptr string, depth int, boolOK bool) *node
 
 func (c *compiler) ref(n *node, o *ijson.Object, r ijson.Value) {
 	s, _ := r.(string)
+	if !strings.HasPrefix(s, "#") && checkURI(s) == nil {
+		switch {
+		case c.opt.Documents != nil:
+			t, ok := c.opt.Documents.lookup(s)
+			if !ok {
+				c.fatal(n.ptr+"/$ref", "$ref", "no document defines %s", s)
+				return
+			}
+			n.external, n.target = s, t
+		case c.building:
+			n.external = s
+			c.pending = append(c.pending, n)
+		default:
+			c.fatal(n.ptr+"/$ref", "$ref", "$ref is #/$defs/<name>: an Atlas schema holds everything it uses")
+		}
+		return
+	}
 	name, ok := strings.CutPrefix(s, "#/$defs/")
 	if !ok || name == "" || strings.ContainsAny(name, "/~") {
 		c.fatal(n.ptr+"/$ref", "$ref", "$ref is #/$defs/<name>")
@@ -509,6 +548,14 @@ func (c *compiler) validation(n *node, o *ijson.Object) {
 	if v, ok := o.Get("pattern"); ok {
 		s, isString := v.(string)
 		re, err := compilePattern(s)
+		if err != nil && c.building {
+			// A protocol document is 2020-12, whose patterns are ECMA-262
+			// regular expressions, not only I-Regexps: the meta-schema's
+			// #/\$defs/ escapes its dollar. RE2 reads what they use.
+			if re2, err2 := regexp.Compile(s); err2 == nil {
+				re, err = re2, nil
+			}
+		}
 		switch {
 		case !isString:
 			c.fatal(n.ptr+"/pattern", "pattern", "pattern is a string")
@@ -670,6 +717,31 @@ func (c *compiler) applicators(n *node, o *ijson.Object, depth int) {
 			c.discriminator(n)
 		}
 	}
+	if v, ok := o.Get("allOf"); ok {
+		list, isArray := v.([]ijson.Value)
+		if !isArray || len(list) == 0 {
+			c.fatal(n.ptr+"/allOf", "allOf", "allOf is a non-empty array of schemas")
+		}
+		for i, s := range list {
+			n.allOf = append(n.allOf, c.walk(s, fmt.Sprintf("%s/allOf/%d", n.ptr, i), depth+1, false))
+		}
+	}
+	for _, k := range []string{"if", "then", "else"} {
+		if v, ok := o.Get(k); ok {
+			b := c.walk(v, n.ptr+"/"+k, depth+1, true)
+			switch k {
+			case "if":
+				n.ifN = b
+			case "then":
+				n.thenN = b
+			default:
+				n.elseN = b
+			}
+		}
+	}
+	if v, ok := o.Get("propertyNames"); ok {
+		n.names = c.walk(v, n.ptr+"/propertyNames", depth+1, true)
+	}
 	c.properties(n)
 }
 
@@ -716,12 +788,15 @@ func (c *compiler) properties(n *node) {
 		if p.key {
 			// An identifier that may be missing (an Isin a holding lacks) is
 			// exempt, as §3.1.3's isin is: the key is then the set of its
-			// non-null values.
-			nullable := p.nullable || p.target != nil && p.target.nullable
-			identifier := p.logical != nil && p.logical.def().identifier
-			if !identifier && (!slices.Contains(n.required, name) || nullable) {
-				c.fail(p.ptr+"/x-atlas-key", "x-atlas-key", "a key property is required and not nullable, unless it is an identifier that may be missing")
-			}
+			// non-null values. Its type may be a definition's, so the check
+			// waits until the refs are linked.
+			c.after = append(c.after, func() {
+				d := p.resolved()
+				identifier := d.logical != nil && d.logical.def().identifier
+				if !identifier && (!slices.Contains(n.required, name) || p.chainNullable()) {
+					c.fail(p.ptr+"/x-atlas-key", "x-atlas-key", "a key property is required and not nullable, unless it is an identifier that may be missing")
+				}
+			})
 		}
 		for _, a := range p.aliases {
 			if other, taken := claimed[a]; taken {
@@ -857,6 +932,7 @@ func (c *compiler) money(n *node) {
 	currency.logical = &logical{name: "Currency"}
 	for name, implied := range map[string]*node{"amount": amount, "currency": currency} {
 		if own, ok := n.props[name]; ok {
+			c.after = append(c.after, func() { c.moneyMember(own, name) })
 			own.mergeImplied(implied)
 		} else {
 			n.props[name] = implied
@@ -869,6 +945,32 @@ func (c *compiler) money(n *node) {
 	sort.SliceStable(n.order, func(i, j int) bool { return n.order[i] == "amount" && n.order[j] != "amount" })
 }
 
+// moneyMember refuses a declaration of Money's amount or currency that
+// contradicts what Money implies, so that nothing validates that the Arrow
+// mapping cannot hold: amount is a decimal string within Decimal(38,6),
+// currency a Currency, and neither is null (assumption A-012).
+func (c *compiler) moneyMember(own *node, name string) {
+	d := own.resolved()
+	want := map[string]string{"amount": "Decimal", "currency": "Currency"}[name]
+	switch {
+	case !d.typed || len(d.types) != 1 || d.types[0] != "string":
+		c.fail(own.ptr+"/type", "x-atlas-logical", "Money's %s is a string", name)
+	case own.chainNullable():
+		c.fail(own.ptr+"/type", "x-atlas-logical", "Money's %s is never null", name)
+	}
+	if d.logical != nil && d.logical.name != want {
+		c.fail(own.ptr+"/x-atlas-logical", "x-atlas-logical", "Money's %s is a %s, not a %s", name, want, d.logical)
+	}
+	for _, f := range d.formats {
+		if name == "currency" || f != "decimal" {
+			c.fail(own.ptr+"/format", "x-atlas-logical", "Money's %s has no format %s", name, f)
+		}
+	}
+	if d.decimal != nil && (d.decimal.precision-d.decimal.scale > 32 || d.decimal.scale > 6) {
+		c.fail(own.ptr+"/x-atlas-logical", "x-atlas-logical", "Money's amount fits Decimal(38,6), and %s does not", d.decimal)
+	}
+}
+
 func (n *node) mergeImplied(implied *node) {
 	n.patterns = append(n.patterns, implied.patterns...)
 	for _, f := range implied.formats {
@@ -876,12 +978,37 @@ func (n *node) mergeImplied(implied *node) {
 			n.formats = append(n.formats, f)
 		}
 	}
-	if implied.decimal != nil {
+	if n.decimal == nil { // a Decimal(p,s) of its own is the narrower
 		n.decimal = implied.decimal
 	}
 	if n.logical == nil {
 		n.logical = implied.logical
 	}
+}
+
+// chain is the node and every definition its $ref leads to, in order. A
+// definition may itself be a $ref, an alias of another, and validation
+// follows the whole chain (validate.go), so every reader of a schema does.
+// resolveRefs refuses a cycle, and the bound only guards an unchecked
+// compile.
+func (n *node) chain() []*node {
+	out := []*node{n}
+	for d := n.target; d != nil && len(out) <= MaxDepth; d = d.target {
+		out = append(out, d)
+	}
+	return out
+}
+
+// resolved is the definition the node's $ref chain ends at, or the node.
+func (n *node) resolved() *node {
+	c := n.chain()
+	return c[len(c)-1]
+}
+
+// chainNullable reports whether the node or any definition it refers to
+// allows null.
+func (n *node) chainNullable() bool {
+	return slices.ContainsFunc(n.chain(), func(x *node) bool { return x.nullable })
 }
 
 // deprecation checks x-atlas-deprecated: null (not deprecated), or all
@@ -1045,6 +1172,9 @@ func (c *compiler) resolveRefs(root *node) {
 		if n.ref != "" {
 			if path[n.ref] {
 				c.fail("/$defs/"+escape(n.ref), "$ref", "the definition %s leads back to itself: atlas/1.0 schemas are not recursive (Q-PROF-1)", n.ref)
+				if c.opt.Unchecked { // a protocol document may recurse: validation follows it instance by instance
+					n.target = c.defs[n.ref]
+				}
 				return
 			}
 			n.target = c.defs[n.ref]
@@ -1061,7 +1191,7 @@ func (c *compiler) resolveRefs(root *node) {
 		}
 		visit(n.additional, path)
 		visit(n.items, path)
-		for _, b := range slices.Concat(n.prefix, n.anyOf, n.oneOf) {
+		for _, b := range slices.Concat(n.prefix, n.anyOf, n.oneOf, n.allOf, []*node{n.ifN, n.thenN, n.elseN, n.names}) {
 			visit(b, path)
 		}
 	}
@@ -1079,9 +1209,7 @@ func (c *compiler) checkDefaults(n *node, seen map[*node]bool) {
 	}
 	seen[n] = true
 	if n.hasDefault {
-		var fs []Failure
-		n.validate(n.defaultV, "", &fs)
-		if len(fs) > 0 {
+		if fs, _, _ := n.failures(n.defaultV, 1, MaxFailureBytes, MaxPointerBytes); len(fs) > 0 {
 			c.fail(n.ptr+"/default", "default", "the default is invalid: %s %s", fs[0].Keyword, fs[0].Message)
 		}
 	}
@@ -1091,7 +1219,84 @@ func (c *compiler) checkDefaults(n *node, seen map[*node]bool) {
 	c.checkDefaults(n.additional, seen)
 	c.checkDefaults(n.items, seen)
 	c.checkDefaults(n.target, seen)
-	for _, b := range slices.Concat(n.prefix, n.anyOf, n.oneOf) {
+	for _, b := range slices.Concat(n.prefix, n.anyOf, n.oneOf, n.allOf, []*node{n.ifN, n.thenN, n.elseN, n.names}) {
 		c.checkDefaults(b, seen)
 	}
+}
+
+// Set is the protocol's own documents, compiled together so that each may
+// refer to the others by $id (§9.3.1: "load all 21 into one registry").
+// They are compiled with 2020-12's semantics alone (Options.Unchecked):
+// they are the protocol's schemas, not schemas inside a profile.
+type Set struct {
+	roots map[string]*node
+	defs  map[string]map[string]*node
+}
+
+// CompileSet compiles documents, each with its $id, and links every $ref
+// between them.
+func CompileSet(docs ...ijson.Value) (*Set, error) {
+	s := &Set{roots: map[string]*node{}, defs: map[string]map[string]*node{}}
+	var pending []*node
+	var errs []Violation
+	for _, d := range docs {
+		o, ok := d.(*ijson.Object)
+		if !ok {
+			return nil, &Error{[]Violation{{"", "profile", "a document is an object"}}}
+		}
+		id, _ := o.Get("$id")
+		uri, _ := id.(string)
+		if checkURI(uri) != nil {
+			return nil, &Error{[]Violation{{"/$id", "$id", "a document of a set has an absolute $id"}}}
+		}
+		c := &compiler{kind: Open, opt: Options{Unchecked: true}, defs: map[string]*node{}, defSources: map[string]ijson.Value{}, building: true}
+		if defs, ok := o.Get("$defs"); ok {
+			if m, isObject := defs.(*ijson.Object); isObject {
+				m.Each(func(name string, v ijson.Value) bool { c.defSources[name] = v; return true })
+				m.Each(func(name string, v ijson.Value) bool {
+					c.defs[name] = c.walk(v, "/$defs/"+escape(name), 2, false)
+					return true
+				})
+			}
+		}
+		root := c.walk(o, "", 1, false)
+		c.resolveRefs(root)
+		errs = append(errs, c.violations...)
+		s.roots[uri], s.defs[uri] = root, c.defs
+		pending = append(pending, c.pending...)
+	}
+	for _, n := range pending {
+		t, ok := s.lookup(n.external)
+		if !ok {
+			errs = append(errs, Violation{n.ptr + "/$ref", "$ref", "no document defines " + n.external})
+			continue
+		}
+		n.target = t
+	}
+	if len(errs) > 0 {
+		return nil, &Error{errs}
+	}
+	return s, nil
+}
+
+// lookup is the node an absolute $ref names: a document, or one of its
+// $defs.
+func (s *Set) lookup(ref string) (*node, bool) {
+	base, frag, _ := strings.Cut(ref, "#")
+	switch {
+	case frag == "":
+		n, ok := s.roots[base]
+		return n, ok
+	case strings.HasPrefix(frag, "/$defs/"):
+		n, ok := s.defs[base][strings.TrimPrefix(frag, "/$defs/")]
+		return n, ok
+	}
+	return nil, false
+}
+
+// Schema is a document of the set, or one of its definitions, by an
+// absolute $ref: https://atlas.jhg.com/protocol/1.0/bootstrap.schema.json.
+func (s *Set) Schema(ref string) (*Schema, bool) {
+	n, ok := s.lookup(ref)
+	return wrap(n), ok
 }

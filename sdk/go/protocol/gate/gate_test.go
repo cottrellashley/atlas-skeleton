@@ -3,14 +3,11 @@ package gate
 import (
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/ijson"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/profile"
 )
-
-var now = time.Date(2026, 10, 31, 12, 0, 0, 0, time.UTC)
 
 const voc = `"$schema": "https://json-schema.org/draft/2020-12/schema", "$vocabulary": {"https://json-schema.org/draft/2020-12/vocab/core": true, "https://json-schema.org/draft/2020-12/vocab/applicator": true, "https://json-schema.org/draft/2020-12/vocab/validation": true, "https://json-schema.org/draft/2020-12/vocab/meta-data": true, "https://json-schema.org/draft/2020-12/vocab/format-assertion": true, "https://atlas.jhg.com/vocab/2026-10": false}`
 
@@ -83,7 +80,7 @@ func classes(fs []Finding) string {
 
 func expectCheck(t *testing.T, p *profile.Profile, want ...string) Report {
 	t.Helper()
-	r := Check(p, load(t, base), nil, now)
+	r := Check(p, load(t, base), nil)
 	got := classes(r.Findings)
 	if got != strings.Join(want, "; ") {
 		t.Errorf("findings\n got: %s\nwant: %s\n%v", got, strings.Join(want, "; "), r.Findings)
@@ -93,20 +90,20 @@ func expectCheck(t *testing.T, p *profile.Profile, want ...string) Report {
 
 func TestTheBaseIsClean(t *testing.T) {
 	p := load(t, base)
-	if fs := Lint(p, nil, now); len(fs) > 0 {
+	if fs := Lint(p, nil); len(fs) > 0 {
 		t.Fatalf("lint: %v", fs)
 	}
 	if rs := Ready(p); len(rs) > 0 {
 		t.Fatalf("ready: %v", rs)
 	}
-	if r := Check(p, p, nil, now); len(r.Findings) > 0 {
+	if r := Check(p, p, nil); len(r.Findings) > 0 {
 		t.Fatalf("a profile against itself: %v", r.Findings)
 	}
 }
 
 func TestProseIsNotAChange(t *testing.T) {
 	p := load(t, strings.Replace(strings.Replace(base, `"Weight."`, `"The weight in the portfolio."`, 1), `"revision": 1`, `"revision": 2`, 1))
-	if r := Check(p, load(t, base), nil, now); len(r.Findings) > 0 {
+	if r := Check(p, load(t, base), nil); len(r.Findings) > 0 {
 		t.Fatalf("prose: %v", r.Findings)
 	}
 }
@@ -124,7 +121,7 @@ func TestRenameWithAliasAndLens(t *testing.T) {
 	noLens := next(t,
 		`"mv": {"type": "number", "x-atlas-unit": "fraction", "description": "Weight."}`, `"market_value": {"type": "number", "x-atlas-unit": "fraction", "description": "Weight.", "x-atlas-aliases": ["mv"]}`,
 		`"required": ["portfolio", "as_of", "mv", "status"]`, `"required": ["portfolio", "as_of", "market_value", "status"]`)
-	if r := Check(noLens, load(t, base), nil, now); !r.Refused() {
+	if r := Check(noLens, load(t, base), nil); !r.Refused() {
 		t.Fatalf("a rename without a lens leaves earlier readers unable to read: %v", r.Findings)
 	}
 }
@@ -144,17 +141,19 @@ func TestRequiredParameterAdded(t *testing.T) {
 func TestResultColumns(t *testing.T) {
 	expectCheck(t, next(t, `"lots": {"type": ["integer", "null"]`, `"spread": {"type": "number", "x-atlas-logical": "Bp", "description": "Spread."}, "lots": {"type": ["integer", "null"]`))
 	expectCheck(t, next(t, `"mv": {"type": "number",`, `"mv": {"type": ["number", "null"],`), "breaking /schemas/result/items/properties/mv")
-	expectCheck(t, next(t, `"lots": {"type": ["integer", "null"]`, `"lots": {"type": "integer"`))
-	expectCheck(t, next(t, `"lots": {"type": ["integer", "null"], "x-atlas-unit": "count"`, `"lots": {"type": ["number", "null"], "x-atlas-unit": "count"`), "dangerous /schemas/result/items/properties/lots")
+	expectCheck(t, next(t, `"lots": {"type": ["integer", "null"]`, `"lots": {"type": "integer"`), "breaking /schemas/result/items/properties/lots")
+	expectCheck(t, next(t, `"lots": {"type": ["integer", "null"], "x-atlas-unit": "count"`, `"lots": {"type": ["number", "null"], "x-atlas-unit": "count"`), "breaking /schemas/result/items/properties/lots")
 	expectCheck(t, next(t, `"lots": {"type": ["integer", "null"], "x-atlas-unit": "count"`, `"lots": {"type": ["string", "null"]`), "breaking /schemas/result/items/properties/lots")
-	expectCheck(t, next(t, `"mv": {"type": "number", "x-atlas-unit": "fraction"`, `"mv": {"type": "number", "x-atlas-unit": "bp"`, `"lens": []`, `"lens": [{"op": "convert_unit", "field": "mv", "from": "fraction", "to": "bp"}]`), "dangerous /schemas/result/items/properties/mv")
+	expectCheck(t, next(t, `"mv": {"type": "number", "x-atlas-unit": "fraction"`, `"mv": {"type": "number", "x-atlas-unit": "bp"`, `"lens": []`, `"lens": [{"op": "convert_unit", "field": "mv", "from": "fraction", "to": "bp"}]`), "breaking /schemas/result/items/properties/mv; breaking /evolution/lens/0")
 	expectCheck(t, next(t, `"mv": {"type": "number", "x-atlas-unit": "fraction"`, `"mv": {"type": "number", "x-atlas-unit": "days"`), "breaking /schemas/result/items/properties/mv")
 	expectCheck(t, next(t, `"enum": ["open", "sold", "UNKNOWN"], "x-atlas-enum": [{"value": "open"}, {"value": "sold"}, {"value": "UNKNOWN"}]`, `"enum": ["open", "sold", "held", "UNKNOWN"], "x-atlas-enum": [{"value": "open"}, {"value": "sold"}, {"value": "held"}, {"value": "UNKNOWN"}]`),
 		"dangerous /schemas/result/items/properties/status")
-	// A column dropped before its sunset, and after it.
+	// A column removed, before its sunset or after it: a new major version.
 	expectCheck(t, next(t, `"lots": {"type": ["integer", "null"], "x-atlas-unit": "count", "description": "Lots."},`, ``), "breaking /schemas/result/items/properties/lots")
 	expectCheck(t, next(t, `,
-   "legacy": {"type": ["string", "null"], "description": "Old.", "x-atlas-deprecated": {"reason": "Unused.", "since": "2026-01-01", "sunset": "2026-06-01", "replaced_by": null}}`, ``, `"lens": []`, `"lens": [{"op": "drop", "field": "legacy"}]`))
+   "legacy": {"type": ["string", "null"], "description": "Old.", "x-atlas-deprecated": {"reason": "Unused.", "since": "2026-01-01", "sunset": "2026-06-01", "replaced_by": null}}`, ``, `"lens": []`, `"lens": [{"op": "drop", "field": "legacy"}]`), "breaking /schemas/result/items/properties/legacy; breaking /evolution/lens/0")
+	// A result field added with no missing value for what was written before.
+	expectCheck(t, next(t, `"required": ["portfolio", "as_of", "mv", "status"]`, `"required": ["portfolio", "as_of", "mv", "status", "spread"]`, `"lots": {"type": ["integer", "null"]`, `"spread": {"type": "number", "x-atlas-logical": "Bp", "description": "Spread."}, "lots": {"type": ["integer", "null"]`), "breaking /schemas/result/items/properties/spread")
 }
 
 func TestRequestValues(t *testing.T) {
@@ -186,13 +185,13 @@ func TestMeaning(t *testing.T) {
 func TestAnnouncementsAndLinks(t *testing.T) {
 	old := load(t, base)
 	doc := strings.Replace(base, `"enum": ["open", "sold", "UNKNOWN"], "x-atlas-enum": [{"value": "open"}, {"value": "sold"}, {"value": "UNKNOWN"}]`, `"enum": ["open", "sold", "held", "UNKNOWN"], "x-atlas-enum": [{"value": "open"}, {"value": "sold"}, {"value": "held"}, {"value": "UNKNOWN"}]`, 1)
-	r := Check(load(t, doc), old, nil, now)
+	r := Check(load(t, doc), old, nil)
 	got := classes(r.Findings)
 	if !strings.Contains(got, "breaking /evolution/previous_profile") || !strings.Contains(got, "breaking /evolution/changelog") {
 		t.Fatalf("a dangerous change names its previous profile and has a changelog entry: %s", got)
 	}
 	bad := next(t, `"lens": []`, `"lens": [{"op": "rename", "from": "nope", "to": "mv"}]`)
-	if r := Check(bad, old, nil, now); !strings.Contains(classes(r.Findings), "breaking /evolution/lens/0") {
+	if r := Check(bad, old, nil); !strings.Contains(classes(r.Findings), "breaking /evolution/lens/0") {
 		t.Fatalf("a lens maps the previous profile onto this one: %v", r.Findings)
 	}
 }
@@ -218,12 +217,12 @@ func TestLint(t *testing.T) {
 		"deprecated, no sunset": strings.Replace(base, `"lifecycle": "stable"`, `"lifecycle": "deprecated"`, 1),
 	} {
 		p := load(t, doc)
-		if fs := Lint(p, catalogue{}, now); len(fs) == 0 {
+		if fs := Lint(p, catalogue{}); len(fs) == 0 {
 			t.Errorf("%s: passed the lint", name)
 		}
 	}
 	ok := strings.Replace(base, `"x-atlas-logical": "PortfolioCode"}}`, `"x-atlas-logical": "PortfolioCode", "x-atlas-reference": "portfolio.list@v1"}}`, 1)
-	if fs := Lint(load(t, ok), catalogue{"portfolio.list@v1": true}, now); len(fs) > 0 {
+	if fs := Lint(load(t, ok), catalogue{"portfolio.list@v1": true}); len(fs) > 0 {
 		t.Fatalf("a reference the catalogue has: %v", fs)
 	}
 }
@@ -243,6 +242,132 @@ func TestReady(t *testing.T) {
 	} {
 		if rs := Ready(load(t, doc)); len(rs) == 0 {
 			t.Errorf("%s: ready", name)
+		}
+	}
+}
+
+// R03's counterexamples (DESIGN-REVIEW): the gate never classifies an old
+// value it cannot represent as safe.
+func TestTheReviewsCounterexamples(t *testing.T) {
+	t.Run("a required field disappears; no default recovers its old value", func(t *testing.T) {
+		r := expectCheck(t, next(t, `"mv": {"type": "number", "x-atlas-unit": "fraction", "description": "Weight."},`, ``, `"required": ["portfolio", "as_of", "mv", "status"]`, `"required": ["portfolio", "as_of", "status"]`),
+			"breaking /schemas/result/items/properties/mv")
+		if !r.Refused() {
+			t.Fatal("a removal is refused within a version")
+		}
+	})
+	t.Run("an integer becomes a number, and the writer sends 1.5", func(t *testing.T) {
+		expectCheck(t, next(t, `"lots": {"type": ["integer", "null"], "x-atlas-unit": "count"`, `"lots": {"type": ["number", "null"], "x-atlas-unit": "count"`, `"lens": []`, `"lens": [{"op": "promote", "field": "lots", "from": "integer", "to": "number"}]`),
+			"breaking /schemas/result/items/properties/lots; breaking /evolution/lens/0")
+	})
+	t.Run("a newer non-null reader meets historical nulls", func(t *testing.T) {
+		expectCheck(t, next(t, `"lots": {"type": ["integer", "null"]`, `"lots": {"type": "integer"`), "breaking /schemas/result/items/properties/lots")
+	})
+	t.Run("a rename keeps its old name, and stays within the version", func(t *testing.T) {
+		r := expectCheck(t, next(t,
+			`"mv": {"type": "number", "x-atlas-unit": "fraction", "description": "Weight."}`, `"market_value": {"type": "number", "x-atlas-unit": "fraction", "description": "Weight.", "x-atlas-aliases": ["mv"]}`,
+			`"required": ["portfolio", "as_of", "mv", "status"]`, `"required": ["portfolio", "as_of", "market_value", "status"]`,
+			`"lens": []`, `"lens": [{"op": "rename", "from": "mv", "to": "market_value"}]`), "dangerous /schemas/result/items/properties/market_value")
+		if r.Refused() {
+			t.Fatal("an exact rename with its alias is served")
+		}
+	})
+}
+
+// variant is doc with edits, each an exact text and its replacement.
+func variant(t *testing.T, doc string, edits ...string) string {
+	t.Helper()
+	for i := 0; i+1 < len(edits); i += 2 {
+		if !strings.Contains(doc, edits[i]) {
+			t.Fatalf("the profile has no %q", edits[i])
+		}
+		doc = strings.Replace(doc, edits[i], edits[i+1], 1)
+	}
+	return doc
+}
+
+func expectClassify(t *testing.T, oldDoc, newDoc string, want ...string) {
+	t.Helper()
+	if got := classes(Classify(load(t, oldDoc), load(t, newDoc))); got != strings.Join(want, "; ") {
+		t.Errorf("findings\n got: %s\nwant: %s", got, strings.Join(want, "; "))
+	}
+}
+
+// An interaction pointed at another schema is compared with the one it
+// used, whatever the two are named.
+func TestClassifyFollowsTheInteractionsSchemas(t *testing.T) {
+	renamed := variant(t, base, `"returns": "result"`, `"returns": "rows"`, `"result": {"$schema"`, `"rows": {"$schema"`)
+	expectClassify(t, base, renamed)
+	incompatible := variant(t, renamed, `"mv": {"type": "number", "x-atlas-unit": "fraction"`, `"mv": {"type": "number", "x-atlas-unit": "days"`)
+	expectClassify(t, base, incompatible, "breaking /schemas/rows/items/properties/mv")
+	// The old schema still there, unused, does not hide the new one.
+	both := variant(t, base, `"returns": "result"`, `"returns": "result2"`, `"result": {"$schema"`, `"result2": {`+voc+`, "type": "array", "items": {"type": "object", "properties": {"mv": {"type": "string", "description": "Weight."}}}}, "result": {"$schema"`)
+	expectClassify(t, base, both, "breaking /schemas/result2/items/properties/mv", "breaking /schemas/result2/items/properties/mv", "breaking /schemas/result2/items/properties/portfolio", "breaking /schemas/result2/items/properties/as_of", "breaking /schemas/result2/items/properties/lots", "breaking /schemas/result2/items/properties/status", "breaking /schemas/result2/items/properties/legacy")
+	// A request schema where there was none is safe only if {} still passes.
+	start, end := strings.Index(base, `"request": {`+voc), strings.Index(base, `"result": {`+voc)
+	none := variant(t, base[:start]+base[end:], `"takes": "request", `, ``)
+	expectClassify(t, none, base, "breaking /interactions/fetch/takes")
+	expectClassify(t, base, none, "breaking /interactions/fetch/takes")
+}
+
+// Every level is compared, the enclosing schema included.
+func TestClassifyComparesEnclosingSchemas(t *testing.T) {
+	req := `"type": "object", "additionalProperties": false, "required": ["portfolios"]`
+	expectClassify(t, base, variant(t, base, req, `"type": "object", "additionalProperties": false, "maxProperties": 1, "required": ["portfolios"]`), "breaking /schemas/request")
+	expectClassify(t, variant(t, base, req, `"type": "object", "additionalProperties": false, "maxProperties": 1, "required": ["portfolios"]`), base)
+	expectClassify(t, base, variant(t, base, `"type": "array", "items": {"type": "object", "required"`, `"type": "array", "maxItems": 100, "items": {"type": "object", "required"`), "breaking /schemas/result")
+	expectClassify(t, base, variant(t, base, `"items": {"type": "object", "required"`, `"items": {"type": "object", "minProperties": 5, "required"`), "breaking /schemas/result/items")
+	expectClassify(t, base, variant(t, base, `"minItems": 1, "items"`, `"minItems": 1, "uniqueItems": true, "items"`), "breaking /schemas/request/properties/portfolios")
+}
+
+// A result is read in both directions: an earlier reader reads what the new
+// writer sends, and a new reader reads what was written before.
+func TestClassifyHistoricalResults(t *testing.T) {
+	spread := `"lots": {"type": ["integer", "null"]`
+	withSpread := variant(t, base, spread, `"spread": {"type": "number", "x-atlas-logical": "Bp", "description": "Spread."}, `+spread)
+	required := `"required": ["portfolio", "as_of", "mv", "status"]`
+	expectClassify(t, withSpread, variant(t, withSpread, required, `"required": ["portfolio", "as_of", "mv", "status", "spread"]`), "breaking /schemas/result/items/properties/spread")
+	defaulted := variant(t, withSpread, `"spread": {"type": "number",`, `"spread": {"type": "number", "default": 0,`)
+	expectClassify(t, defaulted, variant(t, defaulted, required, `"required": ["portfolio", "as_of", "mv", "status", "spread"]`))
+	nullable := variant(t, withSpread, `"spread": {"type": "number",`, `"spread": {"type": ["number", "null"],`)
+	expectClassify(t, nullable, variant(t, nullable, required, `"required": ["portfolio", "as_of", "mv", "status", "spread"]`))
+	expectClassify(t, base, variant(t, base, required, `"required": ["portfolio", "as_of", "status"]`), "breaking /schemas/result/items/properties/mv")
+
+	portfolio := `"portfolio": {"type": "string", "x-atlas-logical": "PortfolioCode",`
+	bounded := variant(t, base, portfolio, portfolio+` "maxLength": 12,`)
+	expectClassify(t, base, bounded, "breaking /schemas/result/items/properties/portfolio")
+	expectClassify(t, bounded, base, "breaking /schemas/result/items/properties/portfolio")
+	expectClassify(t, bounded, variant(t, bounded, `"maxLength": 12`, `"maxLength": 20`), "breaking /schemas/result/items/properties/portfolio")
+
+	price := `"price": {"type": ["string", "null"], "format": "decimal", "x-atlas-logical": "Decimal(18,6)", "description": "Price."}, `
+	priced := variant(t, base, spread, price+spread)
+	expectClassify(t, priced, variant(t, priced, "Decimal(18,6)", "Decimal(12,2)"), "breaking /schemas/result/items/properties/price")
+	expectClassify(t, priced, variant(t, priced, "Decimal(18,6)", "Decimal(20,8)"), "breaking /schemas/result/items/properties/price")
+
+	// A request may still widen.
+	limit := `"portfolios": {"type": "array", "description": "Portfolio codes.", "minItems": 1, "items": {"type": "string", "x-atlas-logical": "PortfolioCode"}}`
+	limited := variant(t, base, limit, `"portfolios": {"type": "array", "description": "Portfolio codes.", "minItems": 1, "items": {"type": "string", "x-atlas-logical": "PortfolioCode", "maxLength": 12}}`)
+	expectClassify(t, limited, variant(t, limited, `"maxLength": 12`, `"maxLength": 20`))
+	expectClassify(t, limited, variant(t, limited, `"maxLength": 12`, `"maxLength": 8`), "breaking /schemas/request/properties/portfolios/items")
+}
+
+// The notice of a deprecated version is measured from the deprecation it
+// records, never from the day the gate runs: the gate takes no clock, so a
+// profile admitted once is admitted unchanged on every later day.
+func TestDeprecationNoticeIsFromItsDate(t *testing.T) {
+	deprecated := func(dates string) *profile.Profile {
+		return load(t, variant(t, base, `"lifecycle": "stable"`, `"lifecycle": "deprecated"`+dates))
+	}
+	if fs := Lint(deprecated(`, "deprecated": "2026-10-01", "sunset": "2027-01-10"`), nil); len(fs) > 0 {
+		t.Fatalf("a sunset 101 days after its deprecation: %v", fs)
+	}
+	for name, dates := range map[string]string{
+		"a sunset 61 days on": `, "deprecated": "2026-10-01", "sunset": "2026-12-01"`,
+		"no deprecation date": `, "sunset": "2027-06-01"`,
+		"no sunset":           `, "deprecated": "2026-10-01"`,
+	} {
+		if fs := Lint(deprecated(dates), nil); len(fs) != 1 || !strings.HasPrefix(fs[0].Pointer, "/properties/") {
+			t.Errorf("%s: %v", name, fs)
 		}
 	}
 }

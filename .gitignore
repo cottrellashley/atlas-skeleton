@@ -3,3 +3,7 @@ __pycache__/
 .pytest_cache/
 .bin/
 clients/python/fiatlas/bin/
+node_modules/
+*.test
+# Binaries built in a module's own directory; `make release` builds into .bin.
+/clients/cli/atlas

@@ -177,3 +177,24 @@ func TestToBatchRefusesWhatTheSchemaRefuses(t *testing.T) {
 		}
 	}
 }
+
+// A column defined by a definition that refers to another derives the type
+// at the end of the chain, as validation reads it.
+func TestDeriveFollowsRefChains(t *testing.T) {
+	v, err := ijson.Parse([]byte("{" + head + `, "$defs": {"price": {"type": "string", "x-atlas-logical": "Decimal(18,6)"}, "px": {"$ref": "#/$defs/price"}},
+		"type": "array", "items": {"type": "object", "required": ["close"], "properties": {"close": {"$ref": "#/$defs/px"}}}}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, err := schema.Compile(v, schema.Open)
+	if err != nil {
+		t.Fatal(err)
+	}
+	a, err := Derive(s, "x.y@v1#3f9a1c0b7d2e4a65", "atlas/1.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := a.Field(0).Type.String(); got != "decimal(18, 6)" {
+		t.Fatalf("close is %s", got)
+	}
+}

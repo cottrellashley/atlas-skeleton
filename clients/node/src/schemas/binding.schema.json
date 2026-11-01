@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/binding.schema.json",
+  "title": "Binding",
+  "description": "Where and how one interaction is served (§4.2, §9.6.1). A client reaches an interaction only through a binding its profile or the bootstrap serves, and picks the first it supports, in the order given; it never builds an address.",
+  "type": "object",
+  "required": [
+    "protocol",
+    "server",
+    "address",
+    "auth"
+  ],
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "enum": [
+        "https",
+        "amqp",
+        "blob",
+        "snowflake",
+        "mcp",
+        "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+        {
+          "value": "https"
+        },
+        {
+          "value": "amqp"
+        },
+        {
+          "value": "blob"
+        },
+        {
+          "value": "snowflake"
+        },
+        {
+          "value": "mcp"
+        },
+        {
+          "value": "UNKNOWN",
+          "description": "A value this reader does not know (§9.5.5)."
+        }
+      ],
+      "description": "How the interaction travels. `sse` and `wss` are reserved for a later minor version (§9.6.5)."
+    },
+    "server": {
+      "type": "string",
+      "pattern": "^[a-z](-?[a-z0-9])*$",
+      "description": "A server the bootstrap names in `servers`; the interaction's URL is that server's `url` followed by `address` (§9.6.1)."
+    },
+    "address": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A path (beginning with `/` for https), channel or topic."
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "POST",
+        "GET",
+        "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+        {
+          "value": "POST"
+        },
+        {
+          "value": "GET"
+        },
+        {
+          "value": "UNKNOWN",
+          "description": "A value this reader does not know (§9.5.5)."
+        }
+      ],
+      "description": "For https: the HTTP method. Every atlas/1.0 interaction binding declares POST (§9.6.2)."
+    },
+    "encodings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "json",
+          "ndjson",
+          "arrow",
+          "csv",
+          "parquet",
+          "cloudevents+json",
+          "UNKNOWN"
+        ],
+        "x-atlas-enum": [
+          {
+            "value": "json"
+          },
+          {
+            "value": "ndjson"
+          },
+          {
+            "value": "arrow"
+          },
+          {
+            "value": "csv"
+          },
+          {
+            "value": "parquet"
+          },
+          {
+            "value": "cloudevents+json"
+          },
+          {
+            "value": "UNKNOWN",
+            "description": "A value this reader does not know (§9.5.5)."
+          }
+        ]
+      },
+      "description": "The encodings this binding serves, in its preference order (§9.6.4)."
+    },
+    "auth": {
+      "type": "string",
+      "enum": [
+        "bearer",
+        "entra-scope",
+        "ticket",
+        "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+        {
+          "value": "bearer"
+        },
+        {
+          "value": "entra-scope"
+        },
+        {
+          "value": "ticket"
+        },
+        {
+          "value": "UNKNOWN",
+          "description": "A value this reader does not know (§9.5.5)."
+        }
+      ],
+      "description": "How the caller authenticates: its sign-in (`bearer`), its own token for the system (`entra-scope`), or a credential the gateway issued (`ticket`)."
+    },
+    "delivery": {
+      "type": "string",
+      "enum": [
+        "single",
+        "chunked",
+        "subscription",
+        "operation",
+        "transfer",
+        "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+        {
+          "value": "single"
+        },
+        {
+          "value": "chunked"
+        },
+        {
+          "value": "subscription"
+        },
+        {
+          "value": "operation"
+        },
+        {
+          "value": "transfer"
+        },
+        {
+          "value": "UNKNOWN",
+          "description": "A value this reader does not know (§9.5.5)."
+        }
+      ],
+      "description": "The delivery this binding answers with, where it differs from its interaction's (a fallback that answers an operation for a stream, §2.1.D; Q-DOC-4)."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "protocol"
+        ],
+        "properties": {
+          "protocol": {
+            "const": "https"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "method"
+        ],
+        "properties": {
+          "address": {
+            "pattern": "^/"
+          }
+        }
+      }
+    }
+  ]
+}

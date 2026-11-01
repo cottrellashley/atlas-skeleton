@@ -3,6 +3,7 @@ package protocol
 import (
 	"errors"
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/grammar"
 	"github.com/jhgonline/fi-app-atlas/sdk/go/protocol/resolve"
@@ -12,6 +13,9 @@ import (
 // Problem is the one shape of every failure (§4.1): RFC 9457 with Atlas's
 // members. Its code is the contract; its status and retryable follow from
 // the code, by the registry or by the capability's declared errors.
+//
+// Keyword is a validation failure's: in each of invalid_request's details,
+// the keyword that failed at Target (§9.2.5, Q-DOC-9).
 type Problem struct {
 	Type       string    `json:"type"`
 	Title      string    `json:"title"`
@@ -22,6 +26,7 @@ type Problem struct {
 	Retryable  bool      `json:"retryable"`
 	RetryAfter int       `json:"retry_after,omitempty"`
 	Target     string    `json:"target,omitempty"`
+	Keyword    string    `json:"keyword,omitempty"`
 	Next       string    `json:"next,omitempty"`
 	Hop        string    `json:"hop,omitempty"`
 	Estimate   *Estimate `json:"estimate,omitempty"`
@@ -237,21 +242,104 @@ func (p *Problem) Check(declared ...Declared) error {
 }
 
 // InvalidRequest is the problem for a request that fails its schema
-// (§9.2.5): every failure in details, the first one's pointer as target.
+// (§9.2.5): each failure in details, as its pointer (target) and the
+// keyword that failed (Q-DOC-9), in the order given, and the first one's
+// pointer as target. Whatever the list, the problem stays small (R049,
+// assumptions A-190 and A-193): it holds at most schema.MaxFailures
+// details, each pointer is schema.ReportedPointer's, keywords and
+// messages are cut to a bound, the pointers and keywords pass
+// schema.MaxFailureBytes only by the first, and the detail says when
+// failures were left out.
+//
+// failures says nothing of failures it may have left out, as Validate's
+// does not. So a list as long as Validate returns at most, or within one
+// failure of its byte budget, may have been cut short, and the detail
+// then says "at least", never an exact count it cannot know. Build the
+// problem from schema.Schema.Failures, with InvalidRequestOf, which knows.
 func InvalidRequest(failures []schema.Failure) *Problem {
+	return invalidRequest(failures, false, mayBeCut(failures))
+}
+
+// InvalidRequestOf is InvalidRequest for what schema.Schema.Failures
+// returns: more says the request fails in more ways than failures holds.
+func InvalidRequestOf(failures []schema.Failure, more bool) *Problem {
+	return invalidRequest(failures, more, false)
+}
+
+// maxKeyword bounds a detail's keyword: no keyword of §9.2.1 is longer
+// than additionalProperties, which is 20 bytes.
+const maxKeyword = 32
+
+// maxFailureBytes is the most a failure counts against the byte budget,
+// so the most a cut list can fall short of it.
+const maxFailureBytes = schema.MaxPointerBytes + maxKeyword
+
+// mayBeCut reports whether failures may be the first of a longer list,
+// cut at schema.Schema.Failures' bounds: as many as it reports, or so
+// many bytes that one more might not have fitted.
+func mayBeCut(failures []schema.Failure) bool {
+	if len(failures) >= schema.MaxFailures {
+		return true
+	}
+	used := 0
+	for _, f := range failures {
+		used += len(schema.ReportedPointer(f.Pointer)) + len(f.Keyword[:cut(f.Keyword, maxKeyword)])
+	}
+	return used > schema.MaxFailureBytes-maxFailureBytes
+}
+
+// invalidRequest builds the problem: more says failures were left out,
+// maybe that they may have been.
+func invalidRequest(failures []schema.Failure, more, maybe bool) *Problem {
 	p := NewProblem(CodeInvalidRequest, "the request is not valid against its schema")
-	for i, f := range failures {
-		if i == 0 {
-			p.Target = f.Pointer
-			p.Detail = fmt.Sprintf("%s: %s", f.Keyword, f.Message)
+	used := 0
+	for _, f := range failures {
+		target, keyword := schema.ReportedPointer(f.Pointer), f.Keyword[:cut(f.Keyword, maxKeyword)]
+		if n := len(p.Details); n > 0 && p.Details[n-1].Target == target && p.Details[n-1].Keyword == keyword {
+			continue // two failures beneath one pointer too long to report are one
 		}
-		d := NewProblem(CodeInvalidRequest, f.Keyword+": "+f.Message).WithTarget(f.Pointer)
+		used += len(target) + len(keyword)
+		if len(p.Details) == schema.MaxFailures || len(p.Details) > 0 && used > schema.MaxFailureBytes {
+			more = true
+			break
+		}
+		message := f.Message
+		if n := cut(message, schema.MaxMessageBytes); n < len(message) {
+			message = message[:n] + "…"
+		}
+		d := NewProblem(CodeInvalidRequest, keyword+": "+message).WithTarget(target)
+		d.Keyword = keyword
 		p.Details = append(p.Details, *d)
 	}
-	if len(failures) > 1 {
-		p.Detail = fmt.Sprintf("%s, and %d more", p.Detail, len(failures)-1)
+	if len(p.Details) == 0 {
+		return p
+	}
+	p.Target, p.Detail = p.Details[0].Target, p.Details[0].Detail
+	switch others := len(p.Details) - 1; {
+	case more && others == 0:
+		p.Detail += ", and more"
+	case more:
+		p.Detail += fmt.Sprintf(", and more than %d more", others)
+	case maybe && others == 0:
+		p.Detail += ", and perhaps more"
+	case maybe:
+		p.Detail += fmt.Sprintf(", and at least %d more", others)
+	case others > 0:
+		p.Detail += fmt.Sprintf(", and %d more", others)
 	}
 	return p
+}
+
+// cut is the largest i ≤ n at which s may be cut between characters, or
+// len(s) when it is no longer than n.
+func cut(s string, n int) int {
+	if len(s) <= n {
+		return len(s)
+	}
+	for n > 0 && !utf8.RuneStart(s[n]) {
+		n--
+	}
+	return n
 }
 
 // ResolutionFailed is the problem for a payload that cannot be resolved

@@ -1,0 +1,30 @@
+{
+ "interaction": "fetch",
+ "object": "HARBOUR.REF.PORTFOLIOS_V",
+ "columns": {
+  "code": {
+   "column": "PORTFOLIO_CODE",
+   "type": "string"
+  },
+  "name": {
+   "column": "PORTFOLIO_NAME",
+   "type": "string"
+  }
+ },
+ "filters": {},
+ "scope": {
+  "portfolio": "PORTFOLIO_CODE"
+ },
+ "order": [
+  "PORTFOLIO_CODE"
+ ],
+ "search": {
+  "words": "words",
+  "limit": "limit",
+  "code": "code",
+  "name": "name",
+  "score": "score",
+  "why": "why"
+ },
+ "unavailable": "warehouse_suspended"
+}

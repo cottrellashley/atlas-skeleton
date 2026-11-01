@@ -14,6 +14,14 @@ This is the Go core of Atlas: the gateway, the Go SDK, the CLI, the Python SDK's
    - authentication, limits and idempotency are pipeline steps, not middleware
    - the codes are `idempotency_conflict` 409 and `precondition_failed` 412
 
+## Never reach github.com/jhgonline
+
+jhgonline is a private organisation. Atlas's module paths (`github.com/jhgonline/fi-app-atlas/...`) are names only:
+- No remote, push, pull, fetch or clone for it, and no `gh` against it.
+- Never `go get`, or `go install <path>@<version>`, a jhgonline path. Build from the checkout: `go -C <module> install ./cmd/...`.
+- A module that needs another in-repo module requires it at `v0.0.0`, with a `replace` to its relative directory, and every module is in `go.work`. `tools/modcheck` proves both.
+- The Makefile exports `GOPRIVATE` and `GOVCS=github.com/jhgonline:off`, so a missing replace fails at once on this machine. Run Go through `make`, or export the same two variables.
+
 ## The constitution (§6.6.4)
 
 1. If it has a name and a lifecycle, it is a resource with the envelope.

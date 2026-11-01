@@ -1,10 +1,8 @@
 package schema
 
 import (
-	"fmt"
 	"math"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -14,89 +12,137 @@ import (
 
 // Failure is one way an instance is invalid (§9.2.5): the instance's JSON
 // Pointer and the keyword that failed. Failures sort by pointer, then
-// keyword, in code-point order, so the first is the same in every
-// implementation (assumption A-009).
+// keyword, in code-point order, each pair once, so the first is the same
+// in every implementation (assumption A-009). A failure whose pointer
+// would pass MaxPointerBytes is reported at ReportedPointer's ancestor of
+// it (assumption A-193).
 type Failure struct {
 	Pointer string `json:"pointer"`
 	Keyword string `json:"keyword"`
 	Message string `json:"message"`
 }
 
-// Validate returns every failure of an instance, sorted; none means valid.
+// The bounds of what a validation reports (R049, assumptions A-190 and
+// A-193). A request inside the body limit may fail in every value it
+// holds; a validation still reads it in time linear in its size, and
+// reports at most MaxFailures failures, the first in the order of
+// assumption A-009, while their pointers and keywords come to at most
+// MaxFailureBytes (the first is always reported, and always fits). A
+// pointer is at most MaxPointerBytes, and a message at most
+// MaxMessageBytes, then "…" where it is cut. The bounds count only what
+// the contract carries, pointers and keywords, so every implementation
+// can cut the same list in the same place: a message is prose.
+const (
+	MaxFailures     = 100
+	MaxFailureBytes = 64 << 10
+	MaxPointerBytes = 1 << 10
+	MaxMessageBytes = 256
+)
+
+// Validate returns the instance's failures, sorted: every one, or the
+// first of them within the bounds. None means valid. It does not say
+// whether it left any out, so build invalid_request from Failures, which
+// does.
 func (s *Schema) Validate(v ijson.Value) []Failure {
-	var fs []Failure
-	s.n.validate(v, "", &fs)
-	sort.SliceStable(fs, func(i, j int) bool {
-		if fs[i].Pointer != fs[j].Pointer {
-			return fs[i].Pointer < fs[j].Pointer
-		}
-		return fs[i].Keyword < fs[j].Keyword
-	})
-	return slices.CompactFunc(fs, func(a, b Failure) bool { return a.Pointer == b.Pointer && a.Keyword == b.Keyword })
+	fs, _ := s.Failures(v)
+	return fs
 }
 
-// Valid reports whether an instance has no failure.
-func (s *Schema) Valid(v ijson.Value) bool {
-	var fs []Failure
-	s.n.validate(v, "", &fs)
-	return len(fs) == 0
+// Failures is Validate, and reports whether the instance fails in more
+// ways than the failures returned.
+func (s *Schema) Failures(v ijson.Value) ([]Failure, bool) {
+	fs, more, _ := s.n.failures(v, MaxFailures, MaxFailureBytes, MaxPointerBytes)
+	return fs, more
 }
 
-func add(out *[]Failure, ptr, keyword, format string, args ...any) {
-	*out = append(*out, Failure{ptr, keyword, fmt.Sprintf(format, args...)})
+// Valid reports whether an instance has no failure. It stops at the
+// first.
+func (s *Schema) Valid(v ijson.Value) bool { return s.n.valid(v) }
+
+// failures validates in full, keeping at most limit failures within
+// budget bytes, at pointers of at most pointer bytes, and reports the
+// work done.
+func (n *node) failures(v ijson.Value, limit, budget, pointer int) ([]Failure, bool, int) {
+	c := collector{max: limit, pointer: pointer}
+	n.validate(v, nil, &c)
+	fs, more := c.report(budget)
+	return fs, more, c.steps
+}
+
+func (n *node) valid(v ijson.Value) bool { return n.validIn(v, &collector{}) }
+
+// validIn is valid inside another validation, whose work it counts.
+func (n *node) validIn(v ijson.Value, outer *collector) bool {
+	c := collector{first: true}
+	n.validate(v, nil, &c)
+	outer.steps += c.steps
+	return len(c.kept) == 0
 }
 
 // validate applies 2020-12's semantics: every keyword on its own, each
 // keyword only to the instances of its type.
-func (n *node) validate(v ijson.Value, ptr string, out *[]Failure) {
+func (n *node) validate(v ijson.Value, at *path, c *collector) {
+	c.steps++
 	if n.boolean != nil {
 		if !*n.boolean {
-			add(out, ptr, "false", "no value is allowed here")
+			c.add(at, "false", "no value is allowed here")
 		}
 		return
 	}
 	if n.target != nil {
-		n.target.validate(v, ptr, out)
+		n.target.validate(v, at, c)
 	}
 	if !n.admits(v) {
-		add(out, ptr, "type", "%s is not %s", describe(v), n.typeName())
+		c.add(at, "type", "%s is not %s", describe(v), n.typeName())
 	}
 	if n.enum != nil && !slices.ContainsFunc(n.enum, func(e ijson.Value) bool { return ijson.Equal(e, v) }) {
-		add(out, ptr, "enum", "%s is not one of the enum", describe(v))
+		c.add(at, "enum", "%s is not one of the enum", describe(v))
 	}
 	if n.hasConst && !ijson.Equal(n.constV, v) {
-		add(out, ptr, "const", "%s is not the const", describe(v))
+		c.add(at, "const", "%s is not the const", describe(v))
+	}
+	if c.done() {
+		return
 	}
 	switch x := v.(type) {
 	case ijson.Number:
-		n.number(x, ptr, out)
+		n.number(x, at, c)
 	case string:
-		n.str(x, ptr, out)
+		n.str(x, at, c)
 	case []ijson.Value:
-		n.array(x, ptr, out)
+		n.array(x, at, c)
 	case *ijson.Object:
-		n.object(x, ptr, out)
+		n.object(x, at, c)
 	}
-	if n.anyOf != nil && !slices.ContainsFunc(n.anyOf, func(b *node) bool { return b.valid(v) }) {
-		add(out, ptr, "anyOf", "the value matches none of anyOf")
+	for _, b := range n.allOf {
+		b.validate(v, at, c)
+	}
+	if c.done() {
+		return
+	}
+	if n.ifN != nil {
+		branch := n.elseN
+		if n.ifN.validIn(v, c) {
+			branch = n.thenN
+		}
+		if branch != nil {
+			branch.validate(v, at, c)
+		}
+	}
+	if n.anyOf != nil && !slices.ContainsFunc(n.anyOf, func(b *node) bool { return b.validIn(v, c) }) {
+		c.add(at, "anyOf", "the value matches none of anyOf")
 	}
 	if n.oneOf != nil {
 		matched := 0
 		for _, b := range n.oneOf {
-			if b.valid(v) {
+			if b.validIn(v, c) {
 				matched++
 			}
 		}
 		if matched != 1 {
-			add(out, ptr, "oneOf", "the value matches %d of oneOf, not exactly one", matched)
+			c.add(at, "oneOf", "the value matches %d of oneOf, not exactly one", matched)
 		}
 	}
-}
-
-func (n *node) valid(v ijson.Value) bool {
-	var fs []Failure
-	n.validate(v, "", &fs)
-	return len(fs) == 0
 }
 
 func (n *node) typeName() string {
@@ -110,6 +156,7 @@ func (n *node) typeName() string {
 	return strings.Join(names, " or ")
 }
 
+// describe names a value in a message, quoting at most 40 bytes of it.
 func describe(v ijson.Value) string {
 	switch x := v.(type) {
 	case nil:
@@ -117,10 +164,10 @@ func describe(v ijson.Value) string {
 	case bool:
 		return strconv.FormatBool(x)
 	case ijson.Number:
-		return string(x)
+		return clip(string(x), 40)
 	case string:
 		if len(x) > 40 {
-			return strconv.Quote(x[:40]) + "…"
+			return strconv.Quote(x[:cut(x, 40)]) + "…"
 		}
 		return strconv.Quote(x)
 	case []ijson.Value:
@@ -131,107 +178,130 @@ func describe(v ijson.Value) string {
 	return "a value"
 }
 
-func (n *node) number(x ijson.Number, ptr string, out *[]Failure) {
+func (n *node) number(x ijson.Number, at *path, c *collector) {
 	f, err := x.Float64()
 	if err != nil {
-		add(out, ptr, "type", "%s is not a binary64 number", x)
+		c.add(at, "type", "%s is not a binary64 number", describe(x))
 		return
 	}
 	if n.minimum != nil && f < *n.minimum {
-		add(out, ptr, "minimum", "%s is below %v", x, *n.minimum)
+		c.add(at, "minimum", "%s is below %v", describe(x), *n.minimum)
 	}
 	if n.maximum != nil && f > *n.maximum {
-		add(out, ptr, "maximum", "%s is above %v", x, *n.maximum)
+		c.add(at, "maximum", "%s is above %v", describe(x), *n.maximum)
 	}
 	if n.exMinimum != nil && f <= *n.exMinimum {
-		add(out, ptr, "exclusiveMinimum", "%s is not above %v", x, *n.exMinimum)
+		c.add(at, "exclusiveMinimum", "%s is not above %v", describe(x), *n.exMinimum)
 	}
 	if n.exMaximum != nil && f >= *n.exMaximum {
-		add(out, ptr, "exclusiveMaximum", "%s is not below %v", x, *n.exMaximum)
+		c.add(at, "exclusiveMaximum", "%s is not below %v", describe(x), *n.exMaximum)
 	}
 	if n.multipleOf > 0 && math.Mod(f, n.multipleOf) != 0 {
-		add(out, ptr, "multipleOf", "%s is not a multiple of %v", x, n.multipleOf)
+		c.add(at, "multipleOf", "%s is not a multiple of %v", describe(x), n.multipleOf)
 	}
 }
 
-func (n *node) str(s, ptr string, out *[]Failure) {
+func (n *node) str(s string, at *path, c *collector) {
 	if n.minLength >= 0 || n.maxLength >= 0 {
 		l := utf8.RuneCountInString(s)
 		if n.minLength >= 0 && l < n.minLength {
-			add(out, ptr, "minLength", "%d characters, fewer than %d", l, n.minLength)
+			c.add(at, "minLength", "%d characters, fewer than %d", l, n.minLength)
 		}
 		if n.maxLength >= 0 && l > n.maxLength {
-			add(out, ptr, "maxLength", "%d characters, more than %d", l, n.maxLength)
+			c.add(at, "maxLength", "%d characters, more than %d", l, n.maxLength)
 		}
 	}
 	for _, re := range n.patterns {
+		if c.done() {
+			return
+		}
 		if !re.MatchString(s) {
-			add(out, ptr, "pattern", "%s does not match its pattern", describe(s))
+			c.add(at, "pattern", "%s does not match its pattern", describe(s))
 		}
 	}
 	for _, f := range n.formats {
+		if c.done() {
+			return
+		}
 		if why := checkFormat(f, s, n.decimal); why != "" {
-			add(out, ptr, "format", "not a %s: %s", f, why)
+			c.add(at, "format", "not a %s: %s", f, why)
 		}
 	}
 }
 
-func (n *node) array(a []ijson.Value, ptr string, out *[]Failure) {
-	for i, e := range a {
-		at := ptr + "/" + strconv.Itoa(i)
-		switch {
-		case i < len(n.prefix):
-			n.prefix[i].validate(e, at, out)
-		case n.items != nil && n.items.boolean != nil && !*n.items.boolean:
-			add(out, at, "items", "no item is allowed here")
-		case n.items != nil:
-			n.items.validate(e, at, out)
+func (n *node) array(a []ijson.Value, at *path, c *collector) {
+	if n.prefix != nil || n.items != nil {
+		for i, e := range a {
+			if c.done() {
+				return
+			}
+			sub, extra := n.items, i >= len(n.prefix)
+			if !extra {
+				sub = n.prefix[i]
+			}
+			if sub == nil {
+				break // nothing applies to the items that remain
+			}
+			item, visit := c.enter(at, "", i)
+			if !visit {
+				continue
+			}
+			if extra && sub.boolean != nil && !*sub.boolean {
+				c.add(item, "items", "no item is allowed here")
+				continue
+			}
+			sub.validate(e, item, c)
 		}
 	}
 	if n.minItems >= 0 && len(a) < n.minItems {
-		add(out, ptr, "minItems", "%d items, fewer than %d", len(a), n.minItems)
+		c.add(at, "minItems", "%d items, fewer than %d", len(a), n.minItems)
 	}
 	if n.maxItems >= 0 && len(a) > n.maxItems {
-		add(out, ptr, "maxItems", "%d items, more than %d", len(a), n.maxItems)
+		c.add(at, "maxItems", "%d items, more than %d", len(a), n.maxItems)
 	}
-	if n.uniqueItems {
-		for i := range a {
-			for j := 0; j < i; j++ {
-				if ijson.Equal(a[i], a[j]) {
-					add(out, ptr, "uniqueItems", "items %d and %d are equal", j, i)
-					return
-				}
-			}
+	if n.uniqueItems && !c.done() && !c.skip(at) {
+		if j, i, ok := repeated(a, c); ok {
+			c.add(at, "uniqueItems", "items %d and %d are equal", j, i)
 		}
 	}
 }
 
-func (n *node) object(o *ijson.Object, ptr string, out *[]Failure) {
-	o.Each(func(name string, m ijson.Value) bool {
-		at := ptr + "/" + escape(name)
-		if p, ok := n.props[name]; ok {
-			p.validate(m, at, out)
+func (n *node) object(o *ijson.Object, at *path, c *collector) {
+	if n.props != nil || n.additional != nil || n.names != nil {
+		o.Each(func(name string, m ijson.Value) bool {
+			if c.done() {
+				return false
+			}
+			member, visit := c.enter(at, name, -1)
+			if !visit {
+				return true
+			}
+			if n.names != nil && !n.names.validIn(name, c) {
+				c.add(member, "propertyNames", "the member name %s is not one this object takes", describe(name))
+			}
+			if p, ok := n.props[name]; ok {
+				p.validate(m, member, c)
+				return true
+			}
+			switch {
+			case n.additional == nil:
+			case n.additional.boolean != nil && !*n.additional.boolean:
+				c.add(member, "additionalProperties", "%s is not a member this object takes", describe(name))
+			default:
+				n.additional.validate(m, member, c)
+			}
 			return true
-		}
-		if n.additional == nil {
-			return true
-		}
-		if n.additional.boolean != nil && !*n.additional.boolean {
-			add(out, at, "additionalProperties", "%q is not a member this object takes", name)
-			return true
-		}
-		n.additional.validate(m, at, out)
-		return true
-	})
+		})
+	}
 	for _, r := range n.required {
 		if _, ok := o.Get(r); !ok {
-			add(out, ptr+"/"+escape(r), "required", "%q is required", r)
+			c.add(c.member(at, r), "required", "%q is required", r)
 		}
 	}
 	if n.minProps >= 0 && o.Len() < n.minProps {
-		add(out, ptr, "minProperties", "%d members, fewer than %d", o.Len(), n.minProps)
+		c.add(at, "minProperties", "%d members, fewer than %d", o.Len(), n.minProps)
 	}
 	if n.maxProps >= 0 && o.Len() > n.maxProps {
-		add(out, ptr, "maxProperties", "%d members, more than %d", o.Len(), n.maxProps)
+		c.add(at, "maxProperties", "%d members, more than %d", o.Len(), n.maxProps)
 	}
 }

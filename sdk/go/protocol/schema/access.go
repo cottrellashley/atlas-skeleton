@@ -9,15 +9,25 @@ import (
 )
 
 // What a schema says, for resolution (§9.5) and the Arrow mapping (§9.2.7).
-// A $ref is followed: a property defined by reference answers with its
-// definition's type and members, and with its own prose and Atlas keywords.
+// A $ref is followed to the end of its chain, as validation follows it: a
+// property defined by reference answers with its definition's type and
+// members, and with the prose and Atlas keywords of the first node in the
+// chain that writes them.
 
-func (s *Schema) def() *node {
-	if s.n.target != nil {
-		return s.n.target
+func (s *Schema) def() *node { return s.n.resolved() }
+
+// first is the first node of the chain for which has holds, or nil.
+func (s *Schema) first(has func(*node) bool) *node {
+	for _, n := range s.n.chain() {
+		if has(n) {
+			return n
+		}
 	}
-	return s.n
+	return nil
 }
+
+// any reports whether has holds for any node of the chain.
+func (s *Schema) any(has func(*node) bool) bool { return s.first(has) != nil }
 
 func wrap(n *node) *Schema {
 	if n == nil {
@@ -32,6 +42,10 @@ func (s *Schema) Pointer() string { return s.n.ptr }
 // Source is the schema as written.
 func (s *Schema) Source() ijson.Value { return s.n.source }
 
+// Definition is the schema its $ref chain ends at, or the schema itself:
+// what holds its type and its constraints.
+func (s *Schema) Definition() *Schema { return wrap(s.def()) }
+
 // Type is the schema's type without null: boolean, object, array, number,
 // string, integer, or "" for a union (anyOf, oneOf) or a boolean schema.
 func (s *Schema) Type() string {
@@ -42,7 +56,7 @@ func (s *Schema) Type() string {
 }
 
 // Nullable reports whether the schema allows null.
-func (s *Schema) Nullable() bool { return s.n.nullable || s.def().nullable }
+func (s *Schema) Nullable() bool { return s.n.chainNullable() }
 
 // Union reports whether the schema is anyOf or oneOf.
 func (s *Schema) Union() bool { d := s.def(); return d.anyOf != nil || d.oneOf != nil }
@@ -69,19 +83,18 @@ func (s *Schema) Items() *Schema {
 
 // Default is the schema's default, if it declares one.
 func (s *Schema) Default() (ijson.Value, bool) {
-	if s.n.hasDefault {
-		return s.n.defaultV, true
+	if d := s.first(func(n *node) bool { return n.hasDefault }); d != nil {
+		return d.defaultV, true
 	}
-	d := s.def()
-	return d.defaultV, d.hasDefault
+	return nil, false
 }
 
 // Aliases are the property's earlier names, oldest first.
 func (s *Schema) Aliases() []string {
-	if s.n.aliases != nil {
-		return slices.Clone(s.n.aliases)
+	if d := s.first(func(n *node) bool { return n.aliases != nil }); d != nil {
+		return slices.Clone(d.aliases)
 	}
-	return slices.Clone(s.def().aliases)
+	return nil
 }
 
 // Enum is the schema's enum, or nil.
@@ -125,18 +138,18 @@ func (s *Schema) Unit() (units.Unit, bool) {
 }
 
 // Key reports whether the property is part of its row's key.
-func (s *Schema) Key() bool { return s.n.key || s.def().key }
+func (s *Schema) Key() bool { return s.any(func(n *node) bool { return n.key }) }
 
 // Deprecated reports whether the property is deprecated.
-func (s *Schema) Deprecated() bool { return s.n.deprecated || s.def().deprecated }
+func (s *Schema) Deprecated() bool { return s.any(func(n *node) bool { return n.deprecated }) }
 
 // Reference is the pinned-id of the capability that lists the property's
 // valid values, or "".
 func (s *Schema) Reference() string {
-	if s.n.reference != "" {
-		return s.n.reference
+	if d := s.first(func(n *node) bool { return n.reference != "" }); d != nil {
+		return d.reference
 	}
-	return s.def().reference
+	return ""
 }
 
 // Project keeps only the named properties of an object schema, in
@@ -167,12 +180,12 @@ type Keyword struct {
 }
 
 // AtlasKeywords are the Atlas keywords on a property, in the order it
-// writes them: its own, then its definition's where it does not override
-// them.
+// writes them: its own, then each definition's along its $ref chain where
+// nothing before it wrote them.
 func (s *Schema) AtlasKeywords() []Keyword {
 	var out []Keyword
 	seen := map[string]bool{}
-	for _, n := range []*node{s.n, s.n.target} {
+	for _, n := range s.n.chain() {
 		o, ok := n.sourceObject()
 		if !ok {
 			continue

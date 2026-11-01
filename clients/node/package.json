@@ -1,0 +1,12 @@
+{
+  "name": "@atlas/sdk",
+  "version": "0.3.0",
+  "description": "Atlas from Node: discover and call capabilities through the Atlas gateway (ATLAS-CORE §6, §9.7). Core and Streaming levels of atlas/1.0.",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "files": ["src", "bin"],
+  "engines": { "node": ">=23.6" },
+  "scripts": { "test": "node --test test/*.test.ts" },
+  "license": "UNLICENSED",
+  "private": true
+}

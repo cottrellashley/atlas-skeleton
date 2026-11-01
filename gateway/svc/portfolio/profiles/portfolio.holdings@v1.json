@@ -1,0 +1,420 @@
+{
+ "identity": {
+  "id": "portfolio.holdings",
+  "version": 1,
+  "title": "Portfolio holdings",
+  "summary": "Positions in one or more portfolios on a valuation date.",
+  "domain": "portfolio",
+  "owner": "QFI"
+ },
+ "properties": {
+  "family": "data",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": [
+   {
+    "name": "Projectable",
+    "critical": false
+   },
+   {
+    "name": "AsOf",
+    "critical": false
+   },
+   {
+    "name": "Keyed",
+    "critical": false
+   }
+  ]
+ },
+ "interactions": {
+  "fetch": {
+   "effect": "read",
+   "result": "table",
+   "delivery": "chunked",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "request",
+   "returns": "result",
+   "deadline": {
+    "default": "PT2M",
+    "max": "PT30M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/data/portfolio.holdings@v1:fetch",
+     "encodings": [
+      "ndjson",
+      "json",
+      "arrow"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  },
+  "explain": {
+   "effect": "read",
+   "result": "record",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "request",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/data/portfolio.holdings@v1:explain",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "object",
+   "description": "Which portfolios, on which date, which asset class and which columns.",
+   "additionalProperties": false,
+   "required": [
+    "portfolios"
+   ],
+   "properties": {
+    "portfolios": {
+     "type": "array",
+     "description": "Portfolio codes, as portfolio.list names them: one to a hundred, each once. Each is refused unless it is in your data scope (not_granted), Harbour knows it (portfolio_not_found) and it was valued on or before as_of (no_valuation): a portfolio is never silently left out.",
+     "minItems": 1,
+     "maxItems": 100,
+     "uniqueItems": true,
+     "items": {
+      "type": "string",
+      "description": "A portfolio code.",
+      "x-atlas-logical": "PortfolioCode",
+      "x-atlas-reference": "portfolio.list@v1"
+     }
+    },
+    "as_of": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "format": "date",
+     "default": null,
+     "description": "The valuation date: each portfolio's last valuation on or before it, chosen per portfolio, so each row says its own as_of. Null is each portfolio's latest valuation. It chooses a valuation date, not a time of knowledge: Harbour overwrites a valuation it corrects, and loaded_at says when each row was written. One date per call: for a range, call once for each date the portfolio was valued."
+    },
+    "asset_class": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "description": "Only positions of this asset class; every class when null.",
+     "enum": [
+      "credit",
+      "rates",
+      "cash",
+      null
+     ],
+     "x-atlas-enum": [
+      {
+       "value": "credit",
+       "description": "Credit instruments."
+      },
+      {
+       "value": "rates",
+       "description": "Rates instruments."
+      },
+      {
+       "value": "cash",
+       "description": "Cash and its equivalents."
+      }
+     ],
+     "default": null
+    },
+    "columns": {
+     "type": [
+      "array",
+      "null"
+     ],
+     "description": "The columns to return, as the result names them; every column when null (Projectable).",
+     "uniqueItems": true,
+     "default": null,
+     "items": {
+      "type": "string",
+      "description": "A column name.",
+      "minLength": 1
+     }
+    }
+   }
+  },
+  "result": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "type": "array",
+   "description": "The holdings: one row per position a portfolio holds on its valuation date, Harbour having summed a security's lots into it. A portfolio that was valued but holds nothing of the asset_class asked for contributes no rows, so an empty answer means nothing matched; a portfolio that cannot be answered is refused, never left out. The data are Harbour's own, licensed from no vendor, and confidential under the firm's house rule: keep them inside the firm. Atlas reads Harbour as the gateway's own service identity and narrows every read to your data scope. An answer longer than your output limit is never cut silently: it says output_limit_exceeded. Ask for fewer portfolios, an asset_class or fewer columns.",
+   "items": {
+    "type": "object",
+    "description": "One position: a security held by a portfolio on a date, its lots summed.",
+    "required": [
+     "portfolio",
+     "security_id",
+     "as_of",
+     "asset_class",
+     "quantity",
+     "market_value",
+     "weight",
+     "status"
+    ],
+    "properties": {
+     "portfolio": {
+      "type": "string",
+      "description": "The portfolio's code.",
+      "x-atlas-logical": "PortfolioCode",
+      "x-atlas-key": true
+     },
+     "security_id": {
+      "type": "string",
+      "description": "Harbour's identifier of the security, unique within a portfolio and date, where an ISIN may be missing: cash is CASH-<currency>; a derivative is its contract's id (an FX forward FXF-<pair>-<settlement date>, a CDS CDS-<reference entity>-<maturity>); a loan is its facility's id (LN-<borrower>-<facility>).",
+      "minLength": 1,
+      "x-atlas-key": true
+     },
+     "as_of": {
+      "type": "string",
+      "format": "date",
+      "description": "The valuation date this row is from.",
+      "x-atlas-key": true
+     },
+     "isin": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "The security's ISIN (ISO 6166); null for cash, derivatives, loans and any instrument without one.",
+      "x-atlas-logical": "Isin"
+     },
+     "title": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "The security's name, as Harbour holds it."
+     },
+     "asset_class": {
+      "type": "string",
+      "description": "The position's asset class.",
+      "enum": [
+       "credit",
+       "rates",
+       "cash",
+       "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+       {
+        "value": "credit",
+        "description": "Credit instruments."
+       },
+       {
+        "value": "rates",
+        "description": "Rates instruments."
+       },
+       {
+        "value": "cash",
+        "description": "Cash and its equivalents."
+       },
+       {
+        "value": "UNKNOWN",
+        "description": "A value this reader does not know (§9.5.5)."
+       }
+      ]
+     },
+     "quantity": {
+      "type": "string",
+      "format": "decimal",
+      "x-atlas-logical": "Decimal(24,6)",
+      "description": "Units held, its lots summed (a derivative's notional); negative when short; zero once closed that day."
+     },
+     "market_value": {
+      "type": "object",
+      "x-atlas-logical": "Money",
+      "description": "The position's market value in its own currency; negative when short and for protection bought; zero once closed."
+     },
+     "weight": {
+      "type": "number",
+      "x-atlas-logical": "Fraction",
+      "description": "Its share of the portfolio's market value in base currency, cash included: its market value at Harbour's rate for the date over the portfolio's total. Negative when short; a portfolio's weights on a date sum to one."
+     },
+     "oas": {
+      "type": [
+       "number",
+       "null"
+      ],
+      "x-atlas-logical": "Bp",
+      "description": "Option-adjusted spread over the government curve; null where none is computed (cash, rates)."
+     },
+     "status": {
+      "type": "string",
+      "description": "Whether the position is still held.",
+      "enum": [
+       "open",
+       "closed",
+       "UNKNOWN"
+      ],
+      "x-atlas-enum": [
+       {
+        "value": "open",
+        "description": "Held at the valuation date."
+       },
+       {
+        "value": "closed",
+        "description": "Sold that day: its quantity, market value and weight are zero, and its row is kept for the day."
+       },
+       {
+        "value": "UNKNOWN",
+        "description": "A value this reader does not know (§9.5.5)."
+       }
+      ]
+     },
+     "loaded_at": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "date-time",
+      "description": "When Harbour wrote this row of its valuation. A correction rewrites the valuation and moves it: two answers for one as_of with different loaded_at were restated between them."
+     }
+    }
+   }
+  }
+ },
+ "errors": [
+  {
+   "code": "portfolio_not_found",
+   "status": 404,
+   "retryable": false,
+   "description": "No portfolio has one of the codes asked for.",
+   "next": "Call portfolio.search@v1:fetch to find the code, or portfolio.list@v1:fetch for the codes you may use."
+  },
+  {
+   "code": "no_valuation",
+   "status": 404,
+   "retryable": false,
+   "description": "A portfolio asked for has no valuation on or before as_of: it was not yet valued then.",
+   "next": "Ask for an as_of on or after the portfolio's first valuation date, or leave as_of null for its latest."
+  },
+  {
+   "code": "warehouse_suspended",
+   "status": 503,
+   "retryable": true,
+   "description": "The warehouse that serves Harbour's views is suspended or unreachable.",
+   "next": "Wait retry_after seconds, then repeat the call."
+  }
+ ],
+ "meaning": {
+  "grain": "portfolio × security × date",
+  "keys": [
+   "portfolio",
+   "security_id",
+   "as_of"
+  ],
+  "as_of": "each portfolio's last valuation on or before as_of, chosen per portfolio: two portfolios may answer from different dates, and each row says its own",
+  "null_as_of": "each portfolio's latest valuation; data.status@v1 says how fresh it is",
+  "lots": "a security's lots are summed into one row",
+  "currency": "market_value is in the position's own currency; weight is computed in the portfolio's base currency",
+  "weights": "weights include cash and sum to one per portfolio and date",
+  "scope": "a portfolio outside the caller's data scope is refused, never silently left out",
+  "order": "by portfolio, then security_id",
+  "source": "Harbour's positions view, HARBOUR.HOLDINGS.POSITIONS_V"
+ },
+ "compatibility": {
+  "request": "BACKWARD_TRANSITIVE",
+  "result": "FULL_TRANSITIVE"
+ },
+ "usage": {
+  "when": "You need what named portfolios hold on a date: securities, quantities, market values, weights or spreads. data.status@v1 says how fresh Harbour's holdings are: freshness is per source, and a portfolio's own latest valuation can lag it, so read each row's as_of.",
+  "when_not": "You need a portfolio's valuation dates, its executed trades or a benchmark's constituents: use their own capabilities, which Related lists where you may use them.",
+  "examples": [
+   {
+    "title": "Latest holdings of one portfolio",
+    "interaction": "fetch",
+    "request": {
+     "portfolios": [
+      "147HYC"
+     ]
+    }
+   },
+   {
+    "title": "Weights on a date",
+    "interaction": "fetch",
+    "request": {
+     "portfolios": [
+      "147HYC"
+     ],
+     "as_of": "2026-10-28",
+     "columns": [
+      "portfolio",
+      "isin",
+      "as_of",
+      "weight"
+     ]
+    }
+   },
+   {
+    "title": "The plan for latest holdings, without running it",
+    "interaction": "explain",
+    "request": {
+     "portfolios": [
+      "147HYC"
+     ]
+    }
+   }
+  ],
+  "related": [
+   "portfolio.search@v1",
+   "portfolio.list@v1",
+   "portfolio.holdings-dates@v1",
+   "data.status@v1"
+  ],
+  "cost": "One warehouse query per call, of the portfolios asked for, after two small reads that check each portfolio exists and was valued. explain shows the statement fetch would run, and runs nothing."
+ },
+ "evolution": {
+  "previous_profile": "portfolio.holdings@v1#eec361cece1d6f2f",
+  "lens": [],
+  "changelog": [
+   {
+    "date": "2026-10-31",
+    "change": "First published."
+   },
+   {
+    "date": "2026-11-01",
+    "change": "Added explain, which plans a request as fetch would and runs nothing. Added no_valuation, for a portfolio with no valuation on or before as_of, which fetch had answered as no rows. Added loaded_at, when Harbour wrote each row. Stated the owner's choices: closed positions, the keys of cash, derivatives and loans, a short's negative weight, one date per call, corrections, data handling and output limits."
+   }
+  ]
+ },
+ "revision": 1
+}

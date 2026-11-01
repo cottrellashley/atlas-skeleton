@@ -1,0 +1,7 @@
+# The CLI: a face over the Go client, as Python and Node are faces of
+# their own. It decides nothing the client does not.
+
+[layers]
+0 = ["sdk/go/protocol/...", "sdk/go/kit/..."]
+1 = ["sdk/go"]
+2 = ["clients/cli/cmd/..."]

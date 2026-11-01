@@ -4,6 +4,13 @@
 //
 // A Plan is prepared once for a writer and a reader, and then resolves any
 // number of records; it is safe for concurrent use.
+//
+// Under the 2026-10-31 design review (R03, ATLAS-CORE §7,
+// docs/pass-2/REVIEW.md), the lens set is an experiment. Clients are
+// obliged only to aliases, defaults, UNKNOWN and projection, and the gate
+// refuses convert_unit, promote and drop within a version. The whole of
+// §9.5 stays here, proved by the references' vectors, for the migrations
+// that come to need it.
 package resolve
 
 import (

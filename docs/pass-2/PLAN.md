@@ -1,5 +1,13 @@
 # Pass 2: the plan
 
+> **Superseded in part on 2026-10-31.** Pass 2 now follows the 2026-10-31 design review (`atlas-spec/review/`), adopted in [REVIEW.md](REVIEW.md), which governs where the two differ:
+> - The first build is one complete journey, through the CLI, Python and Node.
+> - The gateway is one deployable.
+> - Contract evolution is conservative.
+> - Handoff and events are deferred, as gated proofs.
+>
+> The phases below are replaced by REVIEW.md's order of work. Phases 0 and 1 are done (`709bb24`, `0634137`).
+
 Pass 2 rebuilds the skeleton from the rewritten spec (229 requirements) as if it were the last pass. By the end, each real system plugs in through configuration and an adapter that is already written and tested.
 
 [CRITIQUE.md](CRITIQUE.md) lists the 36 defects in pass 1, of which 14 are blockers. This plan fixes all of them.

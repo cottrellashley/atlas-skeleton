@@ -90,9 +90,9 @@ type Catalogue interface {
 // dangerous one, and check that every alias, lens and deprecation is
 // consistent. previous is the last published profile of the same id@vN, or
 // nil for a new capability or version.
-func Check(p, previous *profile.Profile, cat Catalogue, now time.Time) Report {
+func Check(p, previous *profile.Profile, cat Catalogue) Report {
 	var r Report
-	r.Findings = append(r.Findings, Lint(p, cat, now)...)
+	r.Findings = append(r.Findings, Lint(p, cat)...)
 	if previous == nil {
 		if p.Version > 1 && p.Evolution.PreviousVersion == "" {
 			r.Findings = append(r.Findings, Finding{Breaking, "/evolution/previous_version", fmt.Sprintf("@v%d names the version it replaces", p.Version)})
@@ -106,7 +106,7 @@ func Check(p, previous *profile.Profile, cat Catalogue, now time.Time) Report {
 	if previous.FP.Value == p.FP.Value {
 		return r // prose only: a new revision, the same contract
 	}
-	diffs := Classify(previous, p, now)
+	diffs := Classify(previous, p)
 	r.Findings = append(r.Findings, diffs...)
 	if pp := p.Evolution.PreviousProfile; pp == nil || *pp != previous.Exact() {
 		r.Findings = append(r.Findings, Finding{Breaking, "/evolution/previous_profile", fmt.Sprintf("names the profile it replaces, %s", previous.Exact())})

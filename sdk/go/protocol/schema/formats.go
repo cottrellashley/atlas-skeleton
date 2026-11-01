@@ -22,6 +22,16 @@ var (
 	maxInt64 = big.NewInt(1<<63 - 1)
 )
 
+// The longest int64 and the most significant digits of any number a
+// duration within the grammar's range holds (R049). The grammar reads
+// both with big.Int, whose time grows with the square of a number's
+// digits, so a longer one is refused before it is read: validation stays
+// linear in a string a request may make a megabyte long.
+const (
+	maxInt64Length   = len("-9223372036854775808")
+	maxDurationDigit = 19 // 10^19 nanoseconds is past time.Duration
+)
+
 // checkFormat reports why s does not match a format, or "". A decimal is
 // held to the precision and scale of the property's Decimal(p,s), if any.
 func checkFormat(format, s string, decimal *logical) string {
@@ -32,13 +42,19 @@ func checkFormat(format, s string, decimal *logical) string {
 	case "date-time":
 		_, err = grammar.ParseDateTime(s)
 	case "duration":
+		if significantDigits(s) > maxDurationDigit {
+			return fmt.Sprintf("%s holds a number of more than %d significant digits, past the longest duration", describe(s), maxDurationDigit)
+		}
 		_, err = grammar.ParseDuration(s)
 	case "decimal":
 		var d grammar.Decimal
 		if d, err = grammar.ParseDecimal(s); err == nil && decimal != nil && !d.Fits(decimal.precision, decimal.scale) {
-			return fmt.Sprintf("%q does not fit Decimal(%d,%d)", s, decimal.precision, decimal.scale)
+			return fmt.Sprintf("%s does not fit Decimal(%d,%d)", describe(s), decimal.precision, decimal.scale)
 		}
 	case "int64":
+		if len(s) > maxInt64Length {
+			return fmt.Sprintf("%s has more than %d characters, which no signed 64-bit integer has", describe(s), maxInt64Length)
+		}
 		var n *big.Int
 		if n, err = grammar.ParseIntegerString(s); err == nil && (n.Cmp(minInt64) < 0 || n.Cmp(maxInt64) > 0) {
 			return fmt.Sprintf("%q is outside a signed 64-bit integer", s)
@@ -62,19 +78,36 @@ func checkFormat(format, s string, decimal *logical) string {
 	return ""
 }
 
+// significantDigits is the most digits, leading zeros aside, of any run
+// of digits in s.
+func significantDigits(s string) int {
+	most, run := 0, 0
+	for i := 0; i < len(s); i++ {
+		switch c := s[i]; {
+		case c == '0' && run == 0: // a leading zero
+		case digit(c):
+			run++
+			most = max(most, run)
+		default:
+			run = 0
+		}
+	}
+	return most
+}
+
 // checkUUID accepts a lowercase RFC 9562 UUID: 8-4-4-4-12 lowercase hex.
 func checkUUID(s string) error {
 	if len(s) != 36 {
-		return fmt.Errorf("%q is not a lowercase UUID", s)
+		return fmt.Errorf("%s is not a lowercase UUID", describe(s))
 	}
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 		if i == 8 || i == 13 || i == 18 || i == 23 {
 			if c != '-' {
-				return fmt.Errorf("%q is not a lowercase UUID", s)
+				return fmt.Errorf("%s is not a lowercase UUID", describe(s))
 			}
 		} else if !(c >= '0' && c <= '9' || c >= 'a' && c <= 'f') {
-			return fmt.Errorf("%q is not a lowercase UUID", s)
+			return fmt.Errorf("%s is not a lowercase UUID", describe(s))
 		}
 	}
 	return nil
@@ -83,7 +116,7 @@ func checkUUID(s string) error {
 // checkURI accepts a URI by RFC 3986 §3: a scheme, then a hierarchical
 // part, an optional query and an optional fragment (assumption A-010).
 func checkURI(s string) error {
-	bad := func(why string) error { return fmt.Errorf("%q is not an absolute URI: %s", s, why) }
+	bad := func(why string) error { return fmt.Errorf("%s is not an absolute URI: %s", describe(s), why) }
 	scheme, rest, ok := strings.Cut(s, ":")
 	if !ok || scheme == "" || !alpha(scheme[0]) {
 		return bad("it has no scheme")

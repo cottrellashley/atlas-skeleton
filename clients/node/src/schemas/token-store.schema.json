@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/token-store.schema.json",
+  "title": "Token store entry",
+  "description": "<ATLAS_HOME>/state/token-<env>.json (§9.7.3): one environment's sign-in, shared by every client. Mode 0600 in a 0700 directory; written atomically; refreshed within 60 seconds of expires_at.",
+  "type": "object",
+  "required": [
+    "access_token",
+    "expires_at"
+  ],
+  "properties": {
+    "access_token": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expires_at": {
+      "type": "integer",
+      "description": "Seconds since the epoch."
+    },
+    "refresh_token": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

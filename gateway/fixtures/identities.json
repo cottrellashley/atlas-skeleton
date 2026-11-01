@@ -1,0 +1,10 @@
+{
+ "description": "The development gateway's people and workloads, and the tokens it accepts for them. Alice reads four portfolios, Bob one; Carol holds nothing; Dave is denied holdings; nightly-risk is a workload that reads every portfolio.",
+ "identities": [
+  {"token": "dev-alice", "principal": "a11ce000-0000-4000-8000-000000000001", "name": "Alice Analyst", "kind": "person", "groups": ["credit-analysts"]},
+  {"token": "dev-bob", "principal": "b0b00000-0000-4000-8000-000000000002", "name": "Bob Banks", "kind": "person", "groups": ["hy-analysts"]},
+  {"token": "dev-carol", "principal": "ca401000-0000-4000-8000-000000000003", "name": "Carol Clark", "kind": "person", "groups": []},
+  {"token": "dev-dave", "principal": "da7e0000-0000-4000-8000-000000000004", "name": "Dave Dealer", "kind": "person", "groups": ["hy-analysts"]},
+  {"token": "dev-nightly-risk", "principal": "7a5c0000-0000-4000-8000-000000000005", "name": "nightly-risk", "kind": "workload", "groups": ["risk-batch"]}
+ ]
+}

@@ -157,6 +157,19 @@ func NewKeySet(url string) *KeySet {
 
 // Key returns the key for kid, refreshing the set when the kid is unknown or
 // the cached document has expired.
+// Keys is a copy of the keys the last fetched document held, by kid,
+// however old: what a caller keeps to verify with while the set's source
+// cannot be reached. ATLAS: added, for the gateway's held keys.
+func (s *KeySet) Keys() map[string]crypto.PublicKey {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := make(map[string]crypto.PublicKey, len(s.keys))
+	for kid, k := range s.keys {
+		out[kid] = k
+	}
+	return out
+}
+
 func (s *KeySet) Key(ctx context.Context, kid string) (crypto.PublicKey, error) {
 	s.mu.Lock()
 	now := s.now()

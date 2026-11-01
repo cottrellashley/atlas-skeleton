@@ -1,6 +1,7 @@
 package ijson
 
 import (
+	"encoding/json"
 	"math"
 	"strings"
 	"testing"
@@ -238,4 +239,23 @@ func FuzzParse(f *testing.F) {
 			t.Fatalf("canonicalisation is idempotent: %s → %s", c1, c2)
 		}
 	})
+}
+
+// An *Object or a Number inside a Go value marshals as itself: members in
+// their order, the number's own text.
+func TestMarshalJSONKeepsOrderAndText(t *testing.T) {
+	v, err := Parse([]byte(`{"z":1,"a":{"y":12345678901234567890.5,"b":[1e2]}}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := json.Marshal(map[string]any{"doc": v, "n": Number("0.10")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := `{"doc":{"z":1,"a":{"y":12345678901234567890.5,"b":[1e2]}},"n":0.10}`; string(b) != want {
+		t.Fatalf("got %s", b)
+	}
+	if _, err := json.Marshal(Number("1;")); err == nil {
+		t.Fatal("a number that is not one was marshalled")
+	}
 }

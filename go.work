@@ -1,6 +1,12 @@
 go 1.25.0
 
 use (
+	./clients/cli
+	./gateway
+	./gateway/adapter/snowflake/gosf
+	./gateway/cmd/gateway
+	./gateway/local
 	./sdk/go
+	./sqlglot
 	./tools
 )

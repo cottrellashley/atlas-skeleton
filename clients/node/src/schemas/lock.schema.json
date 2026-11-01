@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlas.jhg.com/protocol/1.0/lock.schema.json",
+  "title": "Lock",
+  "description": "atlas.lock, TOML parsed to JSON (§3.3.10, §9.7.9): an application's reader profiles. A DynamicSchema capability is held only as dynamic = true.",
+  "type": "object",
+  "required": [
+    "capabilities"
+  ],
+  "properties": {
+    "capabilities": {
+      "type": "object",
+      "propertyNames": {
+        "format": "capability-id"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "version",
+          "fingerprint"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{16}$"
+          },
+          "dynamic": {
+            "type": "boolean",
+            "description": "Its types are not promised (§9.3.2)."
+          }
+        }
+      }
+    },
+    "extras": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "The client extras the application uses (§9.7.12)."
+    }
+  }
+}

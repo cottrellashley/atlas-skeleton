@@ -51,7 +51,7 @@ func TestVectorProfiles(t *testing.T) {
 			if _, err := protocol.CheckFingerprint(p.Doc); err != nil {
 				t.Errorf("%s: %v", name, err)
 			}
-			if fs := Lint(p, nil, now); len(fs) > 0 {
+			if fs := Lint(p, nil); len(fs) > 0 {
 				t.Errorf("%s: the lint refuses it: %v", name, fs)
 			}
 			if rs := Ready(p); len(rs) > 0 {

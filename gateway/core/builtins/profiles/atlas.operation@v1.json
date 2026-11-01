@@ -1,0 +1,200 @@
+{
+ "identity": {
+  "id": "atlas.operation",
+  "version": 1,
+  "title": "atlas.operation",
+  "summary": "The built-in atlas.operation (§9.3.2).",
+  "domain": "atlas",
+  "owner": "Atlas"
+ },
+ "properties": {
+  "family": "resource",
+  "stability": "official",
+  "lifecycle": "stable",
+  "visibility": "listed",
+  "traits": []
+ },
+ "interactions": {
+  "get": {
+   "effect": "read",
+   "result": "record",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "operation_get_request",
+   "returns": "operation",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/atlas/atlas.operation:get",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  },
+  "list": {
+   "effect": "read",
+   "result": "collection",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "operation_list_request",
+   "returns": "operation",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/atlas/atlas.operation:list",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  },
+  "cancel": {
+   "effect": "write",
+   "result": "record",
+   "delivery": "single",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "operation_get_request",
+   "returns": "operation",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/atlas/atlas.operation:cancel",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  },
+  "watch": {
+   "effect": "read",
+   "result": "record",
+   "delivery": "subscription",
+   "execution": [
+    "gateway"
+   ],
+   "takes": "operation_get_request",
+   "returns": "operation",
+   "deadline": {
+    "default": "PT30S",
+    "max": "PT2M"
+   },
+   "bindings": [
+    {
+     "protocol": "https",
+     "server": "gateway",
+     "method": "POST",
+     "address": "/v1/atlas/atlas.operation:watch",
+     "encodings": [
+      "json"
+     ],
+     "auth": "bearer"
+    }
+   ]
+  }
+ },
+ "schemas": {
+  "operation_get_request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/operation_get_request"
+  },
+  "operation": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/operation.schema.json"
+  },
+  "operation_list_request": {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+   "$vocabulary": {
+    "https://json-schema.org/draft/2020-12/vocab/core": true,
+    "https://json-schema.org/draft/2020-12/vocab/applicator": true,
+    "https://json-schema.org/draft/2020-12/vocab/validation": true,
+    "https://json-schema.org/draft/2020-12/vocab/meta-data": true,
+    "https://json-schema.org/draft/2020-12/vocab/format-assertion": true,
+    "https://atlas.jhg.com/vocab/2026-10": false
+   },
+   "$ref": "https://atlas.jhg.com/protocol/1.0/builtins.schema.json#/$defs/operation_list_request"
+  }
+ },
+ "errors": [],
+ "meaning": {
+  "name": "fixed by atlas/1.0"
+ },
+ "usage": {
+  "when": "A call answered with an operation, and you need its state or result, the operations you started, or to cancel one.",
+  "when_not": "Your call answered at once: there is no operation to follow.",
+  "examples": [
+   {
+    "title": "One operation",
+    "interaction": "get",
+    "request": {
+     "name": "operations/op-1"
+    }
+   },
+   {
+    "title": "Your running operations",
+    "interaction": "list",
+    "request": {
+     "state": "running"
+    }
+   },
+   {
+    "title": "Cancel one",
+    "interaction": "cancel",
+    "request": {
+     "name": "operations/op-1"
+    }
+   },
+   {
+    "title": "Watch one",
+    "interaction": "watch",
+    "request": {
+     "name": "operations/op-1"
+    }
+   }
+  ],
+  "related": []
+ }
+}

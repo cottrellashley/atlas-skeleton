@@ -35,8 +35,11 @@ type compact struct {
 	signingInput []byte
 }
 
-// ErrMalformedToken covers every structural failure.
-var ErrMalformedToken = errors.New("auth: malformed token")
+// ErrMalformedToken covers every structural failure. ATLAS: it wraps
+// ErrInvalidToken, so a caller that maps invalid tokens to unauthenticated
+// maps a malformed one the same way, and never mistakes it for a failure of
+// the verifier itself (the gateway's Authenticator suite caught this).
+var ErrMalformedToken = fmt.Errorf("%w: malformed", ErrInvalidToken)
 
 func parseCompact(token string) (*compact, error) {
 	parts := strings.Split(token, ".")

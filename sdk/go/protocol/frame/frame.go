@@ -24,14 +24,20 @@ import (
 
 // End is the end line (chunk-end.schema.json): the rows sent, whether they
 // were cut at the caller's cap, the usage, and a failure after the first
-// row.
+// row. Every member is always written, and a reader requires every one:
+// usage is {} when nothing was measured, and problem is null on success.
 type End struct {
-	Atlas     string            `json:"$atlas"` // always "end"
-	Rows      int64             `json:"rows"`
-	Truncated bool              `json:"truncated"`
-	Usage     json.RawMessage   `json:"usage,omitempty"`
-	Problem   *protocol.Problem `json:"problem,omitempty"`
+	Rows      int64
+	Truncated bool
+	Usage     json.RawMessage // a JSON object; nil is written as {}
+	Problem   *protocol.Problem
 }
+
+// The end line's members, which chunk-end.schema.json requires.
+var endMembers = []string{"$atlas", "rows", "truncated", "usage", "problem"}
+
+// The members every problem has (problem.schema.json).
+var problemMembers = []string{"type", "status", "code", "retryable", "next", "request_id"}
 
 // MaxLine is the longest NDJSON line a reader takes.
 const MaxLine = 16 << 20
@@ -45,8 +51,128 @@ func invalid(why string) error {
 }
 
 func marshalEnd(e End, rows int64) ([]byte, error) {
-	e.Atlas, e.Rows = "end", rows
-	return json.Marshal(e)
+	usage := e.Usage
+	if len(usage) == 0 {
+		usage = json.RawMessage("{}")
+	}
+	if u, err := ijson.Parse(usage); err != nil {
+		return nil, fmt.Errorf("frame: the end line's usage: %w", err)
+	} else if _, ok := u.(*ijson.Object); !ok {
+		return nil, errors.New("frame: the end line's usage is an object")
+	}
+	problem := json.RawMessage("null")
+	if e.Problem != nil {
+		b, err := json.Marshal(e.Problem)
+		if err != nil {
+			return nil, err
+		}
+		v, err := ijson.Parse(b)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := parseProblem(v.(*ijson.Object)); err != nil {
+			return nil, fmt.Errorf("frame: the end line's problem is not a whole problem (its next and request_id are filled before the end): %w", err)
+		}
+		problem = b
+	}
+	return json.Marshal(struct {
+		Atlas     string          `json:"$atlas"`
+		Rows      int64           `json:"rows"`
+		Truncated bool            `json:"truncated"`
+		Usage     json.RawMessage `json:"usage"`
+		Problem   json.RawMessage `json:"problem"`
+	}{"end", rows, e.Truncated, usage, problem})
+}
+
+// parseEnd reads an end line as chunk-end.schema.json defines it: every
+// member present and of its type, so that a line that only says
+// {"$atlas":"end"} is never taken for a complete answer. A member it does
+// not know is ignored, as in every document the gateway sends.
+func parseEnd(o *ijson.Object) (*End, error) {
+	for _, name := range endMembers {
+		if _, ok := o.Get(name); !ok {
+			return nil, invalid("the end line has no " + name)
+		}
+	}
+	if m, _ := o.Get("$atlas"); m != "end" {
+		return nil, invalid(fmt.Sprintf("the end line has $atlas %v", m))
+	}
+	var e End
+	rows, _ := o.Get("rows")
+	n, isNumber := rows.(ijson.Number)
+	count, isInteger := n.Int64()
+	if !isNumber || !isInteger || count < 0 {
+		return nil, invalid("the end line's rows is not a count")
+	}
+	e.Rows = count
+	truncated, _ := o.Get("truncated")
+	t, isBool := truncated.(bool)
+	if !isBool {
+		return nil, invalid("the end line's truncated is not a boolean")
+	}
+	e.Truncated = t
+	usage, _ := o.Get("usage")
+	if _, isObject := usage.(*ijson.Object); !isObject {
+		return nil, invalid("the end line's usage is not an object")
+	}
+	b, err := ijson.Marshal(usage)
+	if err != nil {
+		return nil, invalid("the end line's usage: " + err.Error())
+	}
+	e.Usage = b
+	switch p := mustGet(o, "problem").(type) {
+	case nil:
+	case *ijson.Object:
+		problem, err := parseProblem(p)
+		if err != nil {
+			return nil, err
+		}
+		e.Problem = problem
+	default:
+		return nil, invalid("the end line's problem is neither null nor a problem")
+	}
+	return &e, nil
+}
+
+func mustGet(o *ijson.Object, name string) ijson.Value {
+	v, _ := o.Get(name)
+	return v
+}
+
+// parseProblem reads the end line's problem, which has every member
+// problem.schema.json requires.
+func parseProblem(o *ijson.Object) (*protocol.Problem, error) {
+	for _, name := range problemMembers {
+		if _, ok := o.Get(name); !ok {
+			return nil, invalid("the end line's problem has no " + name)
+		}
+	}
+	for name, want := range map[string]string{"type": "string", "code": "string", "next": "string", "request_id": "string", "retryable": "boolean", "status": "integer"} {
+		v := mustGet(o, name)
+		var ok bool
+		switch want {
+		case "string":
+			_, ok = v.(string)
+		case "boolean":
+			_, ok = v.(bool)
+		case "integer":
+			n, isNumber := v.(ijson.Number)
+			_, isInteger := n.Int64()
+			ok = isNumber && isInteger
+		}
+		if !ok {
+			return nil, invalid(fmt.Sprintf("the end line's problem has a %s that is not a %s", name, want))
+		}
+	}
+	b, err := ijson.Marshal(o)
+	if err != nil {
+		return nil, invalid("the end line's problem: " + err.Error())
+	}
+	var p protocol.Problem
+	if err := json.Unmarshal(b, &p); err != nil {
+		return nil, invalid("the end line's problem: " + err.Error())
+	}
+	return &p, nil
 }
 
 // NDJSONWriter writes rows, one per line, then the end line.
@@ -144,18 +270,15 @@ func (n *NDJSONReader) next() (*ijson.Object, error) {
 	if !ok {
 		return nil, invalid(fmt.Sprintf("line %d is not a record", n.rows+1))
 	}
-	if marker, isEnd := o.Get("$atlas"); isEnd {
-		if marker != "end" {
-			return nil, invalid(fmt.Sprintf("line %d has $atlas %v", n.rows+1, marker))
-		}
-		var e End
-		if err := json.Unmarshal(line, &e); err != nil {
-			return nil, invalid("the end line: " + err.Error())
+	if _, isEnd := o.Get("$atlas"); isEnd {
+		e, err := parseEnd(o)
+		if err != nil {
+			return nil, err
 		}
 		if e.Rows != n.rows {
 			return nil, invalid(fmt.Sprintf("the end line counts %d rows, and %d arrived", e.Rows, n.rows))
 		}
-		n.end = &e
+		n.end = e
 		return n.next()
 	}
 	n.rows++
@@ -306,17 +429,22 @@ func (a *ArrowReader) next() (arrow.RecordBatch, error) {
 			if b.NumRows() != 0 {
 				return nil, invalid(fmt.Sprintf("the final batch has %d rows", b.NumRows()))
 			}
-			if _, err := ijson.Parse([]byte(text)); err != nil {
+			v, err := ijson.ParseLimits([]byte(text), ijson.Limits{MaxBytes: MaxLine})
+			if err != nil {
 				return nil, invalid("the end line: " + err.Error())
 			}
-			var e End
-			if err := json.Unmarshal([]byte(text), &e); err != nil || e.Atlas != "end" {
+			o, ok := v.(*ijson.Object)
+			if !ok {
 				return nil, invalid("the final batch's atlas:end is not an end line")
+			}
+			e, err := parseEnd(o)
+			if err != nil {
+				return nil, err
 			}
 			if e.Rows != a.rows {
 				return nil, invalid(fmt.Sprintf("the end line counts %d rows, and %d arrived", e.Rows, a.rows))
 			}
-			a.end = &e
+			a.end = e
 			return a.next()
 		}
 	}
